@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium-min";
+import puppeteer from "puppeteer-core";
 import { createClient } from "@/lib/supabaseServer";
 import { proposalHtml } from "@/lib/proposalPdfTemplate";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 type ProjectRow = {
   id: string;
@@ -89,12 +93,24 @@ export async function GET(
 
     const html = proposalHtml(project);
 
+    const executablePath = await chromium.executablePath(
+      "https://github.com/Sparticuz/chromium/releases/download/v138.0.1/chromium-v138.0.1-pack.x64.tar"
+    );
+
     const browser = await puppeteer.launch({
+      args: chromium.args,
+      executablePath,
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
     const page = await browser.newPage();
+
+    await page.setViewport({
+      width: 1440,
+      height: 2000,
+      deviceScaleFactor: 1,
+    });
+
     await page.setContent(html, { waitUntil: "networkidle0" });
 
     const pdf = await page.pdf({
@@ -123,3 +139,4 @@ export async function GET(
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
