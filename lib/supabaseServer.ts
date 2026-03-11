@@ -1,5 +1,5 @@
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -18,7 +18,8 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             });
           } catch {
-            // server components can't set cookies sometimes — middleware handles it
+            // This can happen in Server Components.
+            // Safe to ignore if middleware/proxy handles refresh.
           }
         },
       },
