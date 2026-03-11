@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import puppeteer from "puppeteer";
 import { createClient } from "@/lib/supabaseServer";
 import { proposalHtml } from "@/lib/proposalPdfTemplate";
-import puppeteer from "puppeteer";
 
 type ProjectRow = {
   id: string;
@@ -44,12 +44,6 @@ export async function GET(
 ) {
   try {
     const resolvedParams = await Promise.resolve(context.params);
-    const id = resolvedParams.id;
-
-    if (!id) {
-      return NextResponse.json({ error: "Missing quote id" }, { status: 400 });
-    }
-
     const supabase = await createClient();
 
     const { data: project, error } = await supabase
@@ -82,12 +76,13 @@ export async function GET(
         created_at,
         updated_at
       `)
-      .eq("id", id)
-      .single<ProjectRow>();
+      .eq("id", resolvedParams.id)
+      .limit(1)
+      .maybeSingle<ProjectRow>();
 
     if (error || !project) {
       return NextResponse.json(
-        { error: error?.message ?? "Quote not found" },
+        { error: error?.message ?? "Project not found" },
         { status: 404 }
       );
     }
@@ -99,42 +94,32 @@ export async function GET(
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
-    try {
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
-      const pdf = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        margin: {
-          top: "20px",
-          right: "20px",
-          bottom: "20px",
-          left: "20px",
-        },
-      });
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: {
+        top: "20px",
+        right: "20px",
+        bottom: "20px",
+        left: "20px",
+      },
+    });
 
-      const safeName = (project.name ?? "deck-quote")
-        .replace(/[^a-z0-9]+/gi, "-")
-        .replace(/^-+|-+$/g, "")
-        .toLowerCase();
+    await browser.close();
 
-      return new NextResponse(Buffer.from(pdf), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `inline; filename="${safeName || "deck-quote"}.pdf"`,
-          "Cache-Control": "no-store",
-        },
-      });
-    } finally {
-      await browser.close();
-    }
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err?.message ?? "Failed to generate PDF" },
-      { status: 500 }
-    );
+    return new NextResponse(Buffer.from(pdf), {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="${project.name ?? "proposal"}.pdf"`,
+      },
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to generate PDF";
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
