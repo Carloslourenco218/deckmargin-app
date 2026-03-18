@@ -21,11 +21,23 @@ export default function NewQuoteWizardPage() {
     setSaving(true);
     setErr("");
 
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setErr("You must be logged in to create a quote.");
+      setSaving(false);
+      return;
+    }
+
     const finalName = name.trim() || "Untitled Quote";
 
     const { data, error } = await supabase
       .from("projects")
       .insert({
+        user_id: user.id,
         name: finalName,
         client_name: clientName || null,
         client_email: clientEmail || null,
@@ -122,7 +134,7 @@ export default function NewQuoteWizardPage() {
               disabled={saving}
               className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-60"
             >
-              {saving ? "Creating…" : "Create Quote"}
+              {saving ? "Creating..." : "Create Quote"}
             </button>
           </div>
         </div>

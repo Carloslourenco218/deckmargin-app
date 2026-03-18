@@ -40,11 +40,24 @@ export default function DashboardPage() {
     setLoading(true);
     setErr(null);
 
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setErr("You must be logged in.");
+      setRows([]);
+      setLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("projects")
       .select(
         "id,name,status,final_price,expected_profit,target_margin,created_at"
       )
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(10);
 
