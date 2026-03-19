@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabaseServer";
 
 type ProjectRow = {
   id: string;
+  user_id: string | null;
   name: string | null;
   status: string | null;
 
@@ -61,10 +62,35 @@ export default async function ProjectPage({
   const resolvedParams = await Promise.resolve(params);
   const supabase = await createClient();
 
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return (
+      <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            You must be logged in to view this project.
+          </div>
+
+          <Link
+            href="/login"
+            className="inline-block rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   const { data: project, error } = await supabase
     .from("projects")
     .select(`
       id,
+      user_id,
       name,
       status,
       final_price,
@@ -92,6 +118,7 @@ export default async function ProjectPage({
       updated_at
     `)
     .eq("id", resolvedParams.id)
+    .eq("user_id", user.id)
     .limit(1)
     .maybeSingle<ProjectRow>();
 
@@ -236,7 +263,7 @@ export default async function ProjectPage({
         <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-5">
           <h2 className="mb-4 text-xl font-semibold">Deck Details</h2>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
             <div>
               <div className="text-white/50">Length</div>
               <div className="font-medium">{project.deck_length ?? "—"} ft</div>
@@ -282,7 +309,7 @@ export default async function ProjectPage({
         <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-5">
           <h2 className="mb-4 text-xl font-semibold">Cost Breakdown</h2>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
             <div>
               <div className="text-white/50">Material Cost</div>
               <div className="font-medium">{money(project.material_cost)}</div>
