@@ -18,8 +18,7 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             });
           } catch {
-            // This can happen in Server Components.
-            // Safe to ignore if middleware/proxy handles refresh.
+            // ignore in server components
           }
         },
       },
