@@ -277,7 +277,8 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
     .scope-box,
     .notes-box,
     .terms-box,
-    .addons-box {
+    .addons-box,
+    .acceptance-box {
       border: 1px solid #e5e7eb;
       border-radius: 14px;
       background: #fff;
@@ -298,11 +299,34 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
 
     .notes-box,
     .terms-box,
-    .addons-box {
+    .addons-box,
+    .acceptance-box {
       font-size: 14px;
       line-height: 1.7;
       color: #111827;
       white-space: pre-wrap;
+    }
+
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px 28px;
+      margin-top: 18px;
+    }
+
+    .signature-item {
+      padding-top: 16px;
+    }
+
+    .signature-line {
+      border-bottom: 1px solid #111827;
+      height: 28px;
+      margin-bottom: 8px;
+    }
+
+    .signature-label {
+      font-size: 12px;
+      color: #6b7280;
     }
 
     .footer {
@@ -455,6 +479,44 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
       <div class="terms-box">This quote is valid for 30 days from the date of issuance. After 30 days, pricing is subject to review and adjustment based on current material market rates and labor availability.
 
 We are currently seeing high demand for deck builds this season. To ensure we can hit your target completion date and secure our current lumber pricing, we recommend finalizing this agreement within the next 14 days.</div>
+    </div>
+
+    <div class="section">
+      <h2>Acceptance</h2>
+      <div class="acceptance-box">By signing below, the client acknowledges acceptance of this proposal and the pricing outlined above.
+
+        <div class="signature-grid">
+          <div class="signature-item">
+            <div class="signature-line"></div>
+            <div class="signature-label">Client Signature</div>
+          </div>
+
+          <div class="signature-item">
+            <div class="signature-line"></div>
+            <div class="signature-label">Date</div>
+          </div>
+
+          <div class="signature-item">
+            <div class="signature-line"></div>
+            <div class="signature-label">Client Printed Name</div>
+          </div>
+
+          <div class="signature-item">
+            <div class="signature-line"></div>
+            <div class="signature-label">Contractor Signature</div>
+          </div>
+
+          <div class="signature-item">
+            <div class="signature-line"></div>
+            <div class="signature-label">Contractor Printed Name</div>
+          </div>
+
+          <div class="signature-item">
+            <div class="signature-line"></div>
+            <div class="signature-label">Date</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="footer">
