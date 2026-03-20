@@ -12,6 +12,14 @@ type ProposalData = {
   railing_type: string | null;
   stair_count: number | null;
 
+  lighting_enabled: boolean | null;
+  lighting_cost: number | null;
+  staining_enabled: boolean | null;
+  staining_cost: number | null;
+  built_ins_enabled: boolean | null;
+  built_ins_cost: number | null;
+  built_ins_description: string | null;
+
   material_cost: number | null;
   labor_cost: number | null;
   permit_cost: number | null;
@@ -83,6 +91,22 @@ function buildScope(project: ProposalData) {
 
   if ((project.stair_count ?? 0) > 0) {
     items.push(`Construction of ${project.stair_count} stair ${project.stair_count === 1 ? "section" : "sections"}`);
+  }
+
+  if (project.lighting_enabled) {
+    items.push("Installation of deck lighting package");
+  }
+
+  if (project.staining_enabled) {
+    items.push("Professional staining and sealing of deck surfaces");
+  }
+
+  if (project.built_ins_enabled) {
+    items.push(
+      project.built_ins_description && project.built_ins_description.trim()
+        ? `Built-in feature work: ${project.built_ins_description}`
+        : "Built-in custom feature installation"
+    );
   }
 
   items.push("Final cleanup and completion walkthrough");
@@ -252,7 +276,8 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
 
     .scope-box,
     .notes-box,
-    .terms-box {
+    .terms-box,
+    .addons-box {
       border: 1px solid #e5e7eb;
       border-radius: 14px;
       background: #fff;
@@ -272,7 +297,8 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
     }
 
     .notes-box,
-    .terms-box {
+    .terms-box,
+    .addons-box {
       font-size: 14px;
       line-height: 1.7;
       color: #111827;
@@ -393,6 +419,27 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
         </ul>
       </div>
     </div>
+
+    ${
+      project.lighting_enabled || project.staining_enabled || project.built_ins_enabled
+        ? `
+    <div class="section">
+      <h2>Optional Add-ons Included</h2>
+      <div class="addons-box">
+        ${project.lighting_enabled ? `Lighting: ${escapeHtml(money(project.lighting_cost))}<br />` : ""}
+        ${project.staining_enabled ? `Staining / Sealing: ${escapeHtml(money(project.staining_cost))}<br />` : ""}
+        ${
+          project.built_ins_enabled
+            ? `Built-ins${
+                project.built_ins_description ? ` (${escapeHtml(project.built_ins_description)})` : ""
+              }: ${escapeHtml(money(project.built_ins_cost))}`
+            : ""
+        }
+      </div>
+    </div>
+    `
+        : ""
+    }
 
     <div class="section">
       <h2>Project Notes</h2>

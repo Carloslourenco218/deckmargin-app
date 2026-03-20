@@ -22,6 +22,14 @@ type ProjectRow = {
   railing_type: string | null;
   stair_count: number | null;
 
+  lighting_enabled: boolean | null;
+  lighting_cost: number | null;
+  staining_enabled: boolean | null;
+  staining_cost: number | null;
+  built_ins_enabled: boolean | null;
+  built_ins_cost: number | null;
+  built_ins_description: string | null;
+
   material_cost: number | null;
   labor_cost: number | null;
   permit_cost: number | null;
@@ -83,6 +91,13 @@ export async function GET(
         material_type,
         railing_type,
         stair_count,
+        lighting_enabled,
+        lighting_cost,
+        staining_enabled,
+        staining_cost,
+        built_ins_enabled,
+        built_ins_cost,
+        built_ins_description,
         material_cost,
         labor_cost,
         permit_cost,
@@ -171,3 +186,4 @@ export async function GET(
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

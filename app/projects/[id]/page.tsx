@@ -24,6 +24,14 @@ type ProjectRow = {
   railing_type: string | null;
   stair_count: number | null;
 
+  lighting_enabled: boolean | null;
+  lighting_cost: number | null;
+  staining_enabled: boolean | null;
+  staining_cost: number | null;
+  built_ins_enabled: boolean | null;
+  built_ins_cost: number | null;
+  built_ins_description: string | null;
+
   material_cost: number | null;
   labor_cost: number | null;
   permit_cost: number | null;
@@ -107,6 +115,13 @@ export default async function ProjectPage({
       material_type,
       railing_type,
       stair_count,
+      lighting_enabled,
+      lighting_cost,
+      staining_enabled,
+      staining_cost,
+      built_ins_enabled,
+      built_ins_cost,
+      built_ins_description,
       material_cost,
       labor_cost,
       permit_cost,
@@ -302,6 +317,39 @@ export default async function ProjectPage({
             <div>
               <div className="text-white/50">Status</div>
               <div className="font-medium">{project.status || "open"}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-5">
+          <h2 className="mb-4 text-xl font-semibold">Add-ons</h2>
+
+          <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+              <div className="text-white/50">Lighting</div>
+              <div className="font-medium">
+                {project.lighting_enabled ? money(project.lighting_cost) : "Not included"}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+              <div className="text-white/50">Staining / Sealing</div>
+              <div className="font-medium">
+                {project.staining_enabled ? money(project.staining_cost) : "Not included"}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+              <div className="text-white/50">Built-ins</div>
+              <div className="font-medium">
+                {project.built_ins_enabled
+                  ? `${money(project.built_ins_cost)}${
+                      project.built_ins_description
+                        ? ` • ${project.built_ins_description}`
+                        : ""
+                    }`
+                  : "Not included"}
+              </div>
             </div>
           </div>
         </div>

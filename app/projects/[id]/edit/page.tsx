@@ -29,6 +29,16 @@ type FormState = {
   railing_type: string;
   stair_count: string;
 
+  lighting_enabled: boolean;
+  lighting_cost: string;
+
+  staining_enabled: boolean;
+  staining_cost: string;
+
+  built_ins_enabled: boolean;
+  built_ins_cost: string;
+  built_ins_description: string;
+
   material_cost: string;
   labor_cost: string;
   permit_cost: string;
@@ -51,6 +61,11 @@ function numOrNull(value: string) {
   if (!value.trim()) return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
+}
+
+function numOrZero(value: string) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function moneyString(value: any) {
@@ -85,14 +100,26 @@ function calcSqFt(length: string, width: string) {
   return String(Math.round(l * w));
 }
 
-function calcTotalCost(
-  material: number,
-  labor: number,
-  permit: number,
-  equipment: number,
-  overhead: number
-) {
-  return material + labor + permit + equipment + overhead;
+function calcTotalCost(values: {
+  material: number;
+  labor: number;
+  permit: number;
+  equipment: number;
+  overhead: number;
+  lighting: number;
+  staining: number;
+  builtIns: number;
+}) {
+  return (
+    values.material +
+    values.labor +
+    values.permit +
+    values.equipment +
+    values.overhead +
+    values.lighting +
+    values.staining +
+    values.builtIns
+  );
 }
 
 function materialRate(type: string, settings: SettingsRow) {
@@ -186,6 +213,16 @@ export default function EditProjectPage() {
     railing_type: "none",
     stair_count: "0",
 
+    lighting_enabled: false,
+    lighting_cost: "0",
+
+    staining_enabled: false,
+    staining_cost: "0",
+
+    built_ins_enabled: false,
+    built_ins_cost: "0",
+    built_ins_description: "",
+
     material_cost: "",
     labor_cost: "",
     permit_cost: "",
@@ -248,6 +285,15 @@ export default function EditProjectPage() {
           material_type,
           railing_type,
           stair_count,
+
+          lighting_enabled,
+          lighting_cost,
+          staining_enabled,
+          staining_cost,
+          built_ins_enabled,
+          built_ins_cost,
+          built_ins_description,
+
           material_cost,
           labor_cost,
           permit_cost,
@@ -284,6 +330,16 @@ export default function EditProjectPage() {
         material_type: data.material_type ?? "pressure-treated",
         railing_type: data.railing_type ?? "none",
         stair_count: integerString(data.stair_count ?? 0),
+
+        lighting_enabled: data.lighting_enabled ?? false,
+        lighting_cost: moneyString(data.lighting_cost ?? 0),
+
+        staining_enabled: data.staining_enabled ?? false,
+        staining_cost: moneyString(data.staining_cost ?? 0),
+
+        built_ins_enabled: data.built_ins_enabled ?? false,
+        built_ins_cost: moneyString(data.built_ins_cost ?? 0),
+        built_ins_description: data.built_ins_description ?? "",
 
         material_cost: moneyString(data.material_cost),
         labor_cost: moneyString(data.labor_cost),
@@ -336,7 +392,25 @@ export default function EditProjectPage() {
           ? settings.overhead_default
           : Number(prev.overhead_cost || 0);
 
-      const total = calcTotalCost(material, labor, permit, equipment, overhead);
+      const lighting =
+        prev.lighting_enabled ? numOrZero(prev.lighting_cost) : 0;
+
+      const staining =
+        prev.staining_enabled ? numOrZero(prev.staining_cost) : 0;
+
+      const builtIns =
+        prev.built_ins_enabled ? numOrZero(prev.built_ins_cost) : 0;
+
+      const total = calcTotalCost({
+        material,
+        labor,
+        permit,
+        equipment,
+        overhead,
+        lighting,
+        staining,
+        builtIns,
+      });
 
       const margin = parseMarginInput(prev.target_margin) ?? 0.3;
       const finalPrice = margin >= 1 ? total : total / (1 - margin);
@@ -362,6 +436,15 @@ export default function EditProjectPage() {
     form.material_type,
     form.stair_count,
     form.target_margin,
+    form.permit_cost,
+    form.equipment_cost,
+    form.overhead_cost,
+    form.lighting_enabled,
+    form.lighting_cost,
+    form.staining_enabled,
+    form.staining_cost,
+    form.built_ins_enabled,
+    form.built_ins_cost,
     settings,
   ]);
 
@@ -386,6 +469,18 @@ export default function EditProjectPage() {
       material_type: form.material_type,
       railing_type: form.railing_type,
       stair_count: Number(form.stair_count || 0),
+
+      lighting_enabled: form.lighting_enabled,
+      lighting_cost: form.lighting_enabled ? Number(form.lighting_cost || 0) : 0,
+
+      staining_enabled: form.staining_enabled,
+      staining_cost: form.staining_enabled ? Number(form.staining_cost || 0) : 0,
+
+      built_ins_enabled: form.built_ins_enabled,
+      built_ins_cost: form.built_ins_enabled ? Number(form.built_ins_cost || 0) : 0,
+      built_ins_description: form.built_ins_enabled
+        ? form.built_ins_description || null
+        : null,
 
       material_cost: Number(form.material_cost || 0),
       labor_cost: Number(form.labor_cost || 0),
@@ -665,6 +760,106 @@ export default function EditProjectPage() {
             </div>
           </div>
 
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Add-ons</div>
+
+          <div className="space-y-4">
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input
+                  type="checkbox"
+                  checked={form.lighting_enabled}
+                  onChange={(e) => updateField("lighting_enabled", e.target.checked)}
+                />
+                <span>Lighting</span>
+                <FieldHelp text="Add this if the project includes post lights, stair lights, transformers, or any deck lighting package." />
+              </label>
+
+              {form.lighting_enabled ? (
+                <div className="mt-3">
+                  <FieldLabel
+                    label="Lighting Cost"
+                    help="Enter the total cost allowance for deck lighting on this project."
+                  />
+                  <input
+                    value={form.lighting_cost}
+                    onChange={(e) => updateField("lighting_cost", e.target.value)}
+                    className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
+                    placeholder="0.00"
+                  />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input
+                  type="checkbox"
+                  checked={form.staining_enabled}
+                  onChange={(e) => updateField("staining_enabled", e.target.checked)}
+                />
+                <span>Staining / Sealing</span>
+                <FieldHelp text="Add this if the project includes professional staining or sealing, usually for natural wood decks." />
+              </label>
+
+              {form.staining_enabled ? (
+                <div className="mt-3">
+                  <FieldLabel
+                    label="Staining Cost"
+                    help="Enter the total staining or sealing cost for this project."
+                  />
+                  <input
+                    value={form.staining_cost}
+                    onChange={(e) => updateField("staining_cost", e.target.value)}
+                    className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
+                    placeholder="0.00"
+                  />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input
+                  type="checkbox"
+                  checked={form.built_ins_enabled}
+                  onChange={(e) => updateField("built_ins_enabled", e.target.checked)}
+                />
+                <span>Built-ins</span>
+                <FieldHelp text="Add this if the project includes benches, planters, pergolas, privacy walls, or other integrated custom features." />
+              </label>
+
+              {form.built_ins_enabled ? (
+                <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <FieldLabel
+                      label="Built-ins Description"
+                      help="Describe the built-in feature, like bench seating, pergola, or planter boxes."
+                    />
+                    <input
+                      value={form.built_ins_description}
+                      onChange={(e) => updateField("built_ins_description", e.target.value)}
+                      className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
+                      placeholder="Bench seating, pergola, planter boxes..."
+                    />
+                  </div>
+
+                  <div>
+                    <FieldLabel
+                      label="Built-ins Cost"
+                      help="Enter the total cost allowance for all built-in features on this project."
+                    />
+                    <input
+                      value={form.built_ins_cost}
+                      onChange={(e) => updateField("built_ins_cost", e.target.value)}
+                      className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Cost Breakdown</div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -731,7 +926,7 @@ export default function EditProjectPage() {
             <div>
               <FieldLabel
                 label="Total Job Cost"
-                help="This is the full internal cost of the project based on materials, labor, permits, equipment, and overhead."
+                help="This is the full internal cost of the project based on materials, labor, permits, equipment, overhead, and add-ons."
               />
               <input
                 value={form.total_job_cost}

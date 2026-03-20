@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabaseServer";
 
 type ProjectRow = {
   id: string;
+  user_id: string | null;
   name: string | null;
   status: string | null;
   deck_sqft: number | null;
@@ -18,6 +19,14 @@ type ProjectRow = {
   client_phone: string | null;
   site_address: string | null;
   notes: string | null;
+
+  lighting_enabled: boolean | null;
+  lighting_cost: number | null;
+  staining_enabled: boolean | null;
+  staining_cost: number | null;
+  built_ins_enabled: boolean | null;
+  built_ins_cost: number | null;
+  built_ins_description: string | null;
 };
 
 function money(n: number | null) {
@@ -36,10 +45,25 @@ export default async function PreviewPage({
   const resolvedParams = await Promise.resolve(params);
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return (
+      <main className="min-h-screen bg-[#0b0f19] px-6 py-8 text-white">
+        <div className="mx-auto max-w-4xl rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200">
+          You must be logged in to view this preview.
+        </div>
+      </main>
+    );
+  }
+
   const { data: project, error } = await supabase
     .from("projects")
     .select(`
       id,
+      user_id,
       name,
       status,
       deck_sqft,
@@ -54,10 +78,19 @@ export default async function PreviewPage({
       client_email,
       client_phone,
       site_address,
-      notes
+      notes,
+      lighting_enabled,
+      lighting_cost,
+      staining_enabled,
+      staining_cost,
+      built_ins_enabled,
+      built_ins_cost,
+      built_ins_description
     `)
     .eq("id", resolvedParams.id)
-    .single<ProjectRow>();
+    .eq("user_id", user.id)
+    .limit(1)
+    .maybeSingle<ProjectRow>();
 
   if (error || !project) {
     return (
@@ -164,6 +197,38 @@ export default async function PreviewPage({
             <div className="rounded-xl border border-gray-200 p-4">
               <div className="text-xs uppercase tracking-wide text-gray-500">Status</div>
               <div className="mt-1 font-medium">{project.status || "open"}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="mb-3 text-lg font-semibold">Optional Add-ons</h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="rounded-xl border border-gray-200 p-4">
+              <div className="text-xs uppercase tracking-wide text-gray-500">Lighting</div>
+              <div className="mt-1 font-medium">
+                {project.lighting_enabled ? money(project.lighting_cost) : "Not included"}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 p-4">
+              <div className="text-xs uppercase tracking-wide text-gray-500">Staining / Sealing</div>
+              <div className="mt-1 font-medium">
+                {project.staining_enabled ? money(project.staining_cost) : "Not included"}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 p-4">
+              <div className="text-xs uppercase tracking-wide text-gray-500">Built-ins</div>
+              <div className="mt-1 font-medium">
+                {project.built_ins_enabled
+                  ? `${money(project.built_ins_cost)}${
+                      project.built_ins_description
+                        ? ` • ${project.built_ins_description}`
+                        : ""
+                    }`
+                  : "Not included"}
+              </div>
             </div>
           </div>
         </div>
