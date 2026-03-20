@@ -33,6 +33,12 @@ type ProposalData = {
   updated_at: string | null;
 };
 
+type CompanyInfo = {
+  company_name: string | null;
+  company_phone: string | null;
+  company_email: string | null;
+};
+
 function money(value: number | null | undefined) {
   if (value == null || Number.isNaN(value)) return "—";
   return value.toLocaleString("en-US", {
@@ -66,7 +72,7 @@ function titleCase(value: string | null | undefined) {
 
 function buildScope(project: ProposalData) {
   const items: string[] = [
-    "Site preparation and layout",
+    "Site preparation and project layout",
     "Deck framing and structural build",
     `Installation of ${project.material_type ? titleCase(project.material_type).toLowerCase() : "decking material"}`,
   ];
@@ -92,7 +98,7 @@ function escapeHtml(value: string) {
     .replace(/"/g, "&quot;");
 }
 
-export function proposalHtml(project: ProposalData) {
+export function proposalHtml(project: ProposalData, company: CompanyInfo) {
   const scopeItems = buildScope(project);
 
   return `
@@ -139,6 +145,7 @@ export function proposalHtml(project: ProposalData) {
       margin-top: 6px;
       font-size: 13px;
       color: #6b7280;
+      line-height: 1.5;
     }
 
     .title-wrap {
@@ -288,8 +295,12 @@ export function proposalHtml(project: ProposalData) {
   <div class="page">
     <div class="header">
       <div>
-        <div class="brand">DeckMargin</div>
-        <div class="brand-sub">Deck Project Proposal</div>
+        <div class="brand">${escapeHtml(text(company.company_name))}</div>
+        <div class="brand-sub">
+          Deck Project Proposal<br />
+          Phone: ${escapeHtml(text(company.company_phone))}<br />
+          Email: ${escapeHtml(text(company.company_email))}
+        </div>
       </div>
 
       <div class="title-wrap">
@@ -394,12 +405,16 @@ export function proposalHtml(project: ProposalData) {
 
     <div class="section">
       <h2>Proposal Terms</h2>
-      <div class="terms-box">This proposal reflects the scope of work outlined above and the total investment required to complete the project. Final scheduling, start date, and any site-specific clarifications can be confirmed upon approval.</div>
+      <div class="terms-box">This quote is valid for 30 days from the date of issuance. After 30 days, pricing is subject to review and adjustment based on current material market rates and labor availability.
+
+We are currently seeing high demand for deck builds this season. To ensure we can hit your target completion date and secure our current lumber pricing, we recommend finalizing this agreement within the next 14 days.</div>
     </div>
 
     <div class="footer">
-      <div>Prepared by DeckMargin</div>
-      <div>${escapeHtml(dateText(new Date().toISOString()))}</div>
+      <div>${escapeHtml(text(company.company_name))}</div>
+      <div>
+        ${escapeHtml(text(company.company_phone))} • ${escapeHtml(text(company.company_email))}
+      </div>
     </div>
   </div>
 </body>

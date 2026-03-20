@@ -5,6 +5,10 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabaseClient";
 
 type SettingsRow = {
+  company_name: string;
+  company_phone: string;
+  company_email: string;
+
   labor_rate_per_sqft: number;
   stair_cost: number;
   permit_default: number;
@@ -25,6 +29,10 @@ export default function SettingsPage() {
   const [err, setErr] = useState("");
 
   const [form, setForm] = useState<SettingsRow>({
+    company_name: "",
+    company_phone: "",
+    company_email: "",
+
     labor_rate_per_sqft: 8,
     stair_cost: 250,
     permit_default: 0,
@@ -66,6 +74,10 @@ export default function SettingsPage() {
 
       if (data) {
         setForm({
+          company_name: data.company_name ?? "",
+          company_phone: data.company_phone ?? "",
+          company_email: data.company_email ?? "",
+
           labor_rate_per_sqft: Number(data.labor_rate_per_sqft ?? 8),
           stair_cost: Number(data.stair_cost ?? 250),
           permit_default: Number(data.permit_default ?? 0),
@@ -84,10 +96,17 @@ export default function SettingsPage() {
     load();
   }, [supabase]);
 
-  function updateField<K extends keyof SettingsRow>(key: K, value: string) {
+  function updateNumberField<K extends keyof SettingsRow>(key: K, value: string) {
     setForm((prev) => ({
       ...prev,
       [key]: Number(value || 0),
+    }));
+  }
+
+  function updateTextField<K extends keyof SettingsRow>(key: K, value: string) {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
     }));
   }
 
@@ -108,7 +127,21 @@ export default function SettingsPage() {
 
     const payload = {
       user_id: user.id,
-      ...form,
+
+      company_name: form.company_name || null,
+      company_phone: form.company_phone || null,
+      company_email: form.company_email || null,
+
+      labor_rate_per_sqft: form.labor_rate_per_sqft,
+      stair_cost: form.stair_cost,
+      permit_default: form.permit_default,
+      equipment_default: form.equipment_default,
+      overhead_default: form.overhead_default,
+      pt_material_rate: form.pt_material_rate,
+      trex_material_rate: form.trex_material_rate,
+      timbertech_material_rate: form.timbertech_material_rate,
+      pvc_material_rate: form.pvc_material_rate,
+
       updated_at: new Date().toISOString(),
     };
 
@@ -139,7 +172,7 @@ export default function SettingsPage() {
           <div>
             <h1 className="text-3xl font-semibold">Estimator Settings</h1>
             <p className="text-gray-400">
-              Set your pricing rules once. DeckMargin will use them in every quote.
+              Set your pricing rules and business info once. DeckMargin will use them in every quote.
             </p>
           </div>
 
@@ -165,6 +198,42 @@ export default function SettingsPage() {
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <div className="mb-6 text-sm font-medium text-white/80">
+            Business Contact Info
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-xs text-white/60">Business Name</label>
+              <input
+                value={form.company_name}
+                onChange={(e) => updateTextField("company_name", e.target.value)}
+                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                placeholder="Smith Deck Builders"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs text-white/60">Business Phone</label>
+              <input
+                value={form.company_phone}
+                onChange={(e) => updateTextField("company_phone", e.target.value)}
+                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                placeholder="(555) 555-5555"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs text-white/60">Business Email</label>
+              <input
+                value={form.company_email}
+                onChange={(e) => updateTextField("company_email", e.target.value)}
+                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                placeholder="quotes@yourbusiness.com"
+              />
+            </div>
+          </div>
+
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">
             Material Rates ($ / sqft)
           </div>
 
@@ -173,7 +242,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">Pressure Treated</label>
               <input
                 value={form.pt_material_rate}
-                onChange={(e) => updateField("pt_material_rate", e.target.value)}
+                onChange={(e) => updateNumberField("pt_material_rate", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
@@ -182,7 +251,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">Trex</label>
               <input
                 value={form.trex_material_rate}
-                onChange={(e) => updateField("trex_material_rate", e.target.value)}
+                onChange={(e) => updateNumberField("trex_material_rate", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
@@ -191,7 +260,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">TimberTech</label>
               <input
                 value={form.timbertech_material_rate}
-                onChange={(e) => updateField("timbertech_material_rate", e.target.value)}
+                onChange={(e) => updateNumberField("timbertech_material_rate", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
@@ -200,7 +269,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">PVC</label>
               <input
                 value={form.pvc_material_rate}
-                onChange={(e) => updateField("pvc_material_rate", e.target.value)}
+                onChange={(e) => updateNumberField("pvc_material_rate", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
@@ -215,7 +284,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">Labor Rate Per Sq Ft</label>
               <input
                 value={form.labor_rate_per_sqft}
-                onChange={(e) => updateField("labor_rate_per_sqft", e.target.value)}
+                onChange={(e) => updateNumberField("labor_rate_per_sqft", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
@@ -224,7 +293,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">Stair Cost</label>
               <input
                 value={form.stair_cost}
-                onChange={(e) => updateField("stair_cost", e.target.value)}
+                onChange={(e) => updateNumberField("stair_cost", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
@@ -233,7 +302,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">Default Permit Cost</label>
               <input
                 value={form.permit_default}
-                onChange={(e) => updateField("permit_default", e.target.value)}
+                onChange={(e) => updateNumberField("permit_default", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
@@ -242,7 +311,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">Default Equipment Cost</label>
               <input
                 value={form.equipment_default}
-                onChange={(e) => updateField("equipment_default", e.target.value)}
+                onChange={(e) => updateNumberField("equipment_default", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
@@ -251,7 +320,7 @@ export default function SettingsPage() {
               <label className="mb-1 block text-xs text-white/60">Default Overhead Cost</label>
               <input
                 value={form.overhead_default}
-                onChange={(e) => updateField("overhead_default", e.target.value)}
+                onChange={(e) => updateNumberField("overhead_default", e.target.value)}
                 className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
               />
             </div>
