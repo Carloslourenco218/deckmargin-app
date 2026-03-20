@@ -116,6 +116,40 @@ function laborMultiplier(heightTier: string) {
   return 1;
 }
 
+function FieldHelp({ text }: { text: string }) {
+  return (
+    <span className="group relative inline-flex">
+      <button
+        type="button"
+        tabIndex={0}
+        className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/20 text-[11px] font-semibold text-white/70 hover:bg-white/10 hover:text-white"
+        aria-label="Field help"
+      >
+        ?
+      </button>
+
+      <span className="pointer-events-none absolute left-7 top-1/2 z-20 hidden w-64 -translate-y-1/2 rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2 text-xs font-normal leading-5 text-white/85 shadow-xl group-hover:block group-focus-within:block">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function FieldLabel({
+  label,
+  help,
+}: {
+  label: string;
+  help: string;
+}) {
+  return (
+    <label className="mb-1 flex items-center text-xs text-white/60">
+      <span>{label}</span>
+      <FieldHelp text={help} />
+    </label>
+  );
+}
+
 export default function EditProjectPage() {
   const params = useParams();
   const router = useRouter();
@@ -285,7 +319,7 @@ export default function EditProjectPage() {
         sqft *
           settings.labor_rate_per_sqft *
           laborMultiplier(prev.height_tier) +
-        (Number(prev.stair_count || 0) * settings.stair_cost);
+        Number(prev.stair_count || 0) * settings.stair_cost;
 
       const permit =
         prev.permit_cost.trim() === ""
@@ -406,7 +440,7 @@ export default function EditProjectPage() {
               Edit Quote: {form.name || "Untitled Quote"}
             </h1>
             <p className="mt-1 text-sm text-white/60">
-              This estimator now uses your saved contractor settings automatically.
+              Fill out the quote builder and DeckMargin will calculate pricing automatically.
             </p>
           </div>
 
@@ -447,7 +481,10 @@ export default function EditProjectPage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Quote Name</label>
+              <FieldLabel
+                label="Quote Name"
+                help="This is the internal name of the quote or project, like Smith Residence Deck."
+              />
               <input
                 value={form.name}
                 onChange={(e) => updateField("name", e.target.value)}
@@ -456,7 +493,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Status</label>
+              <FieldLabel
+                label="Status"
+                help="Use status to track where the quote is in your sales process, like open, sent, won, or lost."
+              />
               <select
                 value={form.status}
                 onChange={(e) => updateField("status", e.target.value)}
@@ -471,7 +511,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Client Name</label>
+              <FieldLabel
+                label="Client Name"
+                help="Enter the homeowner or customer name this proposal is for."
+              />
               <input
                 value={form.client_name}
                 onChange={(e) => updateField("client_name", e.target.value)}
@@ -480,7 +523,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Client Phone</label>
+              <FieldLabel
+                label="Client Phone"
+                help="Use the client’s best contact number for project communication."
+              />
               <input
                 value={form.client_phone}
                 onChange={(e) => updateField("client_phone", e.target.value)}
@@ -489,7 +535,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Client Email</label>
+              <FieldLabel
+                label="Client Email"
+                help="Use the client’s email address for proposal delivery and follow-up."
+              />
               <input
                 value={form.client_email}
                 onChange={(e) => updateField("client_email", e.target.value)}
@@ -498,7 +547,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Site Address</label>
+              <FieldLabel
+                label="Site Address"
+                help="Enter the actual job site where the deck will be built."
+              />
               <input
                 value={form.site_address}
                 onChange={(e) => updateField("site_address", e.target.value)}
@@ -511,7 +563,10 @@ export default function EditProjectPage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Deck Length (ft)</label>
+              <FieldLabel
+                label="Deck Length (ft)"
+                help="Enter the full length of the deck in feet."
+              />
               <input
                 value={form.deck_length}
                 onChange={(e) => updateField("deck_length", e.target.value)}
@@ -520,7 +575,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Deck Width (ft)</label>
+              <FieldLabel
+                label="Deck Width (ft)"
+                help="Enter the full width of the deck in feet."
+              />
               <input
                 value={form.deck_width}
                 onChange={(e) => updateField("deck_width", e.target.value)}
@@ -529,7 +587,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Deck Square Feet</label>
+              <FieldLabel
+                label="Deck Square Feet"
+                help="This is automatically calculated from deck length × deck width."
+              />
               <input
                 value={form.deck_sqft}
                 readOnly
@@ -542,7 +603,10 @@ export default function EditProjectPage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Height Tier</label>
+              <FieldLabel
+                label="Height Tier"
+                help="Use standard for lower decks, raised for mid-height builds, and high for taller or more complex elevated decks."
+              />
               <select
                 value={form.height_tier}
                 onChange={(e) => updateField("height_tier", e.target.value)}
@@ -555,7 +619,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Material Type</label>
+              <FieldLabel
+                label="Material Type"
+                help="Select the main decking material. This changes the material rate used in your quote."
+              />
               <select
                 value={form.material_type}
                 onChange={(e) => updateField("material_type", e.target.value)}
@@ -569,7 +636,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Railing Type</label>
+              <FieldLabel
+                label="Railing Type"
+                help="Select the railing style included in the project. Use none if the deck does not require railing."
+              />
               <select
                 value={form.railing_type}
                 onChange={(e) => updateField("railing_type", e.target.value)}
@@ -583,7 +653,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Stair Count</label>
+              <FieldLabel
+                label="Stair Count"
+                help="Enter how many stair sections are included in the build. Leave 0 if there are no stairs."
+              />
               <input
                 value={form.stair_count}
                 onChange={(e) => updateField("stair_count", e.target.value)}
@@ -596,7 +669,10 @@ export default function EditProjectPage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Material Cost</label>
+              <FieldLabel
+                label="Material Cost"
+                help="This is calculated automatically from deck size and selected material type using your saved pricing settings."
+              />
               <input
                 value={form.material_cost}
                 readOnly
@@ -605,7 +681,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Labor Cost</label>
+              <FieldLabel
+                label="Labor Cost"
+                help="This is calculated automatically from deck size, height tier, and stair count using your saved labor settings."
+              />
               <input
                 value={form.labor_cost}
                 readOnly
@@ -614,7 +693,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Permit Cost</label>
+              <FieldLabel
+                label="Permit Cost"
+                help="Add any permit fees required for this job. If left blank, your saved default permit cost is used."
+              />
               <input
                 value={form.permit_cost}
                 onChange={(e) => updateField("permit_cost", e.target.value)}
@@ -623,7 +705,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Equipment Cost</label>
+              <FieldLabel
+                label="Equipment Cost"
+                help="Add equipment-related costs like rentals, specialty tools, delivery equipment, or machinery."
+              />
               <input
                 value={form.equipment_cost}
                 onChange={(e) => updateField("equipment_cost", e.target.value)}
@@ -632,7 +717,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Overhead Cost</label>
+              <FieldLabel
+                label="Overhead Cost"
+                help="Add any extra business overhead tied to the project, like admin time, travel, insurance, or project management."
+              />
               <input
                 value={form.overhead_cost}
                 onChange={(e) => updateField("overhead_cost", e.target.value)}
@@ -641,7 +729,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Total Job Cost</label>
+              <FieldLabel
+                label="Total Job Cost"
+                help="This is the full internal cost of the project based on materials, labor, permits, equipment, and overhead."
+              />
               <input
                 value={form.total_job_cost}
                 readOnly
@@ -654,7 +745,10 @@ export default function EditProjectPage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Final Price</label>
+              <FieldLabel
+                label="Final Price"
+                help="This is the client-facing quote total calculated from your internal costs and target margin."
+              />
               <input
                 value={form.final_price}
                 readOnly
@@ -663,7 +757,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Expected Profit</label>
+              <FieldLabel
+                label="Expected Profit"
+                help="This is your projected internal profit after subtracting total job cost from final price."
+              />
               <input
                 value={form.expected_profit}
                 readOnly
@@ -672,7 +769,10 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Target Margin</label>
+              <FieldLabel
+                label="Target Margin"
+                help="Enter your desired profit margin as a decimal like 0.30 or as a whole number like 30."
+              />
               <input
                 value={form.target_margin}
                 onChange={(e) => updateField("target_margin", e.target.value)}
@@ -683,7 +783,10 @@ export default function EditProjectPage() {
           </div>
 
           <div className="mt-8">
-            <label className="mb-1 block text-xs text-white/60">Notes</label>
+            <FieldLabel
+              label="Notes"
+              help="Use notes for internal reminders, scope clarifications, special conditions, or anything important about the project."
+            />
             <textarea
               value={form.notes}
               onChange={(e) => updateField("notes", e.target.value)}
