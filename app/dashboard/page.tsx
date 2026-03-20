@@ -117,6 +117,13 @@ export default function DashboardPage() {
 
         <div className="flex gap-3">
           <Link
+            href="/billing"
+            className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800"
+          >
+            Billing
+          </Link>
+
+          <Link
             href="/settings"
             className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800"
           >
