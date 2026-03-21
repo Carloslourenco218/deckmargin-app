@@ -39,7 +39,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8">
         <h1 className="text-3xl font-semibold mb-2">Login</h1>
         <p className="text-gray-400 mb-6">
-          Early access testers can log in below.
+          Log in to access your DeckMargin account.
         </p>
 
         {err ? (
@@ -80,10 +80,19 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-400">
-          <Link href="/" className="hover:text-white">
-            Back to home
-          </Link>
+        <div className="mt-6 text-center text-sm text-gray-400 space-y-2">
+          <div>
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="text-white hover:underline">
+              Create account
+            </Link>
+          </div>
+
+          <div>
+            <Link href="/" className="hover:text-white">
+              Back to home
+            </Link>
+          </div>
         </div>
       </div>
     </main>
