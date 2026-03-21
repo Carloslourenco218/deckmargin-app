@@ -17,6 +17,33 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+    if (
+      !appUrl ||
+      (!appUrl.startsWith("http://") && !appUrl.startsWith("https://"))
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid NEXT_PUBLIC_APP_URL. It must start with http:// or https://",
+        },
+        { status: 500 }
+      );
+    }
+
+    const priceId = process.env.STRIPE_PRICE_ID?.trim();
+
+    if (!priceId || !priceId.startsWith("price_")) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid STRIPE_PRICE_ID. It must be a Stripe Price ID starting with price_.",
+        },
+        { status: 500 }
+      );
+    }
+
     const { data: billing } = await supabase
       .from("billing_profiles")
       .select("stripe_customer_id, subscription_status")
@@ -27,7 +54,10 @@ export async function POST() {
       billing?.subscription_status === "active" ||
       billing?.subscription_status === "trialing"
     ) {
-      return NextResponse.json({ error: "Already subscribed" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Already subscribed" },
+        { status: 400 }
+      );
     }
 
     let customerId = billing?.stripe_customer_id ?? null;
@@ -55,13 +85,13 @@ export async function POST() {
       client_reference_id: user.id,
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price: priceId,
           quantity: 1,
         },
       ],
       payment_method_collection: "always",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`,
+      success_url: `${appUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/billing`,
       subscription_data: {
         trial_period_days: 14,
         metadata: {
@@ -76,7 +106,9 @@ export async function POST() {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Failed to create checkout session";
+      error instanceof Error
+        ? error.message
+        : "Failed to create checkout session";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
