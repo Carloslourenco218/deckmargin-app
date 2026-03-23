@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
@@ -20,7 +20,7 @@ function prettyDate(value: string | null | undefined) {
   return new Date(value).toLocaleDateString("en-US");
 }
 
-export default function BillingPage() {
+function BillingPageContent() {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -150,7 +150,8 @@ export default function BillingPage() {
 
         {checkoutState === "success" ? (
           <div className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            Subscription started successfully. Your access should unlock in a few seconds.
+            Subscription started successfully. Your access should unlock in a few
+            seconds.
           </div>
         ) : null}
 
@@ -230,3 +231,18 @@ export default function BillingPage() {
     </main>
   );
 }
+
+export default function BillingPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
+          <div className="mx-auto max-w-3xl">Loading billing…</div>
+        </main>
+      }
+    >
+      <BillingPageContent />
+    </Suspense>
+  );
+}
+
