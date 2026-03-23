@@ -40,27 +40,18 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const billingExemptPaths = [
-    "/login",
-    "/signup",
-    "/billing",
-    "/api/stripe/checkout",
-    "/api/stripe/portal",
-    "/api/stripe/webhook",
-  ];
-
-  if (!user) {
-    if (
-      pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/projects") ||
-      pathname.startsWith("/settings")
-    ) {
+  if (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/projects") ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/billing") ||
+    pathname.startsWith("/api/proposal")
+  ) {
+    if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       return NextResponse.redirect(url);
     }
-
-    return response;
   }
 
   const shouldCheckBilling =
@@ -69,20 +60,25 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/settings") ||
     pathname.startsWith("/api/proposal");
 
-  const isBillingExempt = billingExemptPaths.some((p) =>
-    pathname.startsWith(p)
-  );
+  if (user && shouldCheckBilling) {
+    const [{ data: profile }, { data: billing }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("billing_profiles")
+        .select("subscription_status")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
 
-  if (shouldCheckBilling && !isBillingExempt) {
-    const { data: billing } = await supabase
-      .from("billing_profiles")
-      .select("subscription_status")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const isAdmin = profile?.role === "admin";
+    const hasAccess =
+      isAdmin || ACTIVE_STATUSES.has(billing?.subscription_status ?? "");
 
-    const status = billing?.subscription_status ?? null;
-
-    if (!status || !ACTIVE_STATUSES.has(status)) {
+    if (!hasAccess) {
       const url = request.nextUrl.clone();
       url.pathname = "/billing";
       return NextResponse.redirect(url);
@@ -91,5 +87,4 @@ export async function updateSession(request: NextRequest) {
 
   return response;
 }
-
 
