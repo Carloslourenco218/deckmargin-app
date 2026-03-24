@@ -1,33 +1,29 @@
-import type { Metadata } from "next";
 import Script from "next/script";
-import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "DeckMargin",
-  description: "Deck estimating software built for contractors.",
-};
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <head>
+        {/* Google Tag */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-N3RCLB7DWC"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17331301984"
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
             gtag('js', new Date());
-            gtag('config', 'G-N3RCLB7DWC');
+            gtag('config', 'AW-17331301984');
           `}
         </Script>
       </head>
+
       <body>{children}</body>
     </html>
   );
