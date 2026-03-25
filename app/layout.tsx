@@ -1,3 +1,4 @@
+import "./globals.css";
 import Script from "next/script";
 
 export default function RootLayout({
@@ -8,12 +9,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Google Tag */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=AW-17331301984"
           strategy="afterInteractive"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-ads" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -23,7 +23,6 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-
       <body>{children}</body>
     </html>
   );
