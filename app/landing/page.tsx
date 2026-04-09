@@ -671,7 +671,7 @@ export default function HomePage() {
 
               <p className="mt-4 text-sm text-gray-400">
                 Need help getting set up?{" "}
-                <a href="mailto:hello@deckmargin.com" className="text-white hover:underline">
+                <a href="mailto:Carlos.lourenco@deckmargin.com" className="text-white hover:underline">
                   Contact us
                 </a>
                 .
