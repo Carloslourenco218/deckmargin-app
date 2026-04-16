@@ -722,7 +722,7 @@ export default function HomePage() {
               <div className="mt-8">
                 <PrimaryButton href="/signup">Start Free 14-Day Trial →</PrimaryButton>
               </div>
-              <p className="mt-4 text-xs text-gray-500">No credit card required. Cancel anytime.</p>
+              <p className="mt-4 text-xs text-gray-500">Free for 14 days. Cancel anytime.</p>
               <p className="mt-6 text-sm text-gray-400">
                 Need help getting set up?{" "}
                 <a href="mailto:Carlos.lourenco@deckmargin.com" className="text-white underline hover:text-blue-300">
