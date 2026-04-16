@@ -821,7 +821,7 @@ export default function HomePage() {
             </Link>
           </div>
           <p className="mt-6 text-sm text-blue-200">
-            No credit card required · Cancel anytime · Set up in 20 minutes
+            Free for 14 days · Cancel anytime · Set up in 20 minutes
           </p>
         </div>
       </section>
