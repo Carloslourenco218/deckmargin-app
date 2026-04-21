@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
     const [{ data: profile }, { data: billing }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("role")
+        .select("role, is_free")
         .eq("id", user.id)
         .maybeSingle(),
       supabase
@@ -75,8 +75,9 @@ export async function updateSession(request: NextRequest) {
     ]);
 
     const isAdmin = profile?.role === "admin";
+    const isFree = profile?.is_free === true;
     const hasAccess =
-      isAdmin || ACTIVE_STATUSES.has(billing?.subscription_status ?? "");
+      isAdmin || isFree || ACTIVE_STATUSES.has(billing?.subscription_status ?? "");
 
     if (!hasAccess) {
       const url = request.nextUrl.clone();
@@ -87,4 +88,3 @@ export async function updateSession(request: NextRequest) {
 
   return response;
 }
-
