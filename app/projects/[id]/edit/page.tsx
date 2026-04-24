@@ -16,6 +16,24 @@ type SettingsRow = {
   pvc_material_rate: number;
 };
 
+type HardwareItem = {
+  key: string;
+  label: string;
+  enabled: boolean;
+  cost: string;
+};
+
+const DEFAULT_HARDWARE: HardwareItem[] = [
+  { key: "fasteners_screws", label: "Fasteners / screws", enabled: false, cost: "" },
+  { key: "joist_hangers", label: "Joist hangers", enabled: false, cost: "" },
+  { key: "post_bases", label: "Post bases", enabled: false, cost: "" },
+  { key: "concrete_bags", label: "Concrete / bags", enabled: false, cost: "" },
+  { key: "hurricane_ties", label: "Hurricane ties", enabled: false, cost: "" },
+  { key: "lag_bolts", label: "Lag bolts", enabled: false, cost: "" },
+  { key: "flashing", label: "Flashing", enabled: false, cost: "" },
+  { key: "misc_hardware", label: "Misc hardware", enabled: false, cost: "" },
+];
+
 type FormState = {
   name: string;
   status: string;
@@ -109,6 +127,7 @@ function calcTotalCost(values: {
   lighting: number;
   staining: number;
   builtIns: number;
+  hardware: number;
 }) {
   return (
     values.material +
@@ -118,7 +137,8 @@ function calcTotalCost(values: {
     values.overhead +
     values.lighting +
     values.staining +
-    values.builtIns
+    values.builtIns +
+    values.hardware
   );
 }
 
@@ -143,6 +163,14 @@ function laborMultiplier(heightTier: string) {
   return 1;
 }
 
+function calcHardwareTotal(items: HardwareItem[]): number {
+  return items.reduce((sum, item) => {
+    if (!item.enabled) return sum;
+    const n = Number(item.cost);
+    return sum + (Number.isFinite(n) ? n : 0);
+  }, 0);
+}
+
 function FieldHelp({ text }: { text: string }) {
   return (
     <span className="group relative inline-flex">
@@ -154,7 +182,6 @@ function FieldHelp({ text }: { text: string }) {
       >
         ?
       </button>
-
       <span className="pointer-events-none absolute left-7 top-1/2 z-20 hidden w-64 -translate-y-1/2 rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2 text-xs font-normal leading-5 text-white/85 shadow-xl group-hover:block group-focus-within:block">
         {text}
       </span>
@@ -162,13 +189,7 @@ function FieldHelp({ text }: { text: string }) {
   );
 }
 
-function FieldLabel({
-  label,
-  help,
-}: {
-  label: string;
-  help: string;
-}) {
+function FieldLabel({ label, help }: { label: string; help: string }) {
   return (
     <label className="mb-1 flex items-center text-xs text-white/60">
       <span>{label}</span>
@@ -200,40 +221,34 @@ export default function EditProjectPage() {
     pvc_material_rate: 25,
   });
 
+  const [hardwareItems, setHardwareItems] = useState<HardwareItem[]>(DEFAULT_HARDWARE);
+
   const [form, setForm] = useState<FormState>({
     name: "",
     status: "open",
-
     deck_length: "",
     deck_width: "",
     deck_sqft: "",
-
     height_tier: "standard",
     material_type: "pressure-treated",
     railing_type: "none",
     stair_count: "0",
-
     lighting_enabled: false,
     lighting_cost: "0",
-
     staining_enabled: false,
     staining_cost: "0",
-
     built_ins_enabled: false,
     built_ins_cost: "0",
     built_ins_description: "",
-
     material_cost: "",
     labor_cost: "",
     permit_cost: "",
     equipment_cost: "",
     overhead_cost: "",
     total_job_cost: "",
-
     final_price: "",
     expected_profit: "",
     target_margin: "0.30",
-
     client_name: "",
     client_email: "",
     client_phone: "",
@@ -285,7 +300,6 @@ export default function EditProjectPage() {
           material_type,
           railing_type,
           stair_count,
-
           lighting_enabled,
           lighting_cost,
           staining_enabled,
@@ -293,7 +307,7 @@ export default function EditProjectPage() {
           built_ins_enabled,
           built_ins_cost,
           built_ins_description,
-
+          hardware_items,
           material_cost,
           labor_cost,
           permit_cost,
@@ -318,40 +332,42 @@ export default function EditProjectPage() {
         return;
       }
 
+      // Merge saved hardware_items with defaults so new items always appear
+      if (data.hardware_items && Array.isArray(data.hardware_items) && data.hardware_items.length > 0) {
+        const saved = data.hardware_items as HardwareItem[];
+        const merged = DEFAULT_HARDWARE.map((def) => {
+          const found = saved.find((s) => s.key === def.key);
+          return found ? { ...def, enabled: found.enabled, cost: found.cost ?? "" } : def;
+        });
+        setHardwareItems(merged);
+      }
+
       setForm({
         name: data.name ?? "",
         status: data.status ?? "open",
-
         deck_length: moneyString(data.deck_length),
         deck_width: moneyString(data.deck_width),
         deck_sqft: integerString(data.deck_sqft),
-
         height_tier: data.height_tier ?? "standard",
         material_type: data.material_type ?? "pressure-treated",
         railing_type: data.railing_type ?? "none",
         stair_count: integerString(data.stair_count ?? 0),
-
         lighting_enabled: data.lighting_enabled ?? false,
         lighting_cost: moneyString(data.lighting_cost ?? 0),
-
         staining_enabled: data.staining_enabled ?? false,
         staining_cost: moneyString(data.staining_cost ?? 0),
-
         built_ins_enabled: data.built_ins_enabled ?? false,
         built_ins_cost: moneyString(data.built_ins_cost ?? 0),
         built_ins_description: data.built_ins_description ?? "",
-
         material_cost: moneyString(data.material_cost),
         labor_cost: moneyString(data.labor_cost),
         permit_cost: moneyString(data.permit_cost),
         equipment_cost: moneyString(data.equipment_cost),
         overhead_cost: moneyString(data.overhead_cost),
         total_job_cost: moneyString(data.total_job_cost),
-
         final_price: moneyString(data.final_price),
         expected_profit: moneyString(data.expected_profit),
         target_margin: marginString(data.target_margin ?? 0.3),
-
         client_name: data.client_name ?? "",
         client_email: data.client_email ?? "",
         client_phone: data.client_phone ?? "",
@@ -365,6 +381,7 @@ export default function EditProjectPage() {
     if (id) loadEverything();
   }, [id, supabase]);
 
+  // Recalculate whenever inputs or hardware changes
   useEffect(() => {
     setForm((prev) => {
       const sqft = Number(calcSqFt(prev.deck_length, prev.deck_width) || 0);
@@ -392,14 +409,10 @@ export default function EditProjectPage() {
           ? settings.overhead_default
           : Number(prev.overhead_cost || 0);
 
-      const lighting =
-        prev.lighting_enabled ? numOrZero(prev.lighting_cost) : 0;
-
-      const staining =
-        prev.staining_enabled ? numOrZero(prev.staining_cost) : 0;
-
-      const builtIns =
-        prev.built_ins_enabled ? numOrZero(prev.built_ins_cost) : 0;
+      const lighting = prev.lighting_enabled ? numOrZero(prev.lighting_cost) : 0;
+      const staining = prev.staining_enabled ? numOrZero(prev.staining_cost) : 0;
+      const builtIns = prev.built_ins_enabled ? numOrZero(prev.built_ins_cost) : 0;
+      const hardware = calcHardwareTotal(hardwareItems);
 
       const total = calcTotalCost({
         material,
@@ -410,6 +423,7 @@ export default function EditProjectPage() {
         lighting,
         staining,
         builtIns,
+        hardware,
       });
 
       const margin = parseMarginInput(prev.target_margin) ?? 0.3;
@@ -445,12 +459,27 @@ export default function EditProjectPage() {
     form.staining_cost,
     form.built_ins_enabled,
     form.built_ins_cost,
+    hardwareItems,
     settings,
   ]);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
+
+  function updateHardwareEnabled(key: string, enabled: boolean) {
+    setHardwareItems((prev) =>
+      prev.map((item) => (item.key === key ? { ...item, enabled } : item))
+    );
+  }
+
+  function updateHardwareCost(key: string, cost: string) {
+    setHardwareItems((prev) =>
+      prev.map((item) => (item.key === key ? { ...item, cost } : item))
+    );
+  }
+
+  const hardwareTotal = calcHardwareTotal(hardwareItems);
 
   async function handleSave() {
     setSaving(true);
@@ -478,9 +507,14 @@ export default function EditProjectPage() {
 
       built_ins_enabled: form.built_ins_enabled,
       built_ins_cost: form.built_ins_enabled ? Number(form.built_ins_cost || 0) : 0,
-      built_ins_description: form.built_ins_enabled
-        ? form.built_ins_description || null
-        : null,
+      built_ins_description: form.built_ins_enabled ? form.built_ins_description || null : null,
+
+      hardware_items: hardwareItems.map((item) => ({
+        key: item.key,
+        label: item.label,
+        enabled: item.enabled,
+        cost: item.enabled ? item.cost : "",
+      })),
 
       material_cost: Number(form.material_cost || 0),
       labor_cost: Number(form.labor_cost || 0),
@@ -572,6 +606,7 @@ export default function EditProjectPage() {
         ) : null}
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          {/* ── Project & Client ── */}
           <div className="mb-6 text-sm font-medium text-white/80">Project & Client</div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -620,7 +655,7 @@ export default function EditProjectPage() {
             <div>
               <FieldLabel
                 label="Client Phone"
-                help="Use the client’s best contact number for project communication."
+                help="Use the client's best contact number for project communication."
               />
               <input
                 value={form.client_phone}
@@ -632,7 +667,7 @@ export default function EditProjectPage() {
             <div>
               <FieldLabel
                 label="Client Email"
-                help="Use the client’s email address for proposal delivery and follow-up."
+                help="Use the client's email address for proposal delivery and follow-up."
               />
               <input
                 value={form.client_email}
@@ -654,6 +689,7 @@ export default function EditProjectPage() {
             </div>
           </div>
 
+          {/* ── Deck Size ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Deck Size</div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -694,6 +730,7 @@ export default function EditProjectPage() {
             </div>
           </div>
 
+          {/* ── Deck Build Inputs ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Deck Build Inputs</div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -760,6 +797,7 @@ export default function EditProjectPage() {
             </div>
           </div>
 
+          {/* ── Add-ons ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Add-ons</div>
 
           <div className="space-y-4">
@@ -860,6 +898,66 @@ export default function EditProjectPage() {
             </div>
           </div>
 
+          {/* ── Hardware & Fasteners ── */}
+          <div className="mt-8 mb-6 flex items-center justify-between">
+            <div className="text-sm font-medium text-white/80">Hardware &amp; Fasteners</div>
+            {hardwareTotal > 0 && (
+              <div className="text-sm font-medium text-emerald-400">
+                Total: ${hardwareTotal.toFixed(2)}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+            <p className="mb-4 text-xs text-white/50">
+              Check each item that applies to this job and enter the cost. The total is added to your material cost automatically.
+            </p>
+
+            <div className="space-y-3">
+              {hardwareItems.map((item) => (
+                <div key={item.key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
+                  <label className="flex items-center gap-3 text-sm font-medium text-white">
+                    <input
+                      type="checkbox"
+                      checked={item.enabled}
+                      onChange={(e) => updateHardwareEnabled(item.key, e.target.checked)}
+                      className="h-4 w-4 rounded accent-blue-500"
+                    />
+                    <span>{item.label}</span>
+                  </label>
+
+                  {item.enabled ? (
+                    <div className="mt-2">
+                      <FieldLabel
+                        label="Cost ($)"
+                        help={`Enter the cost for ${item.label} on this project.`}
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.cost}
+                        onChange={(e) => updateHardwareCost(item.key, e.target.value)}
+                        className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+
+            {hardwareTotal > 0 && (
+              <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                <span className="text-sm text-white/70">Hardware subtotal</span>
+                <span className="text-sm font-semibold text-emerald-400">
+                  ${hardwareTotal.toFixed(2)}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Cost Breakdown ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Cost Breakdown</div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -926,7 +1024,7 @@ export default function EditProjectPage() {
             <div>
               <FieldLabel
                 label="Total Job Cost"
-                help="This is the full internal cost of the project based on materials, labor, permits, equipment, overhead, and add-ons."
+                help="This is the full internal cost of the project based on materials, labor, permits, equipment, overhead, add-ons, and hardware."
               />
               <input
                 value={form.total_job_cost}
@@ -936,6 +1034,7 @@ export default function EditProjectPage() {
             </div>
           </div>
 
+          {/* ── Pricing ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Pricing</div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -994,4 +1093,3 @@ export default function EditProjectPage() {
     </main>
   );
 }
-
