@@ -7,6 +7,13 @@ import { proposalHtml } from "@/lib/proposalPdfTemplate";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+type HardwareItem = {
+  key: string;
+  label: string;
+  enabled: boolean;
+  cost: string;
+};
+
 type ProjectRow = {
   id: string;
   user_id: string | null;
@@ -29,6 +36,8 @@ type ProjectRow = {
   built_ins_enabled: boolean | null;
   built_ins_cost: number | null;
   built_ins_description: string | null;
+
+  hardware_items: HardwareItem[] | null;
 
   material_cost: number | null;
   labor_cost: number | null;
@@ -98,6 +107,7 @@ export async function GET(
         built_ins_enabled,
         built_ins_cost,
         built_ins_description,
+        hardware_items,
         material_cost,
         labor_cost,
         permit_cost,
@@ -186,4 +196,3 @@ export async function GET(
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
