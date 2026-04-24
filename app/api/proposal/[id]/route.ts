@@ -19,6 +19,7 @@ type ProjectRow = {
   user_id: string | null;
   name: string | null;
   status: string | null;
+  job_type: string | null;
 
   deck_length: number | null;
   deck_width: number | null;
@@ -93,6 +94,7 @@ export async function GET(
         user_id,
         name,
         status,
+        job_type,
         deck_length,
         deck_width,
         deck_sqft,

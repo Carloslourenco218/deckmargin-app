@@ -8,7 +8,7 @@ type SettingsRow = {
   company_name: string;
   company_phone: string;
   company_email: string;
-
+  region: string;
   labor_rate_per_sqft: number;
   stair_cost: number;
   permit_default: number;
@@ -19,6 +19,16 @@ type SettingsRow = {
   timbertech_material_rate: number;
   pvc_material_rate: number;
 };
+
+const REGIONS = [
+  { value: "national",  label: "National Average",    materialMult: 1.00, laborMult: 1.00, note: "Baseline — used when region is unknown" },
+  { value: "pnw",       label: "Pacific Northwest",   materialMult: 1.32, laborMult: 1.35, note: "Seattle/Portland — moisture-rated lumber required, highest labor market" },
+  { value: "northeast", label: "Northeast",           materialMult: 1.28, laborMult: 1.30, note: "NY/MA/CT — strict codes, shorter build season, high labor" },
+  { value: "california",label: "California",          materialMult: 1.35, laborMult: 1.38, note: "Highest in nation — seismic codes, CEQA, $75/hr skilled trades" },
+  { value: "southeast", label: "Southeast",           materialMult: 0.88, laborMult: 0.85, note: "FL/GA/SC — lower labor costs, longer build season" },
+  { value: "midwest",   label: "Midwest",             materialMult: 0.90, laborMult: 0.88, note: "OH/IL/MI — near national average, lower regulatory burden" },
+  { value: "southwest", label: "Southwest",           materialMult: 0.95, laborMult: 0.93, note: "TX/AZ/NV — growing markets, moderate costs" },
+];
 
 export default function SettingsPage() {
   const supabase = useMemo(() => createClient(), []);
@@ -32,7 +42,7 @@ export default function SettingsPage() {
     company_name: "",
     company_phone: "",
     company_email: "",
-
+    region: "national",
     labor_rate_per_sqft: 8,
     stair_cost: 250,
     permit_default: 0,
@@ -77,7 +87,7 @@ export default function SettingsPage() {
           company_name: data.company_name ?? "",
           company_phone: data.company_phone ?? "",
           company_email: data.company_email ?? "",
-
+          region: data.region ?? "national",
           labor_rate_per_sqft: Number(data.labor_rate_per_sqft ?? 8),
           stair_cost: Number(data.stair_cost ?? 250),
           permit_default: Number(data.permit_default ?? 0),
@@ -97,18 +107,14 @@ export default function SettingsPage() {
   }, [supabase]);
 
   function updateNumberField<K extends keyof SettingsRow>(key: K, value: string) {
-    setForm((prev) => ({
-      ...prev,
-      [key]: Number(value || 0),
-    }));
+    setForm((prev) => ({ ...prev, [key]: Number(value || 0) }));
   }
 
   function updateTextField<K extends keyof SettingsRow>(key: K, value: string) {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setForm((prev) => ({ ...prev, [key]: value }));
   }
+
+  const selectedRegion = REGIONS.find((r) => r.value === form.region) ?? REGIONS[0];
 
   async function save() {
     setSaving(true);
@@ -127,11 +133,10 @@ export default function SettingsPage() {
 
     const payload = {
       user_id: user.id,
-
       company_name: form.company_name || null,
       company_phone: form.company_phone || null,
       company_email: form.company_email || null,
-
+      region: form.region,
       labor_rate_per_sqft: form.labor_rate_per_sqft,
       stair_cost: form.stair_cost,
       permit_default: form.permit_default,
@@ -141,7 +146,6 @@ export default function SettingsPage() {
       trex_material_rate: form.trex_material_rate,
       timbertech_material_rate: form.timbertech_material_rate,
       pvc_material_rate: form.pvc_material_rate,
-
       updated_at: new Date().toISOString(),
     };
 
@@ -175,7 +179,6 @@ export default function SettingsPage() {
               Set your pricing rules and business info once. DeckMargin will use them in every quote.
             </p>
           </div>
-
           <Link
             href="/dashboard"
             className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800"
@@ -197,9 +200,9 @@ export default function SettingsPage() {
         ) : null}
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <div className="mb-6 text-sm font-medium text-white/80">
-            Business Contact Info
-          </div>
+
+          {/* ── Business Contact Info ── */}
+          <div className="mb-6 text-sm font-medium text-white/80">Business Contact Info</div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
@@ -233,8 +236,81 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* ── Regional Pricing ── */}
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Regional Pricing</div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-xs text-white/60">My Region</label>
+              <select
+                value={form.region}
+                onChange={(e) => updateTextField("region", e.target.value)}
+                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+              >
+                {REGIONS.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-xs text-white/40">{selectedRegion.note}</p>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <div className="mb-2 text-xs font-medium text-white/60">Material cost multiplier</div>
+              <div className="text-2xl font-semibold text-white">
+                {selectedRegion.materialMult.toFixed(2)}x
+              </div>
+              <div className="mt-1 text-xs text-white/40">
+                Applied to all material rates automatically
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <div className="mb-2 text-xs font-medium text-white/60">Labor cost multiplier</div>
+              <div className="text-2xl font-semibold text-white">
+                {selectedRegion.laborMult.toFixed(2)}x
+              </div>
+              <div className="mt-1 text-xs text-white/40">
+                Applied to labor rate per sq ft automatically
+              </div>
+            </div>
+
+            <div className="md:col-span-2 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
+              <div className="mb-2 text-xs font-medium text-blue-300">Effective rates with {selectedRegion.label} multiplier</div>
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                <div>
+                  <div className="text-xs text-white/50">Pressure-treated</div>
+                  <div className="text-sm font-medium text-white">
+                    ${(form.pt_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-white/50">Trex</div>
+                  <div className="text-sm font-medium text-white">
+                    ${(form.trex_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-white/50">TimberTech</div>
+                  <div className="text-sm font-medium text-white">
+                    ${(form.timbertech_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-white/50">Labor</div>
+                  <div className="text-sm font-medium text-white">
+                    ${(form.labor_rate_per_sqft * selectedRegion.laborMult).toFixed(2)}/sqft
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Material Rates ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">
-            Material Rates ($ / sqft)
+            Base Material Rates ($ / sqft)
+            <span className="ml-2 text-xs font-normal text-white/40">Regional multiplier applied on top</span>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -275,13 +351,15 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* ── Labor & Defaults ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">
             Labor & Defaults
+            <span className="ml-2 text-xs font-normal text-white/40">Regional multiplier applied to labor rate</span>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Labor Rate Per Sq Ft</label>
+              <label className="mb-1 block text-xs text-white/60">Base Labor Rate Per Sq Ft</label>
               <input
                 value={form.labor_rate_per_sqft}
                 onChange={(e) => updateNumberField("labor_rate_per_sqft", e.target.value)}
@@ -290,7 +368,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-white/60">Stair Cost</label>
+              <label className="mb-1 block text-xs text-white/60">Stair Cost (per section)</label>
               <input
                 value={form.stair_cost}
                 onChange={(e) => updateNumberField("stair_cost", e.target.value)}
@@ -341,4 +419,3 @@ export default function SettingsPage() {
     </main>
   );
 }
-

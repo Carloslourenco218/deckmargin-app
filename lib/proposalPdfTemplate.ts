@@ -9,13 +9,17 @@ type ProposalData = {
   id: string;
   name: string | null;
   status: string | null;
+  job_type: string | null;
+
   deck_length: number | null;
   deck_width: number | null;
   deck_sqft: number | null;
+
   height_tier: string | null;
   material_type: string | null;
   railing_type: string | null;
   stair_count: number | null;
+
   lighting_enabled: boolean | null;
   lighting_cost: number | null;
   staining_enabled: boolean | null;
@@ -23,21 +27,26 @@ type ProposalData = {
   built_ins_enabled: boolean | null;
   built_ins_cost: number | null;
   built_ins_description: string | null;
+
   hardware_items: HardwareItem[] | null;
+
   material_cost: number | null;
   labor_cost: number | null;
   permit_cost: number | null;
   equipment_cost: number | null;
   overhead_cost: number | null;
   total_job_cost: number | null;
+
   final_price: number | null;
   expected_profit: number | null;
   target_margin: number | null;
+
   client_name: string | null;
   client_email: string | null;
   client_phone: string | null;
   site_address: string | null;
   notes: string | null;
+
   created_at: string | null;
   updated_at: string | null;
 };
@@ -46,6 +55,14 @@ type CompanyInfo = {
   company_name: string | null;
   company_phone: string | null;
   company_email: string | null;
+};
+
+const JOB_TYPE_LABELS: Record<string, string> = {
+  new_build:    "New Build",
+  resurface:    "Resurface",
+  railing_only: "Railing Only",
+  repair:       "Repair",
+  addition:     "Addition",
 };
 
 function money(value: number | null | undefined) {
@@ -76,30 +93,64 @@ function titleCase(value: string | null | undefined) {
     .join(" ");
 }
 
+function jobTypeLabel(value: string | null | undefined) {
+  if (!value) return "New Build";
+  return JOB_TYPE_LABELS[value] ?? titleCase(value);
+}
+
 function buildScope(project: ProposalData) {
-  const items: string[] = [
-    "Site preparation and project layout",
-    "Deck framing and structural build",
-    `Installation of ${project.material_type ? titleCase(project.material_type).toLowerCase() : "decking material"}`,
-  ];
-  if (project.railing_type && project.railing_type !== "none") {
-    items.push(`Installation of ${titleCase(project.railing_type).toLowerCase()} railing system`);
+  const jobType = project.job_type ?? "new_build";
+  const items: string[] = [];
+
+  if (jobType === "resurface") {
+    items.push("Remove and dispose of existing deck boards");
+    items.push(`Install new ${project.material_type ? titleCase(project.material_type).toLowerCase() : "decking"} surface boards on existing frame`);
+    if (project.staining_enabled) items.push("Professional staining and sealing of new deck surface");
+    if (project.lighting_enabled) items.push("Installation of deck lighting package");
+  } else if (jobType === "railing_only") {
+    items.push("Remove existing railing if applicable");
+    items.push(`Supply and install new ${project.railing_type && project.railing_type !== "none" ? titleCase(project.railing_type).toLowerCase() : ""} railing system`);
+    items.push("Final inspection and cleanup");
+  } else if (jobType === "repair") {
+    items.push("Site assessment and scope confirmation");
+    items.push("Repair work as outlined in project scope");
+    items.push("Final inspection and cleanup walkthrough");
+  } else if (jobType === "addition") {
+    items.push("Site preparation and layout for deck addition");
+    items.push("Partial framing and structural extension");
+    items.push(`Installation of ${project.material_type ? titleCase(project.material_type).toLowerCase() : "decking"} surface`);
+    if (project.railing_type && project.railing_type !== "none") {
+      items.push(`Installation of ${titleCase(project.railing_type).toLowerCase()} railing on new addition`);
+    }
+    if ((project.stair_count ?? 0) > 0) {
+      items.push(`Construction of ${project.stair_count} stair ${project.stair_count === 1 ? "section" : "sections"}`);
+    }
+    items.push("Final cleanup and completion walkthrough");
+  } else {
+    // new_build
+    items.push("Site preparation and project layout");
+    items.push("Deck framing and structural build");
+    items.push(`Installation of ${project.material_type ? titleCase(project.material_type).toLowerCase() : "decking material"}`);
+    if (project.railing_type && project.railing_type !== "none") {
+      items.push(`Installation of ${titleCase(project.railing_type).toLowerCase()} railing system`);
+    }
+    if ((project.stair_count ?? 0) > 0) {
+      items.push(`Construction of ${project.stair_count} stair ${project.stair_count === 1 ? "section" : "sections"}`);
+    }
+    if (project.lighting_enabled) items.push("Installation of deck lighting package");
+    if (project.staining_enabled) items.push("Professional staining and sealing of deck surfaces");
+    if (project.built_ins_enabled) {
+      items.push(
+        project.built_ins_description && project.built_ins_description.trim()
+          ? `Built-in feature work: ${project.built_ins_description}`
+          : "Built-in custom feature installation"
+      );
+    }
+    const activeHardware = project.hardware_items?.filter((h) => h.enabled) ?? [];
+    if (activeHardware.length > 0) items.push("Supply and installation of hardware and fasteners");
+    items.push("Final cleanup and completion walkthrough");
   }
-  if ((project.stair_count ?? 0) > 0) {
-    items.push(`Construction of ${project.stair_count} stair ${project.stair_count === 1 ? "section" : "sections"}`);
-  }
-  if (project.lighting_enabled) items.push("Installation of deck lighting package");
-  if (project.staining_enabled) items.push("Professional staining and sealing of deck surfaces");
-  if (project.built_ins_enabled) {
-    items.push(
-      project.built_ins_description && project.built_ins_description.trim()
-        ? `Built-in feature work: ${project.built_ins_description}`
-        : "Built-in custom feature installation"
-    );
-  }
-  const activeHardware = project.hardware_items?.filter((h) => h.enabled) ?? [];
-  if (activeHardware.length > 0) items.push("Supply and installation of hardware and fasteners");
-  items.push("Final cleanup and completion walkthrough");
+
   return items;
 }
 
@@ -119,11 +170,15 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
   const scopeItems = buildScope(project);
   const activeHardware = project.hardware_items?.filter((h) => h.enabled) ?? [];
   const hwTotal = calcHardwareTotal(activeHardware);
+  const jobType = project.job_type ?? "new_build";
+
   const hasAddons =
     project.lighting_enabled ||
     project.staining_enabled ||
     project.built_ins_enabled ||
     activeHardware.length > 0;
+
+  const showProjectDetails = jobType !== "railing_only" && jobType !== "repair";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -140,6 +195,7 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
 .title-wrap { text-align: right; }
 .title { margin: 0 0 6px; font-size: 26px; font-weight: 700; color: #111827; }
 .subtle { font-size: 12px; color: #6b7280; line-height: 1.5; }
+.job-type-badge { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; background: #f3f4f6; color: #374151; }
 .hero { margin-bottom: 24px; padding: 22px 24px; border: 1px solid #e5e7eb; border-radius: 16px; background: #fafafa; }
 .hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: #6b7280; margin-bottom: 10px; }
 .hero-price { font-size: 40px; font-weight: 800; color: #111827; margin-bottom: 8px; }
@@ -173,15 +229,21 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
 </head>
 <body>
 <div class="page">
+
   <div class="header">
     <div>
       <div class="brand">${escapeHtml(text(company.company_name))}</div>
-      <div class="brand-sub">Deck Project Proposal<br />Phone: ${escapeHtml(text(company.company_phone))}<br />Email: ${escapeHtml(text(company.company_email))}</div>
+      <div class="brand-sub">
+        Deck Project Proposal<br />
+        Phone: ${escapeHtml(text(company.company_phone))}<br />
+        Email: ${escapeHtml(text(company.company_email))}
+      </div>
     </div>
     <div class="title-wrap">
       <h1 class="title">${escapeHtml(project.name ?? "Untitled Proposal")}</h1>
       <div class="subtle">Prepared: ${escapeHtml(dateText(project.updated_at || project.created_at))}</div>
       <div class="subtle">Proposal ID: ${escapeHtml(project.id)}</div>
+      <div class="job-type-badge">${escapeHtml(jobTypeLabel(project.job_type))}</div>
     </div>
   </div>
 
@@ -201,16 +263,22 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
         <div class="info-item full"><div class="label">Project Address</div><div class="value">${escapeHtml(text(project.site_address))}</div></div>
       </div>
     </div>
+
     <div class="panel">
       <h2>Project Overview</h2>
       <div class="info-grid">
+        <div class="info-item"><div class="label">Job Type</div><div class="value">${escapeHtml(jobTypeLabel(project.job_type))}</div></div>
+        ${showProjectDetails ? `
+        <div class="info-item"><div class="label">Deck Size</div><div class="value">${escapeHtml(num(project.deck_sqft, " sq ft"))}</div></div>
         <div class="info-item"><div class="label">Deck Length</div><div class="value">${escapeHtml(num(project.deck_length, " ft"))}</div></div>
         <div class="info-item"><div class="label">Deck Width</div><div class="value">${escapeHtml(num(project.deck_width, " ft"))}</div></div>
-        <div class="info-item"><div class="label">Deck Size</div><div class="value">${escapeHtml(num(project.deck_sqft, " sq ft"))}</div></div>
         <div class="info-item"><div class="label">Height Tier</div><div class="value">${escapeHtml(titleCase(project.height_tier))}</div></div>
         <div class="info-item"><div class="label">Material</div><div class="value">${escapeHtml(titleCase(project.material_type))}</div></div>
         <div class="info-item"><div class="label">Railing</div><div class="value">${escapeHtml(titleCase(project.railing_type))}</div></div>
-        <div class="info-item"><div class="label">Stair Count</div><div class="value">${escapeHtml(num(project.stair_count))}</div></div>
+        ${(project.stair_count ?? 0) > 0 ? `<div class="info-item"><div class="label">Stair Count</div><div class="value">${escapeHtml(num(project.stair_count))}</div></div>` : ""}
+        ` : `
+        <div class="info-item"><div class="label">Railing Type</div><div class="value">${escapeHtml(titleCase(project.railing_type))}</div></div>
+        `}
       </div>
     </div>
   </div>
@@ -252,7 +320,11 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
 
   <div class="section">
     <h2>Project Notes</h2>
-    <div class="notes-box">${escapeHtml(project.notes && project.notes.trim() ? project.notes : "Project details and final site-specific adjustments will be reviewed prior to work beginning.")}</div>
+    <div class="notes-box">${escapeHtml(
+      project.notes && project.notes.trim()
+        ? project.notes
+        : "Project details and final site-specific adjustments will be reviewed prior to work beginning."
+    )}</div>
   </div>
 
   <div class="section">
@@ -280,6 +352,7 @@ We are currently seeing high demand for deck builds this season. To ensure we ca
     <div>${escapeHtml(text(company.company_name))}</div>
     <div>${escapeHtml(text(company.company_phone))} • ${escapeHtml(text(company.company_email))}</div>
   </div>
+
 </div>
 </body>
 </html>`;
