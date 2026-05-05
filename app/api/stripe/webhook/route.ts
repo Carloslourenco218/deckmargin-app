@@ -46,7 +46,7 @@ async function upsertBillingFromSubscription(
     stripe_customer_id: customerId,
     stripe_subscription_id: subscription.id,
     subscription_status: subscription.status,
-current_period_end: toIsoOrNull((subscription as any).current_period_end),
+    current_period_end: toIsoOrNull((subscription as any).current_period_end),
     updated_at: new Date().toISOString(),
   });
 }
@@ -105,6 +105,29 @@ export async function POST(request: Request) {
         break;
       }
 
+      case "customer.subscription.trial_will_end": {
+        const subscription = event.data.object as Stripe.Subscription;
+        await upsertBillingFromSubscription(subscription);
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice & {
+          subscription?: string | { id: string } | null;
+        };
+        const subscriptionId =
+          typeof invoice.subscription === "string"
+            ? invoice.subscription
+            : (invoice.subscription as any)?.id ?? null;
+
+        if (subscriptionId) {
+          const subscription =
+            await stripe.subscriptions.retrieve(subscriptionId);
+          await upsertBillingFromSubscription(subscription);
+        }
+        break;
+      }
+
       default:
         break;
     }
@@ -116,4 +139,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

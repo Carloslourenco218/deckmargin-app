@@ -89,11 +89,18 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      payment_method_collection: "always",
+      // No card required to start the trial
+      payment_method_collection: "if_required",
       success_url: `${appUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/billing`,
       subscription_data: {
         trial_period_days: 14,
+        // When trial ends with no payment method, cancel immediately
+        trial_settings: {
+          end_behavior: {
+            missing_payment_method: "cancel",
+          },
+        },
         metadata: {
           user_id: user.id,
         },
@@ -113,4 +120,3 @@ export async function POST() {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
