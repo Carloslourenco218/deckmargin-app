@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
-import { createClient } from "@/lib/supabaseServer";
+import { createServiceClient } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,8 @@ async function upsertBillingFromSubscription(
   subscription: Stripe.Subscription,
   fallbackUserId?: string | null
 ) {
-  const supabase = await createClient();
+  // Use service role client — bypasses RLS so webhook can always write
+  const supabase = createServiceClient();
 
   const customerId =
     typeof subscription.customer === "string"

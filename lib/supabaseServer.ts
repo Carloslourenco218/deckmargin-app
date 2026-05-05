@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
+// Standard cookie-based client — used for authenticated user requests
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -26,3 +28,11 @@ export async function createClient() {
   );
 }
 
+// Service role client — bypasses RLS entirely.
+// Only use in server-side code like webhooks, never expose to the client.
+export function createServiceClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
