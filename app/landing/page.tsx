@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 // ── DATA ────────────────────────────────────────────────────────────────────
 
@@ -194,6 +197,8 @@ const pricingFeatures = [
   },
 ];
 
+const VIDEO_ID = "IQzZsUOJpMc";
+
 // ── COMPONENTS ───────────────────────────────────────────────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -221,20 +226,64 @@ function PrimaryButton({
   );
 }
 
-function SecondaryButton({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
+function WatchButton({ onClick }: { onClick: () => void }) {
   return (
-    <Link
-      href={href}
-      className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+    <button
+      onClick={onClick}
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
     >
-      {children}
-    </Link>
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20">
+        ▶
+      </span>
+      Watch how it works
+    </button>
+  );
+}
+
+function WatchButtonAlt({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-8 py-4 text-base font-semibold text-white transition hover:bg-white/20"
+    >
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20">
+        ▶
+      </span>
+      Watch how it works
+    </button>
+  );
+}
+
+function VideoModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition text-lg"
+          aria-label="Close video"
+        >
+          ✕
+        </button>
+        {/* 16:9 responsive embed */}
+        <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
+          <iframe
+            className="absolute inset-0 w-full h-full"
+            src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0`}
+            title="DeckMargin — How It Works"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -258,8 +307,13 @@ function CheckIcon() {
 // ── PAGE ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  const [videoOpen, setVideoOpen] = useState(false);
+
   return (
     <main className="min-h-screen bg-[#0b0d12] text-white">
+
+      {/* ── VIDEO MODAL ── */}
+      {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
 
       {/* ── NAV ── */}
       <header className="sticky top-0 z-50 border-b border-white/8 bg-[#0b0d12]/90 backdrop-blur">
@@ -316,7 +370,7 @@ export default function HomePage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <PrimaryButton href="/signup">Start Free 14-Day Trial →</PrimaryButton>
-              <SecondaryButton href="#how-it-works">Watch how it works</SecondaryButton>
+              <WatchButton onClick={() => setVideoOpen(true)} />
             </div>
 
             {/* Proof strip */}
@@ -547,6 +601,19 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Watch the tutorial CTA */}
+          <div className="mt-12 flex justify-center">
+            <button
+              onClick={() => setVideoOpen(true)}
+              className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10 hover:border-white/20"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-xs">
+                ▶
+              </span>
+              Watch the full 3-minute tutorial
+            </button>
           </div>
         </div>
       </section>
@@ -813,12 +880,7 @@ export default function HomePage() {
             >
               Start Free 14-Day Trial →
             </Link>
-            <Link
-              href="#how-it-works"
-              className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-8 py-4 text-base font-semibold text-white transition hover:bg-white/20"
-            >
-              Watch how it works
-            </Link>
+            <WatchButtonAlt onClick={() => setVideoOpen(true)} />
           </div>
           <p className="mt-6 text-sm text-blue-200">
             Free for 14 days · Cancel anytime · Set up in 20 minutes
