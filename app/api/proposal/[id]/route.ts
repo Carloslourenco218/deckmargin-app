@@ -65,6 +65,9 @@ type UserSettingsRow = {
   company_name: string | null;
   company_phone: string | null;
   company_email: string | null;
+  company_website: string | null;
+  company_address: string | null;
+  logo_url: string | null;
 };
 
 export async function GET(
@@ -141,15 +144,18 @@ export async function GET(
 
     const { data: settings } = await supabase
       .from("user_settings")
-      .select("company_name, company_phone, company_email")
+      .select("company_name, company_phone, company_email, company_website, company_address, logo_url")
       .eq("user_id", user.id)
       .limit(1)
       .maybeSingle<UserSettingsRow>();
 
     const html = proposalHtml(project, {
-      company_name: settings?.company_name ?? null,
-      company_phone: settings?.company_phone ?? null,
-      company_email: settings?.company_email ?? null,
+      company_name:    settings?.company_name    ?? null,
+      company_phone:   settings?.company_phone   ?? null,
+      company_email:   settings?.company_email   ?? null,
+      company_website: settings?.company_website ?? null,
+      company_address: settings?.company_address ?? null,
+      logo_url:        settings?.logo_url        ?? null,
     });
 
     const executablePath = await chromium.executablePath(

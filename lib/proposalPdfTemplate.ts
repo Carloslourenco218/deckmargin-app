@@ -55,6 +55,9 @@ type CompanyInfo = {
   company_name: string | null;
   company_phone: string | null;
   company_email: string | null;
+  company_website?: string | null;
+  company_address?: string | null;
+  logo_url?: string | null;
 };
 
 const JOB_TYPE_LABELS: Record<string, string> = {
@@ -77,6 +80,11 @@ function dateText(value: string | null | undefined) {
 
 function text(value: string | null | undefined) {
   if (!value || value.trim() === "") return "—";
+  return value;
+}
+
+function textOrEmpty(value: string | null | undefined) {
+  if (!value || value.trim() === "") return "";
   return value;
 }
 
@@ -127,7 +135,6 @@ function buildScope(project: ProposalData) {
     }
     items.push("Final cleanup and completion walkthrough");
   } else {
-    // new_build
     items.push("Site preparation and project layout");
     items.push("Deck framing and structural build");
     items.push(`Installation of ${project.material_type ? titleCase(project.material_type).toLowerCase() : "decking material"}`);
@@ -180,6 +187,29 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
 
   const showProjectDetails = jobType !== "railing_only" && jobType !== "repair";
 
+  const hasLogo = company.logo_url && company.logo_url.trim() !== "";
+  const website = textOrEmpty(company.company_website);
+  const address = textOrEmpty(company.company_address);
+
+  // Build the left header — logo + company info
+  const logoHtml = hasLogo
+    ? `<img src="${escapeHtml(company.logo_url!)}" alt="Company logo" style="max-height:80px;max-width:200px;object-fit:contain;display:block;margin-bottom:10px;" />`
+    : "";
+
+  const companyNameHtml = company.company_name && company.company_name.trim()
+    ? `<div class="brand">${escapeHtml(company.company_name)}</div>`
+    : "";
+
+  const contactLines = [
+    "Deck Project Proposal",
+    company.company_phone ? `Phone: ${escapeHtml(company.company_phone)}` : null,
+    company.company_email ? `Email: ${escapeHtml(company.company_email)}` : null,
+    website ? `Web: ${escapeHtml(website)}` : null,
+    address ? escapeHtml(address) : null,
+  ]
+    .filter(Boolean)
+    .join("<br />");
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -190,8 +220,8 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
 body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: #111827; background: #ffffff; }
 .page { width: 100%; padding: 40px 44px 48px; }
 .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e5e7eb; padding-bottom: 18px; margin-bottom: 28px; }
-.brand { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; color: #111827; }
-.brand-sub { margin-top: 6px; font-size: 13px; color: #6b7280; line-height: 1.5; }
+.brand { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color: #111827; margin-bottom: 4px; }
+.brand-sub { font-size: 13px; color: #6b7280; line-height: 1.6; }
 .title-wrap { text-align: right; }
 .title { margin: 0 0 6px; font-size: 26px; font-weight: 700; color: #111827; }
 .subtle { font-size: 12px; color: #6b7280; line-height: 1.5; }
@@ -232,12 +262,9 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
 
   <div class="header">
     <div>
-      <div class="brand">${escapeHtml(text(company.company_name))}</div>
-      <div class="brand-sub">
-        Deck Project Proposal<br />
-        Phone: ${escapeHtml(text(company.company_phone))}<br />
-        Email: ${escapeHtml(text(company.company_email))}
-      </div>
+      ${logoHtml}
+      ${companyNameHtml}
+      <div class="brand-sub">${contactLines}</div>
     </div>
     <div class="title-wrap">
       <h1 class="title">${escapeHtml(project.name ?? "Untitled Proposal")}</h1>
@@ -350,7 +377,7 @@ We are currently seeing high demand for deck builds this season. To ensure we ca
 
   <div class="footer">
     <div>${escapeHtml(text(company.company_name))}</div>
-    <div>${escapeHtml(text(company.company_phone))} • ${escapeHtml(text(company.company_email))}</div>
+    <div>${[company.company_phone, company.company_email].filter(Boolean).map(v => escapeHtml(v!)).join(" • ")}</div>
   </div>
 
 </div>
