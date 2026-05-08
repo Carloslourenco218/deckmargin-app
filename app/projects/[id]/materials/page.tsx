@@ -169,12 +169,13 @@ export default async function MaterialsPrintPage({
         <Link href={`/projects/${project.id}`} className="text-sm text-blue-600 hover:underline">
           ← Back to Quote
         </Link>
-        <button
-          onClick={() => window.print()}
+        {/* ✅ Fixed: anchor tag instead of button with onClick (server component safe) */}
+        <a
+          href="javascript:window.print()"
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           Print / Save as PDF
-        </button>
+        </a>
       </div>
 
       <div className="mx-auto max-w-4xl px-8 py-10">
