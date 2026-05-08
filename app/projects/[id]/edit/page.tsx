@@ -223,8 +223,10 @@ export default function EditProjectPage() {
       setErr("");
       const { data: { user } } = await supabase.auth.getUser();
 
+      let sd: any = null;
       if (user) {
-        const { data: sd } = await supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle();
+        const { data: sdData } = await supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle();
+        sd = sdData;
         if (sd) {
           setSettings({
             labor_rate_per_sqft:       Number(sd.labor_rate_per_sqft      ?? 8),
@@ -317,8 +319,8 @@ export default function EditProjectPage() {
         equipment_cost: moneyString(data.equipment_cost),
         overhead_cost:  moneyString(data.overhead_cost),
         total_job_cost: moneyString(data.total_job_cost),
-        tax_rate:       String(data.tax_rate ?? 0),
-        tax_applies_to: data.tax_applies_to ?? "materials_and_labor",
+        tax_rate:       String(data.tax_rate != null && data.tax_rate !== 0 ? data.tax_rate : (sd?.tax_rate ?? 0)),
+        tax_applies_to: data.tax_applies_to ?? sd?.tax_applies_to ?? "materials_and_labor",
         tax_amount:     moneyString(data.tax_amount ?? 0),
         final_price:    moneyString(data.final_price),
         expected_profit:moneyString(data.expected_profit),
