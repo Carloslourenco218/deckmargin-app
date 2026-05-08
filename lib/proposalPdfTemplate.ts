@@ -30,6 +30,24 @@ type ProposalData = {
 
   hardware_items: HardwareItem[] | null;
 
+  dumpster_enabled: boolean | null;
+  dumpster_cost: number | null;
+
+  tax_rate: number | null;
+  tax_applies_to: string | null;
+  tax_amount: number | null;
+
+  permit_building_enabled: boolean | null;
+  permit_building_cost: number | null;
+  permit_septic_enabled: boolean | null;
+  permit_septic_cost: number | null;
+  permit_electrical_enabled: boolean | null;
+  permit_electrical_cost: number | null;
+  permit_engineering_enabled: boolean | null;
+  permit_engineering_cost: number | null;
+  permit_hoa_enabled: boolean | null;
+  permit_hoa_cost: number | null;
+
   material_cost: number | null;
   labor_cost: number | null;
   permit_cost: number | null;
@@ -72,38 +90,40 @@ function money(value: number | null | undefined) {
   if (value == null || Number.isNaN(value)) return "—";
   return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
-
 function dateText(value: string | null | undefined) {
   if (!value) return "—";
   return new Date(value).toLocaleDateString("en-US");
 }
-
 function text(value: string | null | undefined) {
   if (!value || value.trim() === "") return "—";
   return value;
 }
-
 function textOrEmpty(value: string | null | undefined) {
   if (!value || value.trim() === "") return "";
   return value;
 }
-
 function num(value: number | null | undefined, suffix = "") {
   if (value == null || Number.isNaN(value)) return "—";
   return `${Math.round(value)}${suffix}`;
 }
-
 function titleCase(value: string | null | undefined) {
   if (!value || value.trim() === "") return "—";
-  return value
-    .split(/[\s-_]+/)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return value.split(/[\s-_]+/).map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
 }
-
 function jobTypeLabel(value: string | null | undefined) {
   if (!value) return "New Build";
   return JOB_TYPE_LABELS[value] ?? titleCase(value);
+}
+function taxAppliesToLabel(v: string | null | undefined) {
+  if (v === "materials_only") return "materials only";
+  if (v === "labor_only")     return "labor only";
+  return "materials & labor";
+}
+function escapeHtml(value: string) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function calcHardwareTotal(items: HardwareItem[]): number {
+  return items.filter((i) => i.enabled).reduce((sum, i) => sum + (Number(i.cost) || 0), 0);
 }
 
 function buildScope(project: ProposalData) {
@@ -127,50 +147,23 @@ function buildScope(project: ProposalData) {
     items.push("Site preparation and layout for deck addition");
     items.push("Partial framing and structural extension");
     items.push(`Installation of ${project.material_type ? titleCase(project.material_type).toLowerCase() : "decking"} surface`);
-    if (project.railing_type && project.railing_type !== "none") {
-      items.push(`Installation of ${titleCase(project.railing_type).toLowerCase()} railing on new addition`);
-    }
-    if ((project.stair_count ?? 0) > 0) {
-      items.push(`Construction of ${project.stair_count} stair ${project.stair_count === 1 ? "section" : "sections"}`);
-    }
+    if (project.railing_type && project.railing_type !== "none") items.push(`Installation of ${titleCase(project.railing_type).toLowerCase()} railing on new addition`);
+    if ((project.stair_count ?? 0) > 0) items.push(`Construction of ${project.stair_count} stair ${project.stair_count === 1 ? "section" : "sections"}`);
     items.push("Final cleanup and completion walkthrough");
   } else {
     items.push("Site preparation and project layout");
     items.push("Deck framing and structural build");
     items.push(`Installation of ${project.material_type ? titleCase(project.material_type).toLowerCase() : "decking material"}`);
-    if (project.railing_type && project.railing_type !== "none") {
-      items.push(`Installation of ${titleCase(project.railing_type).toLowerCase()} railing system`);
-    }
-    if ((project.stair_count ?? 0) > 0) {
-      items.push(`Construction of ${project.stair_count} stair ${project.stair_count === 1 ? "section" : "sections"}`);
-    }
+    if (project.railing_type && project.railing_type !== "none") items.push(`Installation of ${titleCase(project.railing_type).toLowerCase()} railing system`);
+    if ((project.stair_count ?? 0) > 0) items.push(`Construction of ${project.stair_count} stair ${project.stair_count === 1 ? "section" : "sections"}`);
     if (project.lighting_enabled) items.push("Installation of deck lighting package");
     if (project.staining_enabled) items.push("Professional staining and sealing of deck surfaces");
-    if (project.built_ins_enabled) {
-      items.push(
-        project.built_ins_description && project.built_ins_description.trim()
-          ? `Built-in feature work: ${project.built_ins_description}`
-          : "Built-in custom feature installation"
-      );
-    }
+    if (project.built_ins_enabled) items.push(project.built_ins_description?.trim() ? `Built-in feature work: ${project.built_ins_description}` : "Built-in custom feature installation");
     const activeHardware = project.hardware_items?.filter((h) => h.enabled) ?? [];
     if (activeHardware.length > 0) items.push("Supply and installation of hardware and fasteners");
     items.push("Final cleanup and completion walkthrough");
   }
-
   return items;
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function calcHardwareTotal(items: HardwareItem[]): number {
-  return items.filter((i) => i.enabled).reduce((sum, i) => sum + (Number(i.cost) || 0), 0);
 }
 
 export function proposalHtml(project: ProposalData, company: CompanyInfo) {
@@ -179,36 +172,32 @@ export function proposalHtml(project: ProposalData, company: CompanyInfo) {
   const hwTotal = calcHardwareTotal(activeHardware);
   const jobType = project.job_type ?? "new_build";
 
-  const hasAddons =
-    project.lighting_enabled ||
-    project.staining_enabled ||
-    project.built_ins_enabled ||
-    activeHardware.length > 0;
+  // ── Permit lines ─────────────────────────────────────────────────────────
+  const permitLines: { label: string; cost: number }[] = [];
+  if (project.permit_building_enabled    && project.permit_building_cost)    permitLines.push({ label: "Building Permit",                   cost: project.permit_building_cost });
+  if (project.permit_septic_enabled      && project.permit_septic_cost)      permitLines.push({ label: "Septic Permit",                     cost: project.permit_septic_cost });
+  if (project.permit_electrical_enabled  && project.permit_electrical_cost)  permitLines.push({ label: "Electrical Permit",                 cost: project.permit_electrical_cost });
+  if (project.permit_engineering_enabled && project.permit_engineering_cost) permitLines.push({ label: "Engineering / Structural Drawings", cost: project.permit_engineering_cost });
+  if (project.permit_hoa_enabled         && project.permit_hoa_cost)         permitLines.push({ label: "HOA Approval Fee",                  cost: project.permit_hoa_cost });
+  const permitTotal = permitLines.reduce((s, p) => s + p.cost, 0);
 
+  const hasTax      = (project.tax_amount ?? 0) > 0;
+  const hasDumpster = project.dumpster_enabled && (project.dumpster_cost ?? 0) > 0;
+  const hasPermits  = permitLines.length > 0;
+  const hasAddons   = project.lighting_enabled || project.staining_enabled || project.built_ins_enabled || activeHardware.length > 0;
   const showProjectDetails = jobType !== "railing_only" && jobType !== "repair";
 
   const hasLogo = company.logo_url && company.logo_url.trim() !== "";
   const website = textOrEmpty(company.company_website);
   const address = textOrEmpty(company.company_address);
 
-  // Build the left header — logo + company info
   const logoHtml = hasLogo
     ? `<img src="${escapeHtml(company.logo_url!)}" alt="Company logo" style="max-height:80px;max-width:200px;object-fit:contain;display:block;margin-bottom:10px;" />`
     : "";
-
-  const companyNameHtml = company.company_name && company.company_name.trim()
+  const companyNameHtml = company.company_name?.trim()
     ? `<div class="brand">${escapeHtml(company.company_name)}</div>`
     : "";
-
-  const contactLines = [
-    "Deck Project Proposal",
-    company.company_phone ? `Phone: ${escapeHtml(company.company_phone)}` : null,
-    company.company_email ? `Email: ${escapeHtml(company.company_email)}` : null,
-    website ? `Web: ${escapeHtml(website)}` : null,
-    address ? escapeHtml(address) : null,
-  ]
-    .filter(Boolean)
-    .join("<br />");
+  const contactLines = ["Deck Project Proposal", company.company_phone ? `Phone: ${escapeHtml(company.company_phone)}` : null, company.company_email ? `Email: ${escapeHtml(company.company_email)}` : null, website ? `Web: ${escapeHtml(website)}` : null, address ? escapeHtml(address) : null].filter(Boolean).join("<br />");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -243,13 +232,15 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
 .scope-list { margin: 0; padding-left: 20px; }
 .scope-list li { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: #111827; }
 .notes-box, .terms-box, .addons-box, .acceptance-box { font-size: 14px; line-height: 1.7; color: #111827; white-space: pre-wrap; }
-.hardware-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.hardware-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; border-bottom: 1px solid #e5e7eb; padding: 6px 8px 8px; }
-.hardware-table th:last-child { text-align: right; }
-.hardware-table td { padding: 8px; border-bottom: 1px solid #f3f4f6; color: #111827; vertical-align: middle; }
-.hardware-table td:last-child { text-align: right; font-weight: 600; }
-.hardware-table tr:last-child td { border-bottom: none; }
-.hardware-total-row td { border-top: 2px solid #e5e7eb !important; border-bottom: none !important; font-weight: 700; padding-top: 10px !important; }
+.line-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.line-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; border-bottom: 1px solid #e5e7eb; padding: 6px 8px 8px; }
+.line-table th:last-child, .line-table td:last-child { text-align: right; }
+.line-table td { padding: 8px; border-bottom: 1px solid #f3f4f6; color: #111827; vertical-align: middle; }
+.line-table td:last-child { font-weight: 600; }
+.line-table tr:last-child td { border-bottom: none; }
+.total-row td { border-top: 2px solid #e5e7eb !important; border-bottom: none !important; font-weight: 700; padding-top: 10px !important; }
+.tax-row td { background: #fafafa; color: #374151; font-style: italic; }
+.grand-total-row td { border-top: 2px solid #111827 !important; font-size: 15px; font-weight: 800; padding-top: 12px !important; }
 .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 28px; margin-top: 18px; }
 .signature-item { padding-top: 16px; }
 .signature-line { border-bottom: 1px solid #111827; height: 28px; margin-bottom: 8px; }
@@ -290,7 +281,6 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
         <div class="info-item full"><div class="label">Project Address</div><div class="value">${escapeHtml(text(project.site_address))}</div></div>
       </div>
     </div>
-
     <div class="panel">
       <h2>Project Overview</h2>
       <div class="info-grid">
@@ -323,8 +313,8 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
   <div class="section">
     <h2>Optional Add-ons Included</h2>
     <div class="addons-box">
-      ${project.lighting_enabled ? `Lighting: ${escapeHtml(money(project.lighting_cost))}<br />` : ""}
-      ${project.staining_enabled ? `Staining / Sealing: ${escapeHtml(money(project.staining_cost))}<br />` : ""}
+      ${project.lighting_enabled  ? `Lighting: ${escapeHtml(money(project.lighting_cost))}<br />` : ""}
+      ${project.staining_enabled  ? `Staining / Sealing: ${escapeHtml(money(project.staining_cost))}<br />` : ""}
       ${project.built_ins_enabled ? `Built-ins${project.built_ins_description ? ` (${escapeHtml(project.built_ins_description)})` : ""}: ${escapeHtml(money(project.built_ins_cost))}<br />` : ""}
     </div>
   </div>
@@ -334,11 +324,39 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
   <div class="section">
     <h2>Hardware &amp; Fasteners</h2>
     <div class="hardware-box">
-      <table class="hardware-table">
-        <thead><tr><th>Item</th><th style="text-align:right;">Cost</th></tr></thead>
+      <table class="line-table">
+        <thead><tr><th>Item</th><th>Cost</th></tr></thead>
         <tbody>
           ${activeHardware.map((item) => `<tr><td>${escapeHtml(item.label)}</td><td>${escapeHtml(money(Number(item.cost) || 0))}</td></tr>`).join("")}
-          <tr class="hardware-total-row"><td>Hardware total</td><td>${escapeHtml(money(hwTotal))}</td></tr>
+          <tr class="total-row"><td>Hardware total</td><td>${escapeHtml(money(hwTotal))}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  ` : ""}
+
+  ${hasPermits ? `
+  <div class="section">
+    <h2>Permits &amp; Approvals</h2>
+    <div class="hardware-box">
+      <table class="line-table">
+        <thead><tr><th>Permit Type</th><th>Cost</th></tr></thead>
+        <tbody>
+          ${permitLines.map((p) => `<tr><td>${escapeHtml(p.label)}</td><td>${escapeHtml(money(p.cost))}</td></tr>`).join("")}
+          <tr class="total-row"><td>Permits total</td><td>${escapeHtml(money(permitTotal))}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  ` : ""}
+
+  ${hasDumpster ? `
+  <div class="section">
+    <h2>Additional Costs</h2>
+    <div class="hardware-box">
+      <table class="line-table">
+        <tbody>
+          <tr><td>Dumpster Rental</td><td>${escapeHtml(money(project.dumpster_cost))}</td></tr>
         </tbody>
       </table>
     </div>
@@ -346,12 +364,28 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
   ` : ""}
 
   <div class="section">
+    <h2>Pricing Summary</h2>
+    <div class="hardware-box">
+      <table class="line-table">
+        <tbody>
+          ${hasTax ? `
+          <tr class="tax-row">
+            <td>Sales Tax (${escapeHtml(String(project.tax_rate ?? 0))}% on ${escapeHtml(taxAppliesToLabel(project.tax_applies_to))})</td>
+            <td>${escapeHtml(money(project.tax_amount))}</td>
+          </tr>
+          ` : ""}
+          <tr class="grand-total-row">
+            <td>Total Quoted Price</td>
+            <td>${escapeHtml(money(project.final_price))}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
     <h2>Project Notes</h2>
-    <div class="notes-box">${escapeHtml(
-      project.notes && project.notes.trim()
-        ? project.notes
-        : "Project details and final site-specific adjustments will be reviewed prior to work beginning."
-    )}</div>
+    <div class="notes-box">${escapeHtml(project.notes?.trim() ? project.notes : "Project details and final site-specific adjustments will be reviewed prior to work beginning.")}</div>
   </div>
 
   <div class="section">
@@ -377,7 +411,7 @@ We are currently seeing high demand for deck builds this season. To ensure we ca
 
   <div class="footer">
     <div>${escapeHtml(text(company.company_name))}</div>
-    <div>${[company.company_phone, company.company_email].filter(Boolean).map(v => escapeHtml(v!)).join(" • ")}</div>
+    <div>${[company.company_phone, company.company_email].filter(Boolean).map((v) => escapeHtml(v!)).join(" • ")}</div>
   </div>
 
 </div>

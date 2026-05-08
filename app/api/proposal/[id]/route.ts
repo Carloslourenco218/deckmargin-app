@@ -40,6 +40,24 @@ type ProjectRow = {
 
   hardware_items: HardwareItem[] | null;
 
+  dumpster_enabled: boolean | null;
+  dumpster_cost: number | null;
+
+  tax_rate: number | null;
+  tax_applies_to: string | null;
+  tax_amount: number | null;
+
+  permit_building_enabled: boolean | null;
+  permit_building_cost: number | null;
+  permit_septic_enabled: boolean | null;
+  permit_septic_cost: number | null;
+  permit_electrical_enabled: boolean | null;
+  permit_electrical_cost: number | null;
+  permit_engineering_enabled: boolean | null;
+  permit_engineering_cost: number | null;
+  permit_hoa_enabled: boolean | null;
+  permit_hoa_cost: number | null;
+
   material_cost: number | null;
   labor_cost: number | null;
   permit_cost: number | null;
@@ -78,57 +96,33 @@ export async function GET(
     const resolvedParams = await Promise.resolve(context.params);
     const supabase = await createClient();
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      return NextResponse.json(
-        { error: "You must be logged in to generate this PDF." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "You must be logged in to generate this PDF." }, { status: 401 });
     }
 
     const { data: project, error } = await supabase
       .from("projects")
       .select(`
-        id,
-        user_id,
-        name,
-        status,
-        job_type,
-        deck_length,
-        deck_width,
-        deck_sqft,
-        height_tier,
-        material_type,
-        railing_type,
-        stair_count,
-        lighting_enabled,
-        lighting_cost,
-        staining_enabled,
-        staining_cost,
-        built_ins_enabled,
-        built_ins_cost,
-        built_ins_description,
+        id, user_id, name, status, job_type,
+        deck_length, deck_width, deck_sqft,
+        height_tier, material_type, railing_type, stair_count,
+        lighting_enabled, lighting_cost,
+        staining_enabled, staining_cost,
+        built_ins_enabled, built_ins_cost, built_ins_description,
         hardware_items,
-        material_cost,
-        labor_cost,
-        permit_cost,
-        equipment_cost,
-        overhead_cost,
-        total_job_cost,
-        final_price,
-        expected_profit,
-        target_margin,
-        client_name,
-        client_email,
-        client_phone,
-        site_address,
-        notes,
-        created_at,
-        updated_at
+        dumpster_enabled, dumpster_cost,
+        tax_rate, tax_applies_to, tax_amount,
+        permit_building_enabled, permit_building_cost,
+        permit_septic_enabled, permit_septic_cost,
+        permit_electrical_enabled, permit_electrical_cost,
+        permit_engineering_enabled, permit_engineering_cost,
+        permit_hoa_enabled, permit_hoa_cost,
+        material_cost, labor_cost, permit_cost,
+        equipment_cost, overhead_cost, total_job_cost,
+        final_price, expected_profit, target_margin,
+        client_name, client_email, client_phone,
+        site_address, notes, created_at, updated_at
       `)
       .eq("id", resolvedParams.id)
       .eq("user_id", user.id)
@@ -136,10 +130,7 @@ export async function GET(
       .maybeSingle<ProjectRow>();
 
     if (error || !project) {
-      return NextResponse.json(
-        { error: error?.message ?? "Project not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: error?.message ?? "Project not found" }, { status: 404 });
     }
 
     const { data: settings } = await supabase
@@ -169,24 +160,13 @@ export async function GET(
     });
 
     const page = await browser.newPage();
-
-    await page.setViewport({
-      width: 1440,
-      height: 2000,
-      deviceScaleFactor: 1,
-    });
-
+    await page.setViewport({ width: 1440, height: 2000, deviceScaleFactor: 1 });
     await page.setContent(html, { waitUntil: "networkidle0" });
 
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: {
-        top: "20px",
-        right: "20px",
-        bottom: "20px",
-        left: "20px",
-      },
+      margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
     });
 
     await browser.close();
@@ -198,9 +178,7 @@ export async function GET(
       },
     });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to generate PDF";
-
+    const message = err instanceof Error ? err.message : "Failed to generate PDF";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

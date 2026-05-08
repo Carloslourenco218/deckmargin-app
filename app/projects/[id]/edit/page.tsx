@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
-// ── Regional multipliers (matches settings page) ──────────────────────────
 const REGION_MULTIPLIERS: Record<string, { material: number; labor: number }> = {
   national:   { material: 1.00, labor: 1.00 },
   pnw:        { material: 1.32, labor: 1.35 },
@@ -15,33 +14,12 @@ const REGION_MULTIPLIERS: Record<string, { material: number; labor: number }> = 
   southwest:  { material: 0.95, labor: 0.93 },
 };
 
-// ── Job type definitions ──────────────────────────────────────────────────
 const JOB_TYPES = [
-  {
-    value: "new_build",
-    label: "New Build",
-    description: "Full deck construction — framing, footings, surface, railing, stairs",
-  },
-  {
-    value: "resurface",
-    label: "Resurface",
-    description: "Surface boards only on existing frame — no framing, footings, or structural labor",
-  },
-  {
-    value: "railing_only",
-    label: "Railing Only",
-    description: "Railing materials and installation labor only",
-  },
-  {
-    value: "repair",
-    label: "Repair",
-    description: "Custom line items only — all auto-calculations zeroed out",
-  },
-  {
-    value: "addition",
-    label: "Addition",
-    description: "Partial framing (60%) plus full surface — extending an existing deck",
-  },
+  { value: "new_build",    label: "New Build",   description: "Full deck construction — framing, footings, surface, railing, stairs" },
+  { value: "resurface",    label: "Resurface",   description: "Surface boards only on existing frame — no framing, footings, or structural labor" },
+  { value: "railing_only", label: "Railing Only",description: "Railing materials and installation labor only" },
+  { value: "repair",       label: "Repair",      description: "Custom line items only — all auto-calculations zeroed out" },
+  { value: "addition",     label: "Addition",    description: "Partial framing (60%) plus full surface — extending an existing deck" },
 ];
 
 type SettingsRow = {
@@ -55,14 +33,17 @@ type SettingsRow = {
   timbertech_material_rate: number;
   pvc_material_rate: number;
   region: string;
+  tax_rate: number;
+  tax_applies_to: string;
+  dumpster_default: number;
+  permit_building_default: number;
+  permit_septic_default: number;
+  permit_electrical_default: number;
+  permit_engineering_default: number;
+  permit_hoa_default: number;
 };
 
-type HardwareItem = {
-  key: string;
-  label: string;
-  enabled: boolean;
-  cost: string;
-};
+type HardwareItem = { key: string; label: string; enabled: boolean; cost: string };
 
 const DEFAULT_HARDWARE: HardwareItem[] = [
   { key: "fasteners_screws", label: "Fasteners / screws",  enabled: false, cost: "" },
@@ -75,188 +56,126 @@ const DEFAULT_HARDWARE: HardwareItem[] = [
   { key: "misc_hardware",    label: "Misc hardware",       enabled: false, cost: "" },
 ];
 
+// ── Permit types ───────────────────────────────────────────────────────────
+const PERMIT_TYPES = [
+  { key: "building",    label: "Building Permit",                  defaultKey: "permit_building_default" },
+  { key: "septic",      label: "Septic Permit",                    defaultKey: "permit_septic_default" },
+  { key: "electrical",  label: "Electrical Permit",               defaultKey: "permit_electrical_default" },
+  { key: "engineering", label: "Engineering / Structural Drawings",defaultKey: "permit_engineering_default" },
+  { key: "hoa",         label: "HOA Approval Fee",                 defaultKey: "permit_hoa_default" },
+] as const;
+
+type PermitKey = typeof PERMIT_TYPES[number]["key"];
+type PermitState = Record<PermitKey, { enabled: boolean; cost: string }>;
+
+function defaultPermits(): PermitState {
+  return {
+    building:    { enabled: false, cost: "" },
+    septic:      { enabled: false, cost: "" },
+    electrical:  { enabled: false, cost: "" },
+    engineering: { enabled: false, cost: "" },
+    hoa:         { enabled: false, cost: "" },
+  };
+}
+
 type FormState = {
-  name: string;
-  status: string;
-  job_type: string;
-
-  deck_length: string;
-  deck_width: string;
-  deck_sqft: string;
-
-  height_tier: string;
-  material_type: string;
-  railing_type: string;
-  stair_count: string;
-
-  lighting_enabled: boolean;
-  lighting_cost: string;
-  staining_enabled: boolean;
-  staining_cost: string;
-  built_ins_enabled: boolean;
-  built_ins_cost: string;
-  built_ins_description: string;
-
-  material_cost: string;
-  labor_cost: string;
-  permit_cost: string;
-  equipment_cost: string;
-  overhead_cost: string;
-  total_job_cost: string;
-
-  final_price: string;
-  expected_profit: string;
-  target_margin: string;
-
-  client_name: string;
-  client_email: string;
-  client_phone: string;
-  site_address: string;
-  notes: string;
+  name: string; status: string; job_type: string;
+  deck_length: string; deck_width: string; deck_sqft: string;
+  height_tier: string; material_type: string; railing_type: string; stair_count: string;
+  lighting_enabled: boolean; lighting_cost: string;
+  staining_enabled: boolean; staining_cost: string;
+  built_ins_enabled: boolean; built_ins_cost: string; built_ins_description: string;
+  dumpster_enabled: boolean; dumpster_cost: string;
+  material_cost: string; labor_cost: string; permit_cost: string;
+  equipment_cost: string; overhead_cost: string; total_job_cost: string;
+  tax_rate: string; tax_applies_to: string; tax_amount: string;
+  final_price: string; expected_profit: string; target_margin: string;
+  client_name: string; client_email: string; client_phone: string;
+  site_address: string; notes: string;
 };
 
-function numOrNull(value: string) {
-  if (!value.trim()) return null;
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
+function numOrNull(v: string) { if (!v.trim()) return null; const n = Number(v); return Number.isFinite(n) ? n : null; }
+function numOrZero(v: string) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+function moneyString(v: any) { if (v === null || v === undefined || v === "") return ""; const n = Number(v); return Number.isFinite(n) ? n.toFixed(2) : ""; }
+function integerString(v: any) { if (v === null || v === undefined || v === "") return ""; const n = Number(v); return Number.isFinite(n) ? String(Math.round(n)) : ""; }
+function marginString(v: any) { if (v === null || v === undefined || v === "") return ""; const n = Number(v); return Number.isFinite(n) ? n.toFixed(2) : ""; }
+function parseMarginInput(v: string) { if (!v.trim()) return null; const n = Number(v); if (!Number.isFinite(n)) return null; return n > 1 ? n / 100 : n; }
 
-function numOrZero(value: string) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function moneyString(value: any) {
-  if (value === null || value === undefined || value === "") return "";
-  const n = Number(value);
-  return Number.isFinite(n) ? n.toFixed(2) : "";
-}
-
-function integerString(value: any) {
-  if (value === null || value === undefined || value === "") return "";
-  const n = Number(value);
-  return Number.isFinite(n) ? String(Math.round(n)) : "";
-}
-
-function marginString(value: any) {
-  if (value === null || value === undefined || value === "") return "";
-  const n = Number(value);
-  return Number.isFinite(n) ? n.toFixed(2) : "";
-}
-
-function parseMarginInput(value: string) {
-  if (!value.trim()) return null;
-  const n = Number(value);
-  if (!Number.isFinite(n)) return null;
-  return n > 1 ? n / 100 : n;
-}
-
-function materialRate(type: string, settings: SettingsRow, region: string) {
-  const mult = REGION_MULTIPLIERS[region]?.material ?? 1.0;
-  let base = settings.pt_material_rate;
-  switch (type) {
-    case "pressure-treated": base = settings.pt_material_rate; break;
-    case "trex":             base = settings.trex_material_rate; break;
-    case "timbertech":       base = settings.timbertech_material_rate; break;
-    case "pvc":              base = settings.pvc_material_rate; break;
-  }
+function materialRate(type: string, s: SettingsRow) {
+  const mult = REGION_MULTIPLIERS[s.region]?.material ?? 1.0;
+  let base = s.pt_material_rate;
+  if (type === "trex") base = s.trex_material_rate;
+  else if (type === "timbertech") base = s.timbertech_material_rate;
+  else if (type === "pvc") base = s.pvc_material_rate;
   return base * mult;
 }
-
-function laborMultiplier(heightTier: string) {
-  if (heightTier === "raised") return 1.15;
-  if (heightTier === "high")   return 1.3;
-  return 1;
+function laborMultiplier(tier: string) { if (tier === "raised") return 1.15; if (tier === "high") return 1.3; return 1; }
+function calcHardwareTotal(items: HardwareItem[]) {
+  return items.reduce((sum, i) => { if (!i.enabled) return sum; const n = Number(i.cost); return sum + (Number.isFinite(n) ? n : 0); }, 0);
+}
+function calcPermitTotal(permits: PermitState) {
+  return (Object.values(permits) as { enabled: boolean; cost: string }[])
+    .reduce((sum, p) => { if (!p.enabled) return sum; const n = Number(p.cost); return sum + (Number.isFinite(n) ? n : 0); }, 0);
 }
 
-function calcHardwareTotal(items: HardwareItem[]): number {
-  return items.reduce((sum, item) => {
-    if (!item.enabled) return sum;
-    const n = Number(item.cost);
-    return sum + (Number.isFinite(n) ? n : 0);
-  }, 0);
+function calcTax(material: number, labor: number, taxRate: number, taxAppliesTo: string): number {
+  if (!taxRate) return 0;
+  const rate = taxRate / 100;
+  if (taxAppliesTo === "materials_only")      return material * rate;
+  if (taxAppliesTo === "labor_only")          return labor * rate;
+  return (material + labor) * rate;
 }
 
-function calcCosts(
-  form: FormState,
-  settings: SettingsRow,
-  hardwareItems: HardwareItem[]
-) {
-  const sqft   = Number(form.deck_sqft || 0);
-  const region = settings.region ?? "national";
-  const regionMult = REGION_MULTIPLIERS[region] ?? { material: 1, labor: 1 };
-  const matRate = materialRate(form.material_type, settings, region);
+function calcCosts(form: FormState, settings: SettingsRow, hardwareItems: HardwareItem[], permits: PermitState) {
+  const sqft = Number(form.deck_sqft || 0);
+  const regionMult = REGION_MULTIPLIERS[settings.region] ?? { material: 1, labor: 1 };
+  const matRate = materialRate(form.material_type, settings);
   const laborBase = settings.labor_rate_per_sqft * regionMult.labor;
   const jobType = form.job_type || "new_build";
 
-  let material = 0;
-  let labor    = 0;
-
+  let material = 0, labor = 0;
   if (jobType === "new_build") {
     material = sqft * matRate;
-    labor    = sqft * laborBase * laborMultiplier(form.height_tier)
-              + Number(form.stair_count || 0) * settings.stair_cost;
+    labor = sqft * laborBase * laborMultiplier(form.height_tier) + Number(form.stair_count || 0) * settings.stair_cost;
   } else if (jobType === "resurface") {
-    // Surface boards only — no framing, footings, structural labor
     material = sqft * matRate;
-    labor    = sqft * laborBase * 0.45; // Surface-only labor ~45% of full build
-  } else if (jobType === "railing_only") {
-    // Railing only — zero deck surface
-    material = 0;
-    labor    = 0;
-    // Railing costs come through permit/equipment/overhead fields manually
-  } else if (jobType === "repair") {
-    // All auto-calc zeroed — contractor enters everything manually
-    material = 0;
-    labor    = 0;
+    labor = sqft * laborBase * 0.45;
   } else if (jobType === "addition") {
-    // 60% framing cost + full surface
     material = sqft * matRate;
-    labor    = sqft * laborBase * laborMultiplier(form.height_tier) * 0.60
-              + Number(form.stair_count || 0) * settings.stair_cost;
+    labor = sqft * laborBase * laborMultiplier(form.height_tier) * 0.60 + Number(form.stair_count || 0) * settings.stair_cost;
   }
 
-  const permit   = form.permit_cost.trim()    === "" ? settings.permit_default    : Number(form.permit_cost    || 0);
-  const equipment= form.equipment_cost.trim() === "" ? settings.equipment_default : Number(form.equipment_cost || 0);
-  const overhead = form.overhead_cost.trim()  === "" ? settings.overhead_default  : Number(form.overhead_cost  || 0);
-  const lighting = form.lighting_enabled ? numOrZero(form.lighting_cost) : 0;
-  const staining = form.staining_enabled ? numOrZero(form.staining_cost) : 0;
-  const builtIns = form.built_ins_enabled ? numOrZero(form.built_ins_cost) : 0;
-  const hardware = calcHardwareTotal(hardwareItems);
+  const equipment = form.equipment_cost.trim() === "" ? settings.equipment_default : Number(form.equipment_cost || 0);
+  const overhead  = form.overhead_cost.trim()  === "" ? settings.overhead_default  : Number(form.overhead_cost  || 0);
+  const lighting  = form.lighting_enabled  ? numOrZero(form.lighting_cost)  : 0;
+  const staining  = form.staining_enabled  ? numOrZero(form.staining_cost)  : 0;
+  const builtIns  = form.built_ins_enabled ? numOrZero(form.built_ins_cost) : 0;
+  const dumpster  = form.dumpster_enabled  ? numOrZero(form.dumpster_cost)  : 0;
+  const hardware  = calcHardwareTotal(hardwareItems);
+  const permitTotal = calcPermitTotal(permits);
 
-  const total = material + labor + permit + equipment + overhead + lighting + staining + builtIns + hardware;
+  const taxRate      = Number(form.tax_rate || 0);
+  const taxAppliesTo = form.tax_applies_to || "materials_and_labor";
+  const tax = calcTax(material, labor, taxRate, taxAppliesTo);
+
+  const total = material + labor + permitTotal + equipment + overhead + lighting + staining + builtIns + dumpster + hardware + tax;
   const margin = parseMarginInput(form.target_margin) ?? 0.3;
   const finalPrice = margin >= 1 ? total : total / (1 - margin);
   const profit = finalPrice - total;
 
-  return { material, labor, permit, equipment, overhead, total, finalPrice, profit };
+  return { material, labor, permitTotal, equipment, overhead, tax, total, finalPrice, profit };
 }
 
 function FieldHelp({ text }: { text: string }) {
   return (
     <span className="group relative inline-flex">
-      <button
-        type="button"
-        tabIndex={0}
-        className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/20 text-[11px] font-semibold text-white/70 hover:bg-white/10 hover:text-white"
-        aria-label="Field help"
-      >
-        ?
-      </button>
-      <span className="pointer-events-none absolute left-7 top-1/2 z-20 hidden w-64 -translate-y-1/2 rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2 text-xs font-normal leading-5 text-white/85 shadow-xl group-hover:block group-focus-within:block">
-        {text}
-      </span>
+      <button type="button" tabIndex={0} className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/20 text-[11px] font-semibold text-white/70 hover:bg-white/10 hover:text-white" aria-label="Field help">?</button>
+      <span className="pointer-events-none absolute left-7 top-1/2 z-20 hidden w-64 -translate-y-1/2 rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2 text-xs font-normal leading-5 text-white/85 shadow-xl group-hover:block group-focus-within:block">{text}</span>
     </span>
   );
 }
-
 function FieldLabel({ label, help }: { label: string; help: string }) {
-  return (
-    <label className="mb-1 flex items-center text-xs text-white/60">
-      <span>{label}</span>
-      <FieldHelp text={help} />
-    </label>
-  );
+  return <label className="mb-1 flex items-center text-xs text-white/60"><span>{label}</span><FieldHelp text={help} /></label>;
 }
 
 export default function EditProjectPage() {
@@ -271,81 +190,61 @@ export default function EditProjectPage() {
   const [success, setSuccess] = useState("");
 
   const [settings, setSettings] = useState<SettingsRow>({
-    labor_rate_per_sqft:      8,
-    stair_cost:               250,
-    permit_default:           0,
-    equipment_default:        0,
-    overhead_default:         0,
-    pt_material_rate:         10,
-    trex_material_rate:       18,
-    timbertech_material_rate: 20,
-    pvc_material_rate:        25,
-    region:                   "national",
+    labor_rate_per_sqft: 8, stair_cost: 250, permit_default: 0,
+    equipment_default: 0, overhead_default: 0,
+    pt_material_rate: 10, trex_material_rate: 18, timbertech_material_rate: 20, pvc_material_rate: 25,
+    region: "national", tax_rate: 0, tax_applies_to: "materials_and_labor",
+    dumpster_default: 0, permit_building_default: 0, permit_septic_default: 0,
+    permit_electrical_default: 0, permit_engineering_default: 0, permit_hoa_default: 0,
   });
 
   const [hardwareItems, setHardwareItems] = useState<HardwareItem[]>(DEFAULT_HARDWARE);
+  const [permits, setPermits] = useState<PermitState>(defaultPermits());
 
   const [form, setForm] = useState<FormState>({
-    name:         "",
-    status:       "open",
-    job_type:     "new_build",
-    deck_length:  "",
-    deck_width:   "",
-    deck_sqft:    "",
-    height_tier:  "standard",
-    material_type:"pressure-treated",
-    railing_type: "none",
-    stair_count:  "0",
-    lighting_enabled: false,
-    lighting_cost:    "0",
-    staining_enabled: false,
-    staining_cost:    "0",
-    built_ins_enabled:    false,
-    built_ins_cost:       "0",
-    built_ins_description:"",
-    material_cost:  "",
-    labor_cost:     "",
-    permit_cost:    "",
-    equipment_cost: "",
-    overhead_cost:  "",
-    total_job_cost: "",
-    final_price:    "",
-    expected_profit:"",
-    target_margin:  "0.30",
-    client_name:    "",
-    client_email:   "",
-    client_phone:   "",
-    site_address:   "",
-    notes:          "",
+    name: "", status: "open", job_type: "new_build",
+    deck_length: "", deck_width: "", deck_sqft: "",
+    height_tier: "standard", material_type: "pressure-treated", railing_type: "none", stair_count: "0",
+    lighting_enabled: false, lighting_cost: "0",
+    staining_enabled: false, staining_cost: "0",
+    built_ins_enabled: false, built_ins_cost: "0", built_ins_description: "",
+    dumpster_enabled: false, dumpster_cost: "0",
+    material_cost: "", labor_cost: "", permit_cost: "",
+    equipment_cost: "", overhead_cost: "", total_job_cost: "",
+    tax_rate: "0", tax_applies_to: "materials_and_labor", tax_amount: "0",
+    final_price: "", expected_profit: "", target_margin: "0.30",
+    client_name: "", client_email: "", client_phone: "", site_address: "", notes: "",
   });
 
-  // ── Load project + settings ──────────────────────────────────────────
+  // ── Load ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     async function loadEverything() {
       setLoading(true);
       setErr("");
-
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: sd } = await supabase
-          .from("user_settings")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
+        const { data: sd } = await supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle();
         if (sd) {
           setSettings({
-            labor_rate_per_sqft:      Number(sd.labor_rate_per_sqft      ?? 8),
-            stair_cost:               Number(sd.stair_cost               ?? 250),
-            permit_default:           Number(sd.permit_default           ?? 0),
-            equipment_default:        Number(sd.equipment_default        ?? 0),
-            overhead_default:         Number(sd.overhead_default         ?? 0),
-            pt_material_rate:         Number(sd.pt_material_rate         ?? 10),
-            trex_material_rate:       Number(sd.trex_material_rate       ?? 18),
-            timbertech_material_rate: Number(sd.timbertech_material_rate ?? 20),
-            pvc_material_rate:        Number(sd.pvc_material_rate        ?? 25),
-            region:                   sd.region ?? "national",
+            labor_rate_per_sqft:       Number(sd.labor_rate_per_sqft      ?? 8),
+            stair_cost:                Number(sd.stair_cost               ?? 250),
+            permit_default:            Number(sd.permit_default           ?? 0),
+            equipment_default:         Number(sd.equipment_default        ?? 0),
+            overhead_default:          Number(sd.overhead_default         ?? 0),
+            pt_material_rate:          Number(sd.pt_material_rate         ?? 10),
+            trex_material_rate:        Number(sd.trex_material_rate       ?? 18),
+            timbertech_material_rate:  Number(sd.timbertech_material_rate ?? 20),
+            pvc_material_rate:         Number(sd.pvc_material_rate        ?? 25),
+            region:                    sd.region ?? "national",
+            tax_rate:                  Number(sd.tax_rate                 ?? 0),
+            tax_applies_to:            sd.tax_applies_to                  ?? "materials_and_labor",
+            dumpster_default:          Number(sd.dumpster_default         ?? 0),
+            permit_building_default:   Number(sd.permit_building_default  ?? 0),
+            permit_septic_default:     Number(sd.permit_septic_default    ?? 0),
+            permit_electrical_default: Number(sd.permit_electrical_default ?? 0),
+            permit_engineering_default:Number(sd.permit_engineering_default ?? 0),
+            permit_hoa_default:        Number(sd.permit_hoa_default       ?? 0),
           });
         }
       }
@@ -359,29 +258,38 @@ export default function EditProjectPage() {
           lighting_enabled, lighting_cost,
           staining_enabled, staining_cost,
           built_ins_enabled, built_ins_cost, built_ins_description,
+          dumpster_enabled, dumpster_cost,
           hardware_items,
           material_cost, labor_cost, permit_cost, equipment_cost,
           overhead_cost, total_job_cost,
+          tax_rate, tax_applies_to, tax_amount,
           final_price, expected_profit, target_margin,
+          permit_building_enabled, permit_building_cost,
+          permit_septic_enabled, permit_septic_cost,
+          permit_electrical_enabled, permit_electrical_cost,
+          permit_engineering_enabled, permit_engineering_cost,
+          permit_hoa_enabled, permit_hoa_cost,
           client_name, client_email, client_phone, site_address, notes
         `)
         .eq("id", id)
         .single();
 
-      if (error || !data) {
-        setErr(error?.message ?? "Could not load project");
-        setLoading(false);
-        return;
-      }
+      if (error || !data) { setErr(error?.message ?? "Could not load project"); setLoading(false); return; }
 
+      // Hardware
       if (data.hardware_items && Array.isArray(data.hardware_items) && data.hardware_items.length > 0) {
         const saved = data.hardware_items as HardwareItem[];
-        const merged = DEFAULT_HARDWARE.map((def) => {
-          const found = saved.find((s) => s.key === def.key);
-          return found ? { ...def, enabled: found.enabled, cost: found.cost ?? "" } : def;
-        });
-        setHardwareItems(merged);
+        setHardwareItems(DEFAULT_HARDWARE.map((def) => { const f = saved.find((s) => s.key === def.key); return f ? { ...def, enabled: f.enabled, cost: f.cost ?? "" } : def; }));
       }
+
+      // Permits — load saved state, fall back to settings defaults when first toggling
+      setPermits({
+        building:    { enabled: data.permit_building_enabled    ?? false, cost: moneyString(data.permit_building_cost)    },
+        septic:      { enabled: data.permit_septic_enabled      ?? false, cost: moneyString(data.permit_septic_cost)      },
+        electrical:  { enabled: data.permit_electrical_enabled  ?? false, cost: moneyString(data.permit_electrical_cost)  },
+        engineering: { enabled: data.permit_engineering_enabled ?? false, cost: moneyString(data.permit_engineering_cost) },
+        hoa:         { enabled: data.permit_hoa_enabled         ?? false, cost: moneyString(data.permit_hoa_cost)         },
+      });
 
       setForm({
         name:          data.name    ?? "",
@@ -401,12 +309,17 @@ export default function EditProjectPage() {
         built_ins_enabled:    data.built_ins_enabled    ?? false,
         built_ins_cost:       moneyString(data.built_ins_cost ?? 0),
         built_ins_description:data.built_ins_description ?? "",
+        dumpster_enabled: data.dumpster_enabled ?? false,
+        dumpster_cost:    moneyString(data.dumpster_cost ?? 0),
         material_cost:  moneyString(data.material_cost),
         labor_cost:     moneyString(data.labor_cost),
         permit_cost:    moneyString(data.permit_cost),
         equipment_cost: moneyString(data.equipment_cost),
         overhead_cost:  moneyString(data.overhead_cost),
         total_job_cost: moneyString(data.total_job_cost),
+        tax_rate:       String(data.tax_rate ?? 0),
+        tax_applies_to: data.tax_applies_to ?? "materials_and_labor",
+        tax_amount:     moneyString(data.tax_amount ?? 0),
         final_price:    moneyString(data.final_price),
         expected_profit:moneyString(data.expected_profit),
         target_margin:  marginString(data.target_margin ?? 0.3),
@@ -419,72 +332,62 @@ export default function EditProjectPage() {
 
       setLoading(false);
     }
-
     if (id) loadEverything();
   }, [id, supabase]);
 
-  // ── Recalculate on any relevant change ───────────────────────────────
+  // ── Recalculate ───────────────────────────────────────────────────────────
   useEffect(() => {
     const sqft = Number(form.deck_length || 0) * Number(form.deck_width || 0);
-
     setForm((prev) => {
       const updated = { ...prev, deck_sqft: String(Math.round(sqft)) };
-      const costs = calcCosts(updated, settings, hardwareItems);
+      const costs = calcCosts(updated, settings, hardwareItems, permits);
       return {
         ...updated,
         material_cost:  costs.material.toFixed(2),
         labor_cost:     costs.labor.toFixed(2),
-        permit_cost:    costs.permit.toFixed(2),
-        equipment_cost: costs.equipment.toFixed(2),
-        overhead_cost:  costs.overhead.toFixed(2),
+        equipment_cost: prev.equipment_cost.trim() === "" ? costs.equipment.toFixed(2) : prev.equipment_cost,
+        overhead_cost:  prev.overhead_cost.trim()  === "" ? costs.overhead.toFixed(2)  : prev.overhead_cost,
         total_job_cost: costs.total.toFixed(2),
+        tax_amount:     costs.tax.toFixed(2),
         final_price:    costs.finalPrice.toFixed(2),
         expected_profit:costs.profit.toFixed(2),
       };
     });
   }, [
-    form.deck_length,
-    form.deck_width,
-    form.height_tier,
-    form.material_type,
-    form.stair_count,
-    form.target_margin,
-    form.permit_cost,
-    form.equipment_cost,
-    form.overhead_cost,
-    form.lighting_enabled,
-    form.lighting_cost,
-    form.staining_enabled,
-    form.staining_cost,
-    form.built_ins_enabled,
-    form.built_ins_cost,
-    form.job_type,
-    hardwareItems,
-    settings,
+    form.deck_length, form.deck_width, form.height_tier, form.material_type,
+    form.stair_count, form.target_margin, form.equipment_cost, form.overhead_cost,
+    form.lighting_enabled, form.lighting_cost, form.staining_enabled, form.staining_cost,
+    form.built_ins_enabled, form.built_ins_cost, form.dumpster_enabled, form.dumpster_cost,
+    form.job_type, form.tax_rate, form.tax_applies_to,
+    hardwareItems, permits, settings,
   ]);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
-
   function updateHardwareEnabled(key: string, enabled: boolean) {
-    setHardwareItems((prev) =>
-      prev.map((item) => (item.key === key ? { ...item, enabled } : item))
-    );
+    setHardwareItems((prev) => prev.map((i) => i.key === key ? { ...i, enabled } : i));
   }
-
   function updateHardwareCost(key: string, cost: string) {
-    setHardwareItems((prev) =>
-      prev.map((item) => (item.key === key ? { ...item, cost } : item))
-    );
+    setHardwareItems((prev) => prev.map((i) => i.key === key ? { ...i, cost } : i));
+  }
+  function togglePermit(key: PermitKey, enabled: boolean) {
+    setPermits((prev) => {
+      const cost = enabled && !prev[key].cost
+        ? moneyString((settings as any)[`permit_${key}_default`] ?? 0)
+        : prev[key].cost;
+      return { ...prev, [key]: { ...prev[key], enabled, cost } };
+    });
+  }
+  function updatePermitCost(key: PermitKey, cost: string) {
+    setPermits((prev) => ({ ...prev, [key]: { ...prev[key], cost } }));
   }
 
   const hardwareTotal = calcHardwareTotal(hardwareItems);
+  const permitTotal   = calcPermitTotal(permits);
   const selectedJobType = JOB_TYPES.find((j) => j.value === form.job_type) ?? JOB_TYPES[0];
   const regionKey = settings.region ?? "national";
   const regionMult = REGION_MULTIPLIERS[regionKey] ?? { material: 1, labor: 1 };
-
-  // Which fields are editable vs auto-zeroed per job type
   const isRepair      = form.job_type === "repair";
   const isRailingOnly = form.job_type === "railing_only";
   const showStairs    = !isRepair && !isRailingOnly;
@@ -499,16 +402,13 @@ export default function EditProjectPage() {
       name:   form.name   || "Untitled Quote",
       status: form.status || "open",
       job_type: form.job_type || "new_build",
-
       deck_length: numOrNull(form.deck_length),
       deck_width:  numOrNull(form.deck_width),
       deck_sqft:   Number(form.deck_sqft || 0),
-
       height_tier:   form.height_tier,
       material_type: form.material_type,
       railing_type:  form.railing_type,
       stair_count:   Number(form.stair_count || 0),
-
       lighting_enabled: form.lighting_enabled,
       lighting_cost:    form.lighting_enabled ? Number(form.lighting_cost || 0) : 0,
       staining_enabled: form.staining_enabled,
@@ -516,55 +416,50 @@ export default function EditProjectPage() {
       built_ins_enabled:    form.built_ins_enabled,
       built_ins_cost:       form.built_ins_enabled ? Number(form.built_ins_cost || 0) : 0,
       built_ins_description:form.built_ins_enabled ? form.built_ins_description || null : null,
-
-      hardware_items: hardwareItems.map((item) => ({
-        key:     item.key,
-        label:   item.label,
-        enabled: item.enabled,
-        cost:    item.enabled ? item.cost : "",
-      })),
-
+      dumpster_enabled: form.dumpster_enabled,
+      dumpster_cost:    form.dumpster_enabled ? Number(form.dumpster_cost || 0) : 0,
+      hardware_items: hardwareItems.map((i) => ({ key: i.key, label: i.label, enabled: i.enabled, cost: i.enabled ? i.cost : "" })),
+      // Permits
+      permit_building_enabled:    permits.building.enabled,
+      permit_building_cost:       permits.building.enabled    ? Number(permits.building.cost    || 0) : 0,
+      permit_septic_enabled:      permits.septic.enabled,
+      permit_septic_cost:         permits.septic.enabled      ? Number(permits.septic.cost      || 0) : 0,
+      permit_electrical_enabled:  permits.electrical.enabled,
+      permit_electrical_cost:     permits.electrical.enabled  ? Number(permits.electrical.cost  || 0) : 0,
+      permit_engineering_enabled: permits.engineering.enabled,
+      permit_engineering_cost:    permits.engineering.enabled ? Number(permits.engineering.cost || 0) : 0,
+      permit_hoa_enabled:         permits.hoa.enabled,
+      permit_hoa_cost:            permits.hoa.enabled         ? Number(permits.hoa.cost         || 0) : 0,
+      // Tax
+      tax_rate:       Number(form.tax_rate || 0),
+      tax_applies_to: form.tax_applies_to,
+      tax_amount:     Number(form.tax_amount || 0),
+      // Costs
       material_cost:  Number(form.material_cost  || 0),
       labor_cost:     Number(form.labor_cost      || 0),
-      permit_cost:    Number(form.permit_cost     || 0),
+      permit_cost:    permitTotal,
       equipment_cost: Number(form.equipment_cost  || 0),
       overhead_cost:  Number(form.overhead_cost   || 0),
       total_job_cost: Number(form.total_job_cost  || 0),
-
       final_price:     Number(form.final_price     || 0),
       expected_profit: Number(form.expected_profit || 0),
       target_margin:   parseMarginInput(form.target_margin) ?? 0.3,
-
       client_name:  form.client_name  || null,
       client_email: form.client_email || null,
       client_phone: form.client_phone || null,
       site_address: form.site_address || null,
       notes:        form.notes        || null,
-
       updated_at: new Date().toISOString(),
     };
 
     const { error } = await supabase.from("projects").update(payload).eq("id", id);
-
-    if (error) {
-      setErr(error.message);
-      setSaving(false);
-      return;
-    }
-
+    if (error) { setErr(error.message); setSaving(false); return; }
     setSuccess("Saved successfully.");
-    setTimeout(() => {
-      router.push(`/projects/${id}`);
-      router.refresh();
-    }, 400);
+    setTimeout(() => { router.push(`/projects/${id}`); router.refresh(); }, 400);
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-[#0b0f19] px-6 py-8 text-white">
-        <div className="mx-auto max-w-5xl text-sm text-white/70">Loading…</div>
-      </main>
-    );
+    return <main className="min-h-screen bg-[#0b0f19] px-6 py-8 text-white"><div className="mx-auto max-w-5xl text-sm text-white/70">Loading…</div></main>;
   }
 
   return (
@@ -574,149 +469,68 @@ export default function EditProjectPage() {
         {/* ── Header ── */}
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold">
-              Edit Quote: {form.name || "Untitled Quote"}
-            </h1>
-            <p className="mt-1 text-sm text-white/60">
-              Fill out the quote builder and DeckMargin will calculate pricing automatically.
-            </p>
+            <h1 className="text-3xl font-semibold">Edit Quote: {form.name || "Untitled Quote"}</h1>
+            <p className="mt-1 text-sm text-white/60">Fill out the quote builder and DeckMargin will calculate pricing automatically.</p>
           </div>
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => router.push(`/projects/${id}`)}
-              className="rounded border border-white/20 px-3 py-2 text-sm hover:bg-white/10"
-            >
-              ← Back to Quote
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="rounded bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Save Changes"}
-            </button>
+            <button type="button" onClick={() => router.push(`/projects/${id}`)} className="rounded border border-white/20 px-3 py-2 text-sm hover:bg-white/10">← Back to Quote</button>
+            <button type="button" onClick={handleSave} disabled={saving} className="rounded bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90 disabled:opacity-60">{saving ? "Saving…" : "Save Changes"}</button>
           </div>
         </div>
 
-        {err ? (
-          <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{err}</div>
-        ) : null}
-        {success ? (
-          <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{success}</div>
-        ) : null}
+        {err     ? <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{err}</div>     : null}
+        {success ? <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{success}</div> : null}
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
 
           {/* ── Job Type ── */}
           <div className="mb-6 text-sm font-medium text-white/80">Job Type</div>
-
           <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
             {JOB_TYPES.map((jt) => (
-              <button
-                key={jt.value}
-                type="button"
-                onClick={() => updateField("job_type", jt.value)}
-                className={`rounded-xl border p-3 text-left transition-all ${
-                  form.job_type === jt.value
-                    ? "border-blue-500 bg-blue-500/10"
-                    : "border-white/10 bg-[#111827] hover:border-white/20"
-                }`}
-              >
-                <div className={`text-sm font-medium ${form.job_type === jt.value ? "text-blue-400" : "text-white"}`}>
-                  {jt.label}
-                </div>
+              <button key={jt.value} type="button" onClick={() => updateField("job_type", jt.value)}
+                className={`rounded-xl border p-3 text-left transition-all ${form.job_type === jt.value ? "border-blue-500 bg-blue-500/10" : "border-white/10 bg-[#111827] hover:border-white/20"}`}>
+                <div className={`text-sm font-medium ${form.job_type === jt.value ? "text-blue-400" : "text-white"}`}>{jt.label}</div>
                 <div className="mt-1 text-xs text-white/40 leading-snug">{jt.description}</div>
               </button>
             ))}
           </div>
 
-          {/* Job type info banner */}
           <div className={`mt-4 rounded-lg border px-4 py-3 text-sm ${
-            form.job_type === "new_build"     ? "border-blue-500/20 bg-blue-500/5 text-blue-300" :
-            form.job_type === "resurface"     ? "border-amber-500/20 bg-amber-500/5 text-amber-300" :
-            form.job_type === "railing_only"  ? "border-purple-500/20 bg-purple-500/5 text-purple-300" :
-            form.job_type === "repair"        ? "border-red-500/20 bg-red-500/5 text-red-300" :
-                                                "border-emerald-500/20 bg-emerald-500/5 text-emerald-300"
-          }`}>
+            form.job_type === "new_build"    ? "border-blue-500/20 bg-blue-500/5 text-blue-300" :
+            form.job_type === "resurface"    ? "border-amber-500/20 bg-amber-500/5 text-amber-300" :
+            form.job_type === "railing_only" ? "border-purple-500/20 bg-purple-500/5 text-purple-300" :
+            form.job_type === "repair"       ? "border-red-500/20 bg-red-500/5 text-red-300" :
+                                               "border-emerald-500/20 bg-emerald-500/5 text-emerald-300"}`}>
             <span className="font-medium">{selectedJobType.label}:</span>{" "}
             {form.job_type === "new_build"    && "Full calculation active — all fields apply."}
-            {form.job_type === "resurface"    && "Framing, footings, and structural labor zeroed out. Surface materials and labor only. Add permit, equipment, and overhead manually if needed."}
+            {form.job_type === "resurface"    && "Framing, footings, and structural labor zeroed out. Surface materials and labor only."}
             {form.job_type === "railing_only" && "Deck surface calculation zeroed. Use permit and equipment fields to enter railing material and labor costs."}
-            {form.job_type === "repair"       && "All auto-calculations zeroed. Enter all costs manually in permit, equipment, and overhead fields."}
-            {form.job_type === "addition"     && "60% framing credit applied — partial structural build on existing deck. Full surface calculation active."}
+            {form.job_type === "repair"       && "All auto-calculations zeroed. Enter all costs manually."}
+            {form.job_type === "addition"     && "60% framing credit applied — partial structural build on existing deck."}
           </div>
 
-          {/* Regional multiplier badge */}
           {regionKey !== "national" && (
             <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/60">
               <span>Regional pricing active:</span>
-              <span className="font-medium text-white/80">
-                {regionKey.charAt(0).toUpperCase() + regionKey.slice(1)}
-              </span>
+              <span className="font-medium text-white/80">{regionKey.charAt(0).toUpperCase() + regionKey.slice(1)}</span>
               <span>— materials ×{regionMult.material.toFixed(2)}, labor ×{regionMult.labor.toFixed(2)}</span>
             </div>
           )}
 
           {/* ── Project & Client ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Project & Client</div>
-
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <FieldLabel label="Quote Name" help="The internal name of the quote or project." />
-              <input
-                value={form.name}
-                onChange={(e) => updateField("name", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
+            <div><FieldLabel label="Quote Name" help="The internal name of the quote or project." /><input value={form.name} onChange={(e) => updateField("name", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
             <div>
               <FieldLabel label="Status" help="Track where this quote is in your sales process." />
-              <select
-                value={form.status}
-                onChange={(e) => updateField("status", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              >
-                <option value="open">open</option>
-                <option value="sent">sent</option>
-                <option value="approved">approved</option>
-                <option value="won">won</option>
-                <option value="lost">lost</option>
+              <select value={form.status} onChange={(e) => updateField("status", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                <option value="open">open</option><option value="sent">sent</option><option value="approved">approved</option><option value="won">won</option><option value="lost">lost</option>
               </select>
             </div>
-            <div>
-              <FieldLabel label="Client Name" help="The homeowner or customer name this proposal is for." />
-              <input
-                value={form.client_name}
-                onChange={(e) => updateField("client_name", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Client Phone" help="Client's best contact number." />
-              <input
-                value={form.client_phone}
-                onChange={(e) => updateField("client_phone", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Client Email" help="Client's email for proposal delivery." />
-              <input
-                value={form.client_email}
-                onChange={(e) => updateField("client_email", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Site Address" help="The job site where the deck will be built." />
-              <input
-                value={form.site_address}
-                onChange={(e) => updateField("site_address", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
+            <div><FieldLabel label="Client Name" help="The homeowner or customer name this proposal is for." /><input value={form.client_name} onChange={(e) => updateField("client_name", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><FieldLabel label="Client Phone" help="Client's best contact number." /><input value={form.client_phone} onChange={(e) => updateField("client_phone", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><FieldLabel label="Client Email" help="Client's email for proposal delivery." /><input value={form.client_email} onChange={(e) => updateField("client_email", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><FieldLabel label="Site Address" help="The job site where the deck will be built." /><input value={form.site_address} onChange={(e) => updateField("site_address", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
           </div>
 
           {/* ── Deck Size ── */}
@@ -724,30 +538,9 @@ export default function EditProjectPage() {
             <>
               <div className="mt-8 mb-6 text-sm font-medium text-white/80">Deck Size</div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div>
-                  <FieldLabel label="Deck Length (ft)" help="Full length of the deck in feet." />
-                  <input
-                    value={form.deck_length}
-                    onChange={(e) => updateField("deck_length", e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <FieldLabel label="Deck Width (ft)" help="Full width of the deck in feet." />
-                  <input
-                    value={form.deck_width}
-                    onChange={(e) => updateField("deck_width", e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <FieldLabel label="Deck Square Feet" help="Auto-calculated from length × width." />
-                  <input
-                    value={form.deck_sqft}
-                    readOnly
-                    className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80"
-                  />
-                </div>
+                <div><FieldLabel label="Deck Length (ft)" help="Full length of the deck in feet." /><input value={form.deck_length} onChange={(e) => updateField("deck_length", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+                <div><FieldLabel label="Deck Width (ft)" help="Full width of the deck in feet." /><input value={form.deck_width} onChange={(e) => updateField("deck_width", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+                <div><FieldLabel label="Deck Square Feet" help="Auto-calculated from length × width." /><input value={form.deck_sqft} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
               </div>
             </>
           )}
@@ -759,71 +552,37 @@ export default function EditProjectPage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <FieldLabel label="Height Tier" help="Standard for low decks, raised for mid-height, high for elevated builds." />
-                  <select
-                    value={form.height_tier}
-                    onChange={(e) => updateField("height_tier", e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-                  >
-                    <option value="standard">standard</option>
-                    <option value="raised">raised</option>
-                    <option value="high">high</option>
+                  <select value={form.height_tier} onChange={(e) => updateField("height_tier", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                    <option value="standard">standard</option><option value="raised">raised</option><option value="high">high</option>
                   </select>
                 </div>
                 <div>
                   <FieldLabel label="Material Type" help="Main decking material — changes the material rate used." />
-                  <select
-                    value={form.material_type}
-                    onChange={(e) => updateField("material_type", e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-                  >
-                    <option value="pressure-treated">pressure-treated</option>
-                    <option value="trex">trex</option>
-                    <option value="timbertech">timbertech</option>
-                    <option value="pvc">pvc</option>
+                  <select value={form.material_type} onChange={(e) => updateField("material_type", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                    <option value="pressure-treated">pressure-treated</option><option value="trex">trex</option><option value="timbertech">timbertech</option><option value="pvc">pvc</option>
                   </select>
                 </div>
                 <div>
                   <FieldLabel label="Railing Type" help="Railing style for the project." />
-                  <select
-                    value={form.railing_type}
-                    onChange={(e) => updateField("railing_type", e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-                  >
-                    <option value="none">none</option>
-                    <option value="wood">wood</option>
-                    <option value="composite">composite</option>
-                    <option value="metal">metal</option>
+                  <select value={form.railing_type} onChange={(e) => updateField("railing_type", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                    <option value="none">none</option><option value="wood">wood</option><option value="composite">composite</option><option value="metal">metal</option>
                   </select>
                 </div>
                 {showStairs && (
-                  <div>
-                    <FieldLabel label="Stair Count" help="Number of stair sections in the build." />
-                    <input
-                      value={form.stair_count}
-                      onChange={(e) => updateField("stair_count", e.target.value)}
-                      className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-                    />
-                  </div>
+                  <div><FieldLabel label="Stair Count" help="Number of stair sections in the build." /><input value={form.stair_count} onChange={(e) => updateField("stair_count", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
                 )}
               </div>
             </>
           )}
 
-          {/* Railing only — railing type selector */}
           {isRailingOnly && (
             <>
               <div className="mt-8 mb-6 text-sm font-medium text-white/80">Railing Specs</div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <FieldLabel label="Railing Type" help="Select the railing style being installed." />
-                  <select
-                    value={form.railing_type}
-                    onChange={(e) => updateField("railing_type", e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-                  >
-                    <option value="wood">wood</option>
-                    <option value="composite">composite</option>
-                    <option value="metal">metal</option>
+                  <select value={form.railing_type} onChange={(e) => updateField("railing_type", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                    <option value="wood">wood</option><option value="composite">composite</option><option value="metal">metal</option>
                   </select>
                 </div>
               </div>
@@ -832,128 +591,115 @@ export default function EditProjectPage() {
 
           {/* ── Add-ons ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Add-ons</div>
-
           <div className="space-y-4">
+
+            {/* Lighting */}
             <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
               <label className="flex items-center gap-3 text-sm font-medium text-white">
-                <input
-                  type="checkbox"
-                  checked={form.lighting_enabled}
-                  onChange={(e) => updateField("lighting_enabled", e.target.checked)}
-                />
+                <input type="checkbox" checked={form.lighting_enabled} onChange={(e) => updateField("lighting_enabled", e.target.checked)} />
                 <span>Lighting</span>
                 <FieldHelp text="Post lights, stair lights, transformers, or any deck lighting package." />
               </label>
               {form.lighting_enabled && (
-                <div className="mt-3">
-                  <FieldLabel label="Lighting Cost" help="Total cost allowance for deck lighting." />
-                  <input
-                    value={form.lighting_cost}
-                    onChange={(e) => updateField("lighting_cost", e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
-                    placeholder="0.00"
-                  />
-                </div>
+                <div className="mt-3"><FieldLabel label="Lighting Cost" help="Total cost allowance for deck lighting." /><input value={form.lighting_cost} onChange={(e) => updateField("lighting_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" /></div>
               )}
             </div>
 
+            {/* Staining */}
             <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
               <label className="flex items-center gap-3 text-sm font-medium text-white">
-                <input
-                  type="checkbox"
-                  checked={form.staining_enabled}
-                  onChange={(e) => updateField("staining_enabled", e.target.checked)}
-                />
+                <input type="checkbox" checked={form.staining_enabled} onChange={(e) => updateField("staining_enabled", e.target.checked)} />
                 <span>Staining / Sealing</span>
                 <FieldHelp text="Professional staining or sealing, usually for natural wood decks." />
               </label>
               {form.staining_enabled && (
-                <div className="mt-3">
-                  <FieldLabel label="Staining Cost" help="Total staining or sealing cost." />
-                  <input
-                    value={form.staining_cost}
-                    onChange={(e) => updateField("staining_cost", e.target.value)}
-                    className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
-                    placeholder="0.00"
-                  />
-                </div>
+                <div className="mt-3"><FieldLabel label="Staining Cost" help="Total staining or sealing cost." /><input value={form.staining_cost} onChange={(e) => updateField("staining_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" /></div>
               )}
             </div>
 
+            {/* Built-ins */}
             <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
               <label className="flex items-center gap-3 text-sm font-medium text-white">
-                <input
-                  type="checkbox"
-                  checked={form.built_ins_enabled}
-                  onChange={(e) => updateField("built_ins_enabled", e.target.checked)}
-                />
+                <input type="checkbox" checked={form.built_ins_enabled} onChange={(e) => updateField("built_ins_enabled", e.target.checked)} />
                 <span>Built-ins</span>
                 <FieldHelp text="Benches, planters, pergolas, privacy walls, or other custom integrated features." />
               </label>
               {form.built_ins_enabled && (
                 <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="md:col-span-2">
-                    <FieldLabel label="Built-ins Description" help="Describe the feature, like bench seating or pergola." />
-                    <input
-                      value={form.built_ins_description}
-                      onChange={(e) => updateField("built_ins_description", e.target.value)}
-                      className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
-                      placeholder="Bench seating, pergola, planter boxes..."
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel label="Built-ins Cost" help="Total cost allowance for all built-in features." />
-                    <input
-                      value={form.built_ins_cost}
-                      onChange={(e) => updateField("built_ins_cost", e.target.value)}
-                      className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
-                      placeholder="0.00"
-                    />
-                  </div>
+                  <div className="md:col-span-2"><FieldLabel label="Built-ins Description" help="Describe the feature." /><input value={form.built_ins_description} onChange={(e) => updateField("built_ins_description", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="Bench seating, pergola, planter boxes..." /></div>
+                  <div><FieldLabel label="Built-ins Cost" help="Total cost allowance for all built-in features." /><input value={form.built_ins_cost} onChange={(e) => updateField("built_ins_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" /></div>
                 </div>
               )}
             </div>
+
+            {/* Dumpster */}
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input type="checkbox" checked={form.dumpster_enabled}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    updateField("dumpster_enabled", on);
+                    if (on && (!form.dumpster_cost || form.dumpster_cost === "0" || form.dumpster_cost === "0.00")) {
+                      updateField("dumpster_cost", moneyString(settings.dumpster_default));
+                    }
+                  }} />
+                <span>Dumpster Required</span>
+                <FieldHelp text="Add a dumpster rental cost to the job. Pre-fills from your settings default." />
+              </label>
+              {form.dumpster_enabled && (
+                <div className="mt-3"><FieldLabel label="Dumpster Cost" help="Total dumpster rental cost for this job." /><input value={form.dumpster_cost} onChange={(e) => updateField("dumpster_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" /></div>
+              )}
+            </div>
+
+          </div>
+
+          {/* ── Permits ── */}
+          <div className="mt-8 mb-4 flex items-center justify-between">
+            <div className="text-sm font-medium text-white/80">Permits & Approvals</div>
+            {permitTotal > 0 && <div className="text-sm font-medium text-emerald-400">Total: ${permitTotal.toFixed(2)}</div>}
+          </div>
+          <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+            <p className="mb-4 text-xs text-white/50">Toggle each permit that applies. Costs pre-fill from your settings defaults.</p>
+            <div className="space-y-3">
+              {PERMIT_TYPES.map(({ key, label }) => (
+                <div key={key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
+                  <label className="flex items-center gap-3 text-sm font-medium text-white">
+                    <input type="checkbox" checked={permits[key].enabled} onChange={(e) => togglePermit(key, e.target.checked)} className="h-4 w-4 rounded accent-blue-500" />
+                    <span>{label}</span>
+                  </label>
+                  {permits[key].enabled && (
+                    <div className="mt-2">
+                      <FieldLabel label="Cost ($)" help={`Cost for ${label} on this project.`} />
+                      <input type="number" min="0" step="0.01" value={permits[key].cost} onChange={(e) => updatePermitCost(key, e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm" placeholder="0.00" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {permitTotal > 0 && (
+              <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                <span className="text-sm text-white/70">Permits subtotal</span>
+                <span className="text-sm font-semibold text-emerald-400">${permitTotal.toFixed(2)}</span>
+              </div>
+            )}
           </div>
 
           {/* ── Hardware & Fasteners ── */}
           <div className="mt-8 mb-6 flex items-center justify-between">
             <div className="text-sm font-medium text-white/80">Hardware &amp; Fasteners</div>
-            {hardwareTotal > 0 && (
-              <div className="text-sm font-medium text-emerald-400">
-                Total: ${hardwareTotal.toFixed(2)}
-              </div>
-            )}
+            {hardwareTotal > 0 && <div className="text-sm font-medium text-emerald-400">Total: ${hardwareTotal.toFixed(2)}</div>}
           </div>
-
           <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
-            <p className="mb-4 text-xs text-white/50">
-              Check each item that applies. Total is added to your job cost automatically.
-            </p>
+            <p className="mb-4 text-xs text-white/50">Check each item that applies. Total is added to your job cost automatically.</p>
             <div className="space-y-3">
               {hardwareItems.map((item) => (
                 <div key={item.key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
                   <label className="flex items-center gap-3 text-sm font-medium text-white">
-                    <input
-                      type="checkbox"
-                      checked={item.enabled}
-                      onChange={(e) => updateHardwareEnabled(item.key, e.target.checked)}
-                      className="h-4 w-4 rounded accent-blue-500"
-                    />
+                    <input type="checkbox" checked={item.enabled} onChange={(e) => updateHardwareEnabled(item.key, e.target.checked)} className="h-4 w-4 rounded accent-blue-500" />
                     <span>{item.label}</span>
                   </label>
                   {item.enabled && (
-                    <div className="mt-2">
-                      <FieldLabel label="Cost ($)" help={`Enter the cost for ${item.label} on this project.`} />
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={item.cost}
-                        onChange={(e) => updateHardwareCost(item.key, e.target.value)}
-                        className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm"
-                        placeholder="0.00"
-                      />
-                    </div>
+                    <div className="mt-2"><FieldLabel label="Cost ($)" help={`Enter the cost for ${item.label} on this project.`} /><input type="number" min="0" step="0.01" value={item.cost} onChange={(e) => updateHardwareCost(item.key, e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm" placeholder="0.00" /></div>
                   )}
                 </div>
               ))}
@@ -968,103 +714,30 @@ export default function EditProjectPage() {
 
           {/* ── Cost Breakdown ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Cost Breakdown</div>
-
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div><FieldLabel label="Material Cost" help="Auto-calculated from deck size, material type, and your regional multiplier." /><input value={form.material_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+            <div><FieldLabel label="Labor Cost" help="Auto-calculated from deck size, height tier, stair count, and your regional labor multiplier." /><input value={form.labor_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
             <div>
-              <FieldLabel
-                label="Material Cost"
-                help="Auto-calculated from deck size, material type, and your regional multiplier."
-              />
-              <input
-                value={form.material_cost}
-                readOnly
-                className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80"
-              />
+              <FieldLabel label="Sales Tax" help="Calculated from your tax rate and applies-to setting." />
+              <input value={`$${Number(form.tax_amount || 0).toFixed(2)} (${form.tax_rate}% on ${form.tax_applies_to.replace(/_/g, " ")})`} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80 text-sm" />
             </div>
-            <div>
-              <FieldLabel
-                label="Labor Cost"
-                help="Auto-calculated from deck size, height tier, stair count, and your regional labor multiplier."
-              />
-              <input
-                value={form.labor_cost}
-                readOnly
-                className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Permit Cost" help="Permit fees for this job. Blank uses your default." />
-              <input
-                value={form.permit_cost}
-                onChange={(e) => updateField("permit_cost", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Equipment Cost" help="Rentals, specialty tools, delivery equipment." />
-              <input
-                value={form.equipment_cost}
-                onChange={(e) => updateField("equipment_cost", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Overhead Cost" help="Admin time, travel, insurance, project management." />
-              <input
-                value={form.overhead_cost}
-                onChange={(e) => updateField("overhead_cost", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Total Job Cost" help="Full internal cost — materials, labor, permits, equipment, overhead, add-ons, and hardware." />
-              <input
-                value={form.total_job_cost}
-                readOnly
-                className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80"
-              />
-            </div>
+            <div><FieldLabel label="Permits Total" help="Sum of all toggled permit costs." /><input value={permitTotal.toFixed(2)} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+            <div><FieldLabel label="Equipment Cost" help="Rentals, specialty tools, delivery equipment." /><input value={form.equipment_cost} onChange={(e) => updateField("equipment_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><FieldLabel label="Overhead Cost" help="Admin time, travel, insurance, project management." /><input value={form.overhead_cost} onChange={(e) => updateField("overhead_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><FieldLabel label="Total Job Cost" help="Full internal cost including all line items, tax, permits, and add-ons." /><input value={form.total_job_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
           </div>
 
           {/* ── Pricing ── */}
           <div className="mt-8 mb-6 text-sm font-medium text-white/80">Pricing</div>
-
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div>
-              <FieldLabel label="Final Price" help="Client-facing total based on your costs and target margin." />
-              <input
-                value={form.final_price}
-                readOnly
-                className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Expected Profit" help="Projected profit after subtracting total job cost from final price." />
-              <input
-                value={form.expected_profit}
-                readOnly
-                className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80"
-              />
-            </div>
-            <div>
-              <FieldLabel label="Target Margin" help="Enter your desired margin as 0.30 or 30." />
-              <input
-                value={form.target_margin}
-                onChange={(e) => updateField("target_margin", e.target.value)}
-                placeholder="0.30 or 30"
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
+            <div><FieldLabel label="Final Price" help="Client-facing total based on your costs and target margin." /><input value={form.final_price} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+            <div><FieldLabel label="Expected Profit" help="Projected profit after subtracting total job cost from final price." /><input value={form.expected_profit} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+            <div><FieldLabel label="Target Margin" help="Enter your desired margin as 0.30 or 30." /><input value={form.target_margin} onChange={(e) => updateField("target_margin", e.target.value)} placeholder="0.30 or 30" className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
           </div>
 
           <div className="mt-8">
             <FieldLabel label="Notes" help="Internal reminders, scope clarifications, or special conditions." />
-            <textarea
-              value={form.notes}
-              onChange={(e) => updateField("notes", e.target.value)}
-              rows={5}
-              className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-            />
+            <textarea value={form.notes} onChange={(e) => updateField("notes", e.target.value)} rows={5} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
           </div>
 
         </div>
