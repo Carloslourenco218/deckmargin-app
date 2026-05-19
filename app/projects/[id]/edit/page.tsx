@@ -378,15 +378,11 @@ export default function EditProjectPage() {
   }
   function togglePermit(key: PermitKey, enabled: boolean) {
     const defaults = settingsRef.current ?? settings;
-    console.log("togglePermit fired", key, enabled);
-    console.log("settingsRef.current", settingsRef.current);
-    console.log("settings state", settings);
-    console.log("resolved defaults", defaults);
     setPermits((prev) => {
-      const cost = enabled && !prev[key].cost
+      const existingCost = Number(prev[key].cost);
+      const cost = enabled && (!prev[key].cost || existingCost === 0)
         ? moneyString((defaults as any)[`permit_${key}_default`] ?? 0)
         : prev[key].cost;
-      console.log("computed cost", cost);
       return { ...prev, [key]: { ...prev[key], enabled, cost } };
     });
   }
@@ -651,7 +647,7 @@ export default function EditProjectPage() {
                     const on = e.target.checked;
                     const defaults = settingsRef.current ?? settings;
                     updateField("dumpster_enabled", on);
-                    if (on && (!form.dumpster_cost || form.dumpster_cost === "0" || form.dumpster_cost === "0.00")) {
+                    if (on && (!form.dumpster_cost || Number(form.dumpster_cost) === 0)) {
                       updateField("dumpster_cost", moneyString(defaults.dumpster_default));
                     }
                   }} />
