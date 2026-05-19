@@ -378,10 +378,15 @@ export default function EditProjectPage() {
   }
   function togglePermit(key: PermitKey, enabled: boolean) {
     const defaults = settingsRef.current ?? settings;
+    console.log("togglePermit fired", key, enabled);
+    console.log("settingsRef.current", settingsRef.current);
+    console.log("settings state", settings);
+    console.log("resolved defaults", defaults);
     setPermits((prev) => {
       const cost = enabled && !prev[key].cost
         ? moneyString((defaults as any)[`permit_${key}_default`] ?? 0)
         : prev[key].cost;
+      console.log("computed cost", cost);
       return { ...prev, [key]: { ...prev[key], enabled, cost } };
     });
   }
