@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
@@ -200,6 +200,7 @@ export default function EditProjectPage() {
 
   const [hardwareItems, setHardwareItems] = useState<HardwareItem[]>(DEFAULT_HARDWARE);
   const [permits, setPermits] = useState<PermitState>(defaultPermits());
+  const settingsRef = useRef<SettingsRow | null>(null);
 
   const [form, setForm] = useState<FormState>({
     name: "", status: "open", job_type: "new_build",
@@ -228,7 +229,7 @@ export default function EditProjectPage() {
         const { data: sdData } = await supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle();
         sd = sdData;
         if (sd) {
-          setSettings({
+          const s: SettingsRow = {
             labor_rate_per_sqft:       Number(sd.labor_rate_per_sqft      ?? 8),
             stair_cost:                Number(sd.stair_cost               ?? 250),
             permit_default:            Number(sd.permit_default           ?? 0),
@@ -247,7 +248,9 @@ export default function EditProjectPage() {
             permit_electrical_default: Number(sd.permit_electrical_default ?? 0),
             permit_engineering_default:Number(sd.permit_engineering_default?? 0),
             permit_hoa_default:        Number(sd.permit_hoa_default        ?? 0),
-          });
+          };
+          setSettings(s);
+          settingsRef.current = s;
         }
       }
 
@@ -374,9 +377,10 @@ export default function EditProjectPage() {
     setHardwareItems((prev) => prev.map((i) => i.key === key ? { ...i, cost } : i));
   }
   function togglePermit(key: PermitKey, enabled: boolean) {
+    const defaults = settingsRef.current ?? settings;
     setPermits((prev) => {
       const cost = enabled && !prev[key].cost
-        ? moneyString((settings as any)[`permit_${key}_default`] ?? 0)
+        ? moneyString((defaults as any)[`permit_${key}_default`] ?? 0)
         : prev[key].cost;
       return { ...prev, [key]: { ...prev[key], enabled, cost } };
     });
@@ -640,9 +644,10 @@ export default function EditProjectPage() {
                 <input type="checkbox" checked={form.dumpster_enabled}
                   onChange={(e) => {
                     const on = e.target.checked;
+                    const defaults = settingsRef.current ?? settings;
                     updateField("dumpster_enabled", on);
                     if (on && (!form.dumpster_cost || form.dumpster_cost === "0" || form.dumpster_cost === "0.00")) {
-                      updateField("dumpster_cost", moneyString(settings.dumpster_default));
+                      updateField("dumpster_cost", moneyString(defaults.dumpster_default));
                     }
                   }} />
                 <span>Dumpster Required</span>
