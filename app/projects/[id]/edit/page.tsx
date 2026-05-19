@@ -239,14 +239,14 @@ export default function EditProjectPage() {
             timbertech_material_rate:  Number(sd.timbertech_material_rate ?? 20),
             pvc_material_rate:         Number(sd.pvc_material_rate        ?? 25),
             region:                    sd.region ?? "national",
-            tax_rate:                  Number(sd.tax_rate                 ?? 0),
-            tax_applies_to:            sd.tax_applies_to                  ?? "materials_and_labor",
-            dumpster_default:          Number(sd.dumpster_default         ?? 0),
-            permit_building_default:   Number(sd.permit_building_default  ?? 0),
-            permit_septic_default:     Number(sd.permit_septic_default    ?? 0),
+            tax_rate:                  Number(sd.tax_rate                  ?? 0),
+            tax_applies_to:            sd.tax_applies_to                   ?? "materials_and_labor",
+            dumpster_default:          Number(sd.dumpster_default          ?? 0),
+            permit_building_default:   Number(sd.permit_building_default   ?? 0),
+            permit_septic_default:     Number(sd.permit_septic_default     ?? 0),
             permit_electrical_default: Number(sd.permit_electrical_default ?? 0),
-            permit_engineering_default:Number(sd.permit_engineering_default ?? 0),
-            permit_hoa_default:        Number(sd.permit_hoa_default       ?? 0),
+            permit_engineering_default:Number(sd.permit_engineering_default?? 0),
+            permit_hoa_default:        Number(sd.permit_hoa_default        ?? 0),
           });
         }
       }
