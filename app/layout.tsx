@@ -3,7 +3,7 @@ import Script from "next/script";
 import { Suspense } from "react";
 import AnalyticsPageView from "@/app/components/AnalyticsPageView";
 
-const GA_ID  = "G-S6T8QXLGFC";
+const GA_ID = "G-N3RCLB7DWC";
 const AW_ID  = "AW-17331301984";
 
 export default function RootLayout({
