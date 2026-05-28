@@ -150,6 +150,9 @@ export default async function ProjectPage({
             <Link href={`/projects/${project.id}/edit`} className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800">
               Edit Quote
             </Link>
+            <Link href={`/projects/${project.id}/design`} className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-emerald-300 hover:bg-emerald-500/20">
+              🎨 Design Canvas
+            </Link>
             <a
               href={`/api/proposal/${project.id}`}
               target="_blank"
