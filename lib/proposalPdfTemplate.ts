@@ -78,6 +78,13 @@ type CompanyInfo = {
   logo_url?: string | null;
 };
 
+type DesignSummary = {
+  deck_sqft: number;
+  total_linear_ft_railing: number;
+  total_stair_count: number;
+  material_type: string | null;
+} | null;
+
 const JOB_TYPE_LABELS: Record<string, string> = {
   new_build:    "New Build",
   resurface:    "Resurface",
@@ -166,7 +173,7 @@ function buildScope(project: ProposalData) {
   return items;
 }
 
-export function proposalHtml(project: ProposalData, company: CompanyInfo) {
+export function proposalHtml(project: ProposalData, company: CompanyInfo, designSummary?: DesignSummary) {
   const scopeItems = buildScope(project);
   const activeHardware = project.hardware_items?.filter((h) => h.enabled) ?? [];
   const hwTotal = calcHardwareTotal(activeHardware);
@@ -299,6 +306,33 @@ body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; color: 
       </div>
     </div>
   </div>
+
+  ${designSummary ? `
+  <div class="section">
+    <h2>Design Summary</h2>
+    <div class="panel" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div>
+        <div class="label">Deck Area</div>
+        <div class="value" style="font-size:20px;font-weight:700;">${escapeHtml(String(Math.round(designSummary.deck_sqft)))} <span style="font-size:13px;font-weight:400;color:#6b7280;">sq ft</span></div>
+      </div>
+      ${designSummary.total_linear_ft_railing > 0 ? `
+      <div>
+        <div class="label">Railing</div>
+        <div class="value" style="font-size:20px;font-weight:700;">${escapeHtml(String(Math.round(designSummary.total_linear_ft_railing)))} <span style="font-size:13px;font-weight:400;color:#6b7280;">lin ft</span></div>
+      </div>` : ""}
+      ${designSummary.total_stair_count > 0 ? `
+      <div>
+        <div class="label">Stairs</div>
+        <div class="value" style="font-size:20px;font-weight:700;">${escapeHtml(String(designSummary.total_stair_count))} <span style="font-size:13px;font-weight:400;color:#6b7280;">steps</span></div>
+      </div>` : ""}
+      ${designSummary.material_type ? `
+      <div>
+        <div class="label">Primary Material</div>
+        <div class="value" style="font-size:15px;font-weight:600;">${escapeHtml(titleCase(designSummary.material_type))}</div>
+      </div>` : ""}
+    </div>
+  </div>
+  ` : ""}
 
   <div class="section">
     <h2>Scope of Work</h2>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import dynamic from 'next/dynamic';
@@ -9,7 +9,14 @@ import ComponentPalette from '@/components/design/ComponentPalette';
 import PropertiesPanel from '@/components/design/PropertiesPanel';
 import TakeoffSidebar from '@/components/design/TakeoffSidebar';
 import { calculateMaterials } from '@/lib/design/calculateMaterials';
-import type { DesignComponent } from '@/lib/design/types';
+import type { DesignComponent, DeckSection, StairModule } from '@/lib/design/types';
+
+// Rough material cost per sq ft by material type (for estimate only)
+const MATERIAL_COST_PER_SQFT: Record<string, number> = {
+  pt: 8,
+  trex: 15,
+  cedar: 12,
+};
 
 // react-konva must be dynamically imported (no SSR — it requires window/canvas)
 const DesignCanvas = dynamic(() => import('@/components/design/DesignCanvas'), {
@@ -40,6 +47,7 @@ export default function DesignPage() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   const [state, dispatch] = useDesignReducer();
+  const [applyStatus, setApplyStatus] = useState<'idle' | 'applying' | 'success' | 'error'>('idle');
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSavingRef = useRef(false);
 
@@ -112,6 +120,58 @@ export default function DesignPage() {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
   }, [state.is_dirty, state.components, saveDesign]);
+
+  // ─── Apply to Estimate ────────────────────────────────────────────────────────
+  const applyToEstimate = useCallback(async () => {
+    if (state.components.length === 0) return;
+    setApplyStatus('applying');
+
+    try {
+      const deckSections = state.components.filter((c): c is DeckSection => c.type === 'deck_section');
+      const stairs = state.components.filter((c): c is StairModule => c.type === 'stair');
+      const takeoff = calculateMaterials(state.components);
+
+      // Find the largest deck section as the "primary"
+      const primaryDeck = deckSections.reduce<DeckSection | null>((largest, d) => {
+        if (!largest) return d;
+        return d.width_ft * d.length_ft > largest.width_ft * largest.length_ft ? d : largest;
+      }, null);
+
+      const deck_sqft = deckSections.reduce((sum, d) => sum + d.width_ft * d.length_ft, 0);
+      const stair_count = stairs.reduce((sum, s) => sum + s.stair_count, 0);
+      const material_type = primaryDeck?.material ?? null;
+      const deck_length = primaryDeck?.length_ft ?? null;
+      const deck_width = primaryDeck?.width_ft ?? null;
+
+      // Estimate material cost: sqft × per-sqft rate for primary material
+      const rate = material_type ? (MATERIAL_COST_PER_SQFT[material_type] ?? 10) : 10;
+      const material_cost = Math.round(deck_sqft * rate);
+
+      const updates: Record<string, number | string | null> = {
+        deck_sqft,
+        stair_count,
+        updated_at: new Date().toISOString(),
+      };
+      if (deck_length !== null) updates.deck_length = deck_length;
+      if (deck_width !== null) updates.deck_width = deck_width;
+      if (material_type !== null) updates.material_type = material_type;
+      if (material_cost > 0) updates.material_cost = material_cost;
+
+      const { error } = await supabase
+        .from('projects')
+        .update(updates)
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      setApplyStatus('success');
+      setTimeout(() => setApplyStatus('idle'), 3000);
+    } catch (err) {
+      console.error('Apply to estimate failed:', err);
+      setApplyStatus('error');
+      setTimeout(() => setApplyStatus('idle'), 3000);
+    }
+  }, [state.components, projectId, supabase]);
 
   // ─── Export takeoff as CSV ────────────────────────────────────────────────────
   const exportTakeoff = useCallback(() => {
@@ -214,6 +274,33 @@ export default function DesignPage() {
         >
           {state.components.length} component{state.components.length !== 1 ? 's' : ''}
         </span>
+
+        {/* Apply to Estimate button */}
+        {state.components.length > 0 && (
+          <button
+            onClick={applyToEstimate}
+            disabled={applyStatus === 'applying'}
+            style={{
+              padding: '6px 14px',
+              fontSize: 12,
+              fontWeight: 600,
+              border: 'none',
+              borderRadius: 6,
+              cursor: applyStatus === 'applying' ? 'wait' : 'pointer',
+              background:
+                applyStatus === 'success' ? '#1A7A3C' :
+                applyStatus === 'error' ? '#8B1A1A' :
+                '#2D6A4F',
+              color: '#FFFFFF',
+              transition: 'background 0.2s',
+            }}
+          >
+            {applyStatus === 'applying' ? 'Applying…' :
+             applyStatus === 'success' ? '✓ Applied!' :
+             applyStatus === 'error' ? '✕ Failed' :
+             '⬆ Apply to Estimate'}
+          </button>
+        )}
 
         {/* Keyboard hint */}
         <span style={{ fontSize: 10, color: '#6B6860' }}>

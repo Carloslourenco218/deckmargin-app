@@ -3,6 +3,8 @@ import chromium from "@sparticuz/chromium-min";
 import puppeteer from "puppeteer-core";
 import { createClient } from "@/lib/supabaseServer";
 import { proposalHtml } from "@/lib/proposalPdfTemplate";
+import { calculateMaterials } from "@/lib/design/calculateMaterials";
+import type { DesignComponent, DeckSection } from "@/lib/design/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -140,6 +142,34 @@ export async function GET(
       .limit(1)
       .maybeSingle<UserSettingsRow>();
 
+    // ── Fetch canvas design summary if one exists ─────────────────────────────
+    let designSummary = null;
+    const { data: designData } = await supabase
+      .from("deck_designs")
+      .select("canvas_data")
+      .eq("project_id", resolvedParams.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (designData?.canvas_data?.components?.length) {
+      const takeoff = calculateMaterials(designData.canvas_data.components as DesignComponent[]);
+      const deckSections = (designData.canvas_data.components as DesignComponent[]).filter(
+        (c): c is DeckSection => c.type === "deck_section"
+      );
+      const primaryMaterial = deckSections.length > 0
+        ? deckSections.reduce((a, b) =>
+            a.width_ft * a.length_ft >= b.width_ft * b.length_ft ? a : b
+          ).material
+        : null;
+
+      designSummary = {
+        deck_sqft: takeoff.summary.total_deck_sqft,
+        total_linear_ft_railing: takeoff.summary.total_linear_ft_railing,
+        total_stair_count: takeoff.summary.total_stair_count,
+        material_type: primaryMaterial,
+      };
+    }
+
     const html = proposalHtml(project, {
       company_name:    settings?.company_name    ?? null,
       company_phone:   settings?.company_phone   ?? null,
@@ -147,7 +177,7 @@ export async function GET(
       company_website: settings?.company_website ?? null,
       company_address: settings?.company_address ?? null,
       logo_url:        settings?.logo_url        ?? null,
-    });
+    }, designSummary);
 
     const executablePath = await chromium.executablePath(
       "https://github.com/Sparticuz/chromium/releases/download/v138.0.1/chromium-v138.0.1-pack.x64.tar"
