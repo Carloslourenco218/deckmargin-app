@@ -8,18 +8,19 @@ const css = `
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  body { font-family: 'Inter', -apple-system, sans-serif; background: #080d18; color: #f0f4ff; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #0D0D0D; color: #FFFFFF; line-height: 1.6; -webkit-font-smoothing: antialiased; }
   img { max-width: 100%; display: block; }
   a { color: inherit; text-decoration: none; }
   ul { list-style: none; }
   button { cursor: pointer; font-family: inherit; border: none; }
 
   :root {
-    --bg: #080d18; --bg-2: #0e1525; --bg-card: #121c2e; --bg-card-2: #172035;
-    --border: rgba(255,255,255,0.07); --border-2: rgba(255,255,255,0.12);
-    --green: #22c55e; --green-dim: #16a34a; --green-glow: rgba(34,197,94,0.15);
+    --bg: #0D0D0D; --bg-2: #111827; --bg-card: #111827; --bg-card-2: #1E2A3A;
+    --border: #1F2937; --border-2: rgba(31,41,55,0.9);
+    --blue: #3B82F6; --blue-dim: #2563EB; --blue-glow: rgba(59,130,246,0.15);
+    --green: #10B981; --green-dim: #059669; --green-glow: rgba(16,185,129,0.15);
     --amber: #f59e0b; --amber-dim: #d97706;
-    --text-1: #f0f4ff; --text-2: #8899b8; --text-3: #556070;
+    --text-1: #FFFFFF; --text-2: #9CA3AF; --text-3: #6B7280;
     --radius: 12px; --radius-lg: 18px;
     --shadow: 0 4px 24px rgba(0,0,0,0.4); --shadow-lg: 0 8px 48px rgba(0,0,0,0.6);
   }
@@ -34,25 +35,25 @@ const css = `
   .section-label {
     display: inline-flex; align-items: center; gap: 8px;
     font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--green); background: var(--green-glow);
-    border: 1px solid rgba(34,197,94,0.25); border-radius: 100px; padding: 5px 14px; margin-bottom: 20px;
+    color: var(--blue); background: var(--blue-glow);
+    border: 1px solid rgba(59,130,246,0.25); border-radius: 100px; padding: 5px 14px; margin-bottom: 20px;
   }
   .section-header { text-align: center; max-width: 680px; margin: 0 auto 64px; }
   .section-header p { font-size: 18px; margin-top: 16px; }
 
   .btn { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; border-radius: 10px; padding: 14px 28px; transition: all 0.2s ease; white-space: nowrap; }
-  .btn-primary { background: var(--green); color: #000; }
-  .btn-primary:hover { background: #1db854; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(34,197,94,0.35); }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-dim); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.35); }
   .btn-outline { background: transparent; color: var(--text-1); border: 1.5px solid var(--border-2); }
   .btn-outline:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
   .btn-lg { font-size: 18px; padding: 17px 36px; border-radius: 12px; }
   .btn-sm { font-size: 14px; padding: 10px 20px; }
 
-  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(8,13,24,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid transparent; transition: border-color 0.3s; }
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(13,13,13,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid transparent; transition: border-color 0.3s; }
   .nav.scrolled { border-color: var(--border); }
   .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
   .nav-logo { font-size: 20px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-1); }
-  .nav-logo span { color: var(--green); }
+  .nav-logo span { color: var(--blue); }
   .nav-links { display: flex; align-items: center; gap: 32px; }
   .nav-links a { font-size: 14px; font-weight: 500; color: var(--text-2); transition: color 0.2s; }
   .nav-links a:hover { color: var(--text-1); }
@@ -61,28 +62,28 @@ const css = `
   .nav-login:hover { color: var(--text-1); }
   .nav-mobile-btn { display: none; background: none; color: var(--text-1); font-size: 24px; }
 
-  .hero { padding: 160px 0 100px; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(34,197,94,0.08) 0%, transparent 70%); }
+  .hero { padding: 160px 0 100px; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(59,130,246,0.08) 0%, transparent 70%); }
   .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
   .hero-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-2); background: var(--bg-card); border: 1px solid var(--border-2); border-radius: 100px; padding: 7px 16px; margin-bottom: 24px; }
-  .hero-badge .dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; }
+  .hero-badge .dot { width: 7px; height: 7px; background: var(--blue); border-radius: 50%; }
   .hero h1 { margin-bottom: 24px; }
-  .hero h1 .stat { color: var(--green); }
+  .hero h1 .stat { color: var(--blue); }
   .hero-sub { font-size: 18px; line-height: 1.7; color: var(--text-2); margin-bottom: 36px; }
   .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 40px; }
   .hero-trust { display: flex; gap: 24px; flex-wrap: wrap; }
   .hero-trust-item { display: flex; flex-direction: column; }
   .hero-trust-item .trust-num { font-size: 22px; font-weight: 800; color: var(--text-1); letter-spacing: -0.03em; }
   .hero-trust-item .trust-label { font-size: 12px; color: var(--text-3); font-weight: 500; }
-  .hero-divider { width: 1px; height: 40px; background: var(--border-2); align-self: center; }
+  .hero-divider { width: 1px; height: 40px; background: var(--border); align-self: center; }
 
-  .hero-ui { background: var(--bg-card); border: 1px solid var(--border-2); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg), 0 0 80px rgba(34,197,94,0.06); }
+  .hero-ui { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg), 0 0 80px rgba(59,130,246,0.06); }
   .ui-header { background: var(--bg-card-2); border-bottom: 1px solid var(--border); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
   .ui-header-left { display: flex; align-items: center; gap: 10px; }
   .ui-dots { display: flex; gap: 6px; }
   .ui-dot { width: 10px; height: 10px; border-radius: 50%; }
   .ui-dot.r { background: #ff5f57; } .ui-dot.y { background: #febc2e; } .ui-dot.g { background: #28c840; }
   .ui-title { font-size: 13px; font-weight: 600; color: var(--text-2); }
-  .ui-badge { font-size: 11px; font-weight: 700; background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); border-radius: 100px; padding: 3px 10px; }
+  .ui-badge { font-size: 11px; font-weight: 700; background: var(--green-glow); color: var(--green); border: 1px solid rgba(16,185,129,0.3); border-radius: 100px; padding: 3px 10px; }
   .ui-body { padding: 20px; }
   .ui-project { font-size: 13px; color: var(--text-3); margin-bottom: 16px; }
   .ui-project strong { color: var(--text-2); }
@@ -94,13 +95,13 @@ const css = `
   .ui-cost-row { display: flex; justify-content: space-between; padding: 6px 0; }
   .ui-cost-label { font-size: 13px; color: var(--text-2); }
   .ui-cost-val { font-size: 13px; font-weight: 600; color: var(--text-1); }
-  .ui-margin-box { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 10px; padding: 14px; margin-top: 14px; }
+  .ui-margin-box { background: var(--green-glow); border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 14px; margin-top: 14px; }
   .ui-margin-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .ui-margin-label { font-size: 12px; color: var(--text-2); }
   .ui-margin-val { font-size: 13px; font-weight: 700; color: var(--green); }
-  .ui-send-price { display: flex; justify-content: space-between; align-items: center; background: var(--green); border-radius: 8px; padding: 12px 16px; margin-top: 14px; }
-  .ui-send-label { font-size: 13px; font-weight: 700; color: #000; }
-  .ui-send-val { font-size: 18px; font-weight: 900; color: #000; }
+  .ui-send-price { display: flex; justify-content: space-between; align-items: center; background: var(--blue); border-radius: 8px; padding: 12px 16px; margin-top: 14px; }
+  .ui-send-label { font-size: 13px; font-weight: 700; color: #fff; }
+  .ui-send-val { font-size: 18px; font-weight: 900; color: #fff; }
   .ui-footer { border-top: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
   .ui-footer-time { font-size: 12px; color: var(--text-3); }
   .ui-footer-time span { color: var(--amber); font-weight: 600; }
@@ -121,28 +122,28 @@ const css = `
   .new-features { background: var(--bg-2); }
   .new-badge { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; background: var(--amber); color: #000; border-radius: 100px; padding: 3px 10px; margin-bottom: 14px; }
   .new-features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  .new-feature-card { background: var(--bg-card); border: 1px solid var(--border-2); border-radius: var(--radius-lg); padding: 32px; position: relative; overflow: hidden; }
-  .new-feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green), transparent); }
+  .new-feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; position: relative; overflow: hidden; }
+  .new-feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--blue), transparent); }
   .new-feature-card .feature-icon-lg { font-size: 36px; margin-bottom: 16px; }
   .new-feature-card h3 { font-size: 22px; color: var(--text-1); margin-bottom: 10px; }
   .new-feature-card > p { font-size: 15px; line-height: 1.7; margin-bottom: 20px; }
   .feature-bullets { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
   .feature-bullet { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text-2); }
-  .feature-bullet .check { color: var(--green); font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+  .feature-bullet .check { color: var(--blue); font-size: 15px; margin-top: 1px; flex-shrink: 0; }
 
   .canvas-mock { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; overflow: hidden; }
   .canvas-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-  .canvas-tool { font-size: 11px; font-weight: 600; background: var(--bg-card); border: 1px solid var(--border-2); border-radius: 6px; padding: 5px 10px; color: var(--text-2); }
-  .canvas-tool.active { background: var(--green); color: #000; border-color: var(--green); }
+  .canvas-tool { font-size: 11px; font-weight: 600; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; color: var(--text-2); }
+  .canvas-tool.active { background: var(--blue); color: #fff; border-color: var(--blue); }
   .canvas-grid { display: grid; grid-template-columns: 3fr 1fr; gap: 8px; margin-bottom: 10px; }
-  .canvas-cell { background: rgba(34,197,94,0.08); border: 1.5px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 12px 10px; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px; }
-  .canvas-cell-label { font-size: 11px; font-weight: 700; color: var(--green); }
+  .canvas-cell { background: rgba(59,130,246,0.08); border: 1.5px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 12px 10px; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px; }
+  .canvas-cell-label { font-size: 11px; font-weight: 700; color: var(--blue); }
   .canvas-cell-size { font-size: 13px; font-weight: 600; color: var(--text-1); }
   .canvas-cell-mat { font-size: 11px; color: var(--text-2); }
   .canvas-stair { background: rgba(245,158,11,0.08); border: 1.5px dashed rgba(245,158,11,0.4); border-radius: 8px; padding: 8px; text-align: center; }
   .canvas-stair-label { font-size: 11px; font-weight: 600; color: var(--amber); }
   .canvas-stair-count { font-size: 13px; font-weight: 700; color: var(--text-1); }
-  .canvas-apply-btn { width: 100%; background: var(--green); color: #000; border: none; border-radius: 7px; padding: 9px; font-size: 12px; font-weight: 800; cursor: default; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .canvas-apply-btn { width: 100%; background: var(--blue); color: #fff; border: none; border-radius: 7px; padding: 9px; font-size: 12px; font-weight: 800; cursor: default; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .canvas-railing { background: rgba(99,102,241,0.08); border: 1.5px dashed rgba(99,102,241,0.35); border-radius: 8px; padding: 8px; text-align: center; margin-bottom: 8px; }
   .canvas-railing-label { font-size: 11px; font-weight: 600; color: #818cf8; }
   .canvas-railing-val { font-size: 13px; font-weight: 700; color: var(--text-1); }
@@ -163,16 +164,16 @@ const css = `
 
   .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
   .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; transition: border-color 0.2s, transform 0.2s; }
-  .feature-card:hover { border-color: var(--border-2); transform: translateY(-2px); }
+  .feature-card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-2px); }
   .feature-card .feature-icon { font-size: 28px; margin-bottom: 14px; }
   .feature-card h3 { font-size: 17px; margin-bottom: 10px; color: var(--text-1); }
   .feature-card p { font-size: 14px; line-height: 1.7; }
 
   .how-it-works { background: var(--bg-2); }
   .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; position: relative; }
-  .steps-grid::before { content: ''; position: absolute; top: 28px; left: calc(16.67% + 28px); right: calc(16.67% + 28px); height: 1px; background: linear-gradient(90deg, var(--green), var(--green-dim), var(--green)); opacity: 0.3; }
+  .steps-grid::before { content: ''; position: absolute; top: 28px; left: calc(16.67% + 28px); right: calc(16.67% + 28px); height: 1px; background: linear-gradient(90deg, var(--blue), var(--blue-dim), var(--blue)); opacity: 0.3; }
   .step { text-align: center; }
-  .step-num { width: 56px; height: 56px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--green); color: var(--green); font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  .step-num { width: 56px; height: 56px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--blue); color: var(--blue); font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
   .step h3 { color: var(--text-1); margin-bottom: 10px; }
   .step p { font-size: 15px; line-height: 1.7; }
   .step-time { display: inline-block; font-size: 12px; font-weight: 700; color: var(--amber); margin-top: 12px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); border-radius: 100px; padding: 4px 12px; }
@@ -183,24 +184,24 @@ const css = `
   .testimonial-card blockquote { font-size: 15px; line-height: 1.75; color: var(--text-2); font-style: italic; margin-bottom: 20px; }
   blockquote::before { content: '"'; } blockquote::after { content: '"'; }
   .testimonial-author { display: flex; align-items: center; gap: 12px; }
-  .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--green-dim); color: #fff; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .avatar.b { background: #2563eb; } .avatar.a { background: #7c3aed; }
+  .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--blue-dim); color: #fff; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .avatar.b { background: #1d4ed8; } .avatar.a { background: #7c3aed; }
   .author-info .name { font-size: 14px; font-weight: 700; color: var(--text-1); }
   .author-info .role { font-size: 12px; color: var(--text-3); }
 
-  .comparison-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border-2); }
+  .comparison-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); }
   .comparison-table { width: 100%; border-collapse: collapse; min-width: 640px; }
   .comparison-table th { padding: 18px 20px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--border); background: var(--bg-card-2); }
-  .comparison-table th.highlight { background: rgba(34,197,94,0.08); color: var(--green); font-size: 15px; font-weight: 800; text-align: center; border-left: 1px solid rgba(34,197,94,0.2); border-right: 1px solid rgba(34,197,94,0.2); }
+  .comparison-table th.highlight { background: rgba(59,130,246,0.08); color: var(--blue); font-size: 15px; font-weight: 800; text-align: center; border-left: 1px solid rgba(59,130,246,0.2); border-right: 1px solid rgba(59,130,246,0.2); }
   .comparison-table td { padding: 16px 20px; font-size: 14px; color: var(--text-2); border-bottom: 1px solid var(--border); }
   .comparison-table tr:last-child td { border-bottom: none; }
-  .comparison-table td.highlight { background: rgba(34,197,94,0.04); text-align: center; font-weight: 700; color: var(--text-1); border-left: 1px solid rgba(34,197,94,0.1); border-right: 1px solid rgba(34,197,94,0.1); }
+  .comparison-table td.highlight { background: rgba(59,130,246,0.04); text-align: center; font-weight: 700; color: var(--text-1); border-left: 1px solid rgba(59,130,246,0.1); border-right: 1px solid rgba(59,130,246,0.1); }
   .comparison-table td.center { text-align: center; }
-  .check-yes { color: var(--green); font-size: 18px; } .check-no { color: var(--text-3); font-size: 18px; }
+  .check-yes { color: var(--blue); font-size: 18px; } .check-no { color: var(--text-3); font-size: 18px; }
 
   .pricing-inner { max-width: 600px; margin: 0 auto; }
-  .pricing-card { background: var(--bg-card); border: 1px solid rgba(34,197,94,0.3); border-radius: var(--radius-lg); padding: 48px; text-align: center; box-shadow: 0 0 60px rgba(34,197,94,0.06); position: relative; }
-  .pricing-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--green); color: #000; font-size: 12px; font-weight: 800; border-radius: 100px; padding: 5px 20px; white-space: nowrap; }
+  .pricing-card { background: var(--bg-card); border: 1px solid rgba(59,130,246,0.3); border-radius: var(--radius-lg); padding: 48px; text-align: center; box-shadow: 0 0 60px rgba(59,130,246,0.06); position: relative; }
+  .pricing-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--blue); color: #fff; font-size: 12px; font-weight: 800; border-radius: 100px; padding: 5px 20px; white-space: nowrap; }
   .pricing-vs { font-size: 14px; color: var(--text-3); text-decoration: line-through; margin-bottom: 4px; }
   .pricing-price { font-size: 72px; font-weight: 900; color: var(--text-1); letter-spacing: -0.04em; line-height: 1; }
   .pricing-price sup { font-size: 32px; vertical-align: top; margin-top: 12px; }
@@ -208,9 +209,9 @@ const css = `
   .pricing-desc { font-size: 16px; color: var(--text-2); margin: 16px 0 32px; }
   .pricing-features { text-align: left; display: flex; flex-direction: column; gap: 14px; margin-bottom: 36px; }
   .pricing-feat { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--text-2); }
-  .pricing-feat .pf-check { color: var(--green); font-size: 17px; flex-shrink: 0; margin-top: 2px; }
+  .pricing-feat .pf-check { color: var(--blue); font-size: 17px; flex-shrink: 0; margin-top: 2px; }
   .pricing-feat strong { color: var(--text-1); }
-  .pricing-roi { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15); border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; font-size: 14px; color: var(--text-2); line-height: 1.6; }
+  .pricing-roi { background: var(--green-glow); border: 1px solid rgba(16,185,129,0.15); border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; font-size: 14px; color: var(--text-2); line-height: 1.6; }
   .pricing-roi strong { color: var(--green); }
   .pricing-fine { font-size: 13px; color: var(--text-3); margin-top: 16px; }
 
@@ -223,7 +224,7 @@ const css = `
   .faq-answer { display: none; padding: 0 24px 20px; font-size: 15px; color: var(--text-2); line-height: 1.75; }
   .faq-item.open .faq-answer { display: block; }
 
-  .final-cta { background: radial-gradient(ellipse 80% 80% at 50% 100%, rgba(34,197,94,0.1) 0%, transparent 70%); text-align: center; padding: 120px 0; }
+  .final-cta { background: radial-gradient(ellipse 80% 80% at 50% 100%, rgba(59,130,246,0.1) 0%, transparent 70%); text-align: center; padding: 120px 0; }
   .final-cta h2 { margin-bottom: 16px; }
   .final-cta p { font-size: 18px; max-width: 480px; margin: 0 auto 40px; }
   .final-cta-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
@@ -243,7 +244,7 @@ const css = `
 
   .modal-overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal-inner { width: 90%; max-width: 900px; background: var(--bg-card); border: 1px solid var(--border-2); border-radius: var(--radius-lg); overflow: hidden; position: relative; }
+  .modal-inner { width: 90%; max-width: 900px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; position: relative; }
   .modal-close { position: absolute; top: 12px; right: 12px; z-index: 10; width: 36px; height: 36px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
   .modal-close:hover { background: rgba(255,255,255,0.2); }
   .modal-video-wrap { position: relative; padding-bottom: 56.25%; height: 0; }
@@ -323,9 +324,9 @@ export default function Home() {
         } else {
           Object.assign(links.style, {
             display: "flex", flexDirection: "column", position: "absolute",
-            top: "68px", left: "0", right: "0", background: "#0e1525",
+            top: "68px", left: "0", right: "0", background: "#111827",
             padding: "24px", gap: "20px",
-            borderBottom: "1px solid rgba(255,255,255,0.07)", zIndex: "99",
+            borderBottom: "1px solid #1F2937", zIndex: "99",
           });
         }
       }
@@ -459,9 +460,9 @@ export default function Home() {
             <div className="problem-card"><div className="problem-icon">⏱️</div><h3>Slow quote turnaround costs you jobs</h3><p>Homeowner asks &quot;roughly what&apos;s this gonna cost?&quot; You go home to figure it up. By the time you send the quote, they&apos;ve called someone else.</p></div>
             <div className="problem-card"><div className="problem-icon">💸</div><h3>One missed cost wipes out profit on the entire job</h3><p>Forget demolition. Forget the permit allowance. Forget the site is elevated. There goes your margin — and sometimes more than that.</p></div>
           </div>
-          <div style={{maxWidth:"680px",margin:"48px auto 0",background:"var(--bg-card)",border:"1px solid var(--border-2)",borderLeft:"3px solid var(--green)",borderRadius:"var(--radius)",padding:"28px 32px"}}>
-            <p style={{fontSize:"18px",lineHeight:"1.75",color:"var(--text-1)",fontStyle:"italic",marginBottom:"16px"}}>&ldquo;My accountant taught me this as I was about to call it quits because I lost so much money on so many jobs. Changed my business — and still can&apos;t keep up with all the work.&rdquo;</p>
-            <p style={{fontSize:"14px",color:"var(--text-3)",fontWeight:600}}>— Jay A., Deck Contractor</p>
+          <div style={{maxWidth:"680px",margin:"48px auto 0",background:"#111827",border:"1px solid #1F2937",borderLeft:"3px solid #3B82F6",borderRadius:"12px",padding:"28px 32px"}}>
+            <p style={{fontSize:"18px",lineHeight:"1.75",color:"#FFFFFF",fontStyle:"italic",marginBottom:"16px"}}>&ldquo;My accountant taught me this as I was about to call it quits because I lost so much money on so many jobs. Changed my business — and still can&apos;t keep up with all the work.&rdquo;</p>
+            <p style={{fontSize:"14px",color:"#6B7280",fontWeight:600}}>— Jay A., Deck Contractor</p>
           </div>
         </div>
       </section>
@@ -483,7 +484,7 @@ export default function Home() {
               <div className="feature-bullets">
                 <div className="feature-bullet"><span className="check">✓</span>Drag-and-drop deck sections with real dimensions</div>
                 <div className="feature-bullet"><span className="check">✓</span>Add stair modules, railing runs, and custom sections</div>
-                <div className="feature-bullet"><span className="check">✓</span><strong style={{color:"var(--green)"}}>&ldquo;Apply to Estimate&rdquo;</strong> — one click updates dimensions, material type, stair count, and cost automatically</div>
+                <div className="feature-bullet"><span className="check">✓</span><strong style={{color:"#3B82F6"}}>&ldquo;Apply to Estimate&rdquo;</strong> — one click updates dimensions, material type, stair count, and cost automatically</div>
                 <div className="feature-bullet"><span className="check">✓</span>Design summary auto-appears in your proposal PDF — total sq ft, railing footage, stair count, material type</div>
               </div>
               <div className="canvas-mock">
@@ -584,7 +585,7 @@ export default function Home() {
       </section>
 
       {/* ── COMPARISON ──────────────────────────────────────────── */}
-      <section className="section" style={{background:"var(--bg-2)"}} id="compare">
+      <section className="section" style={{background:"#111827"}} id="compare">
         <div className="container">
           <div className="section-header">
             <div className="section-label">How DeckMargin Stacks Up</div>
@@ -608,12 +609,12 @@ export default function Home() {
                 <tr><td>Margin visible before quote goes out</td><td className="center"><span className="check-no">✕</span></td><td className="center"><span className="check-yes">✓</span></td><td className="highlight"><span className="check-yes">✓</span></td></tr>
                 <tr><td>Professional proposal in same workflow</td><td className="center"><span className="check-no">✕</span></td><td className="center"><span className="check-yes">✓</span></td><td className="highlight"><span className="check-yes">✓</span></td></tr>
                 <tr><td>Deck-specific inputs (height tiers, stair sections, composite)</td><td className="center"><span className="check-no">✕</span></td><td className="center"><span className="check-no">✕</span></td><td className="highlight"><span className="check-yes">✓</span></td></tr>
-                <tr><td>Setup time</td><td className="center" style={{color:"var(--text-2)"}}>Hours building it yourself</td><td className="center" style={{color:"var(--text-2)"}}>Days to weeks</td><td className="highlight" style={{color:"var(--green)"}}>20 minutes</td></tr>
-                <tr><td>Monthly cost</td><td className="center" style={{color:"var(--text-2)"}}>Free (costs you margin)</td><td className="center" style={{color:"var(--text-2)"}}>$199–$400/mo</td><td className="highlight" style={{color:"var(--green)",fontSize:"18px"}}>$99/mo</td></tr>
+                <tr><td>Setup time</td><td className="center" style={{color:"#9CA3AF"}}>Hours building it yourself</td><td className="center" style={{color:"#9CA3AF"}}>Days to weeks</td><td className="highlight" style={{color:"#3B82F6"}}>20 minutes</td></tr>
+                <tr><td>Monthly cost</td><td className="center" style={{color:"#9CA3AF"}}>Free (costs you margin)</td><td className="center" style={{color:"#9CA3AF"}}>$199–$400/mo</td><td className="highlight" style={{color:"#3B82F6",fontSize:"18px"}}>$99/mo</td></tr>
               </tbody>
             </table>
           </div>
-          <p style={{textAlign:"center",fontSize:"14px",color:"var(--text-3)",marginTop:"24px",maxWidth:"600px",marginLeft:"auto",marginRight:"auto"}}>Most all-in-one contractor software costs $200–$400/month and makes you pay for crew scheduling, punch lists, and time tracking you&apos;ll never use as a deck contractor. DeckMargin does three things and charges $99/month.</p>
+          <p style={{textAlign:"center",fontSize:"14px",color:"#6B7280",marginTop:"24px",maxWidth:"600px",marginLeft:"auto",marginRight:"auto"}}>Most all-in-one contractor software costs $200–$400/month and makes you pay for crew scheduling, punch lists, and time tracking you&apos;ll never use as a deck contractor. DeckMargin does three things and charges $99/month.</p>
         </div>
       </section>
 
@@ -643,14 +644,14 @@ export default function Home() {
               <div className="pricing-roi"><strong>The math is simple:</strong> At $99/month, you only need to recover margin on <strong>one job per year</strong> to pay for the whole subscription. Most contractors recover that in the first week.</div>
               <a href="/signup" className="btn btn-primary btn-lg" style={{width:"100%",justifyContent:"center"}}>Start Free 14-Day Trial →</a>
               <p className="pricing-fine">Free for 14 days · No credit card required · Set up in 20 minutes</p>
-              <p className="pricing-fine" style={{marginTop:"10px"}}>Questions? <a href="mailto:carlos.lourenco@deckmargin.com" style={{color:"var(--green)"}}>Email the founder directly →</a></p>
+              <p className="pricing-fine" style={{marginTop:"10px"}}>Questions? <a href="mailto:carlos.lourenco@deckmargin.com" style={{color:"#3B82F6"}}>Email the founder directly →</a></p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────────────── */}
-      <section className="section" style={{background:"var(--bg-2)"}} id="faq">
+      <section className="section" style={{background:"#111827"}} id="faq">
         <div className="container">
           <div className="section-header">
             <div className="section-label">Common Questions</div>
