@@ -6,6 +6,8 @@ import type { DesignComponent, MaterialLine } from '@/lib/design/types';
 
 interface Props {
   components: DesignComponent[];
+  /** Optional style overrides for the root aside — useful for mobile full-width layout */
+  style?: React.CSSProperties;
 }
 
 const CATEGORY_ORDER = ['decking', 'framing', 'posts', 'concrete', 'hardware', 'railing'] as const;
@@ -26,7 +28,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   railing: '#B5274F',
 };
 
-export default function TakeoffSidebar({ components }: Props) {
+export default function TakeoffSidebar({ components, style }: Props) {
   const takeoff = useMemo(() => calculateMaterials(components), [components]);
 
   // Group lines by category
@@ -41,18 +43,10 @@ export default function TakeoffSidebar({ components }: Props) {
 
   const orderedCategories = CATEGORY_ORDER.filter((c) => grouped[c]?.length);
 
+  const mergedStyle: React.CSSProperties = { ...sidebarStyle, ...style };
+
   return (
-    <aside
-      style={{
-        width: 260,
-        background: '#FAFAF8',
-        borderLeft: '1px solid #E0DDD5',
-        display: 'flex',
-        flexDirection: 'column',
-        flexShrink: 0,
-        overflow: 'hidden',
-      }}
-    >
+    <aside style={mergedStyle}>
       {/* Header */}
       <div style={{ padding: '12px 16px', borderBottom: '1px solid #E0DDD5' }}>
         <p
@@ -100,7 +94,7 @@ export default function TakeoffSidebar({ components }: Props) {
             lineHeight: 1.7,
           }}
         >
-          Drag components onto the canvas to generate a material takeoff.
+          Add components to the canvas to generate a material takeoff.
         </div>
       )}
 
@@ -220,3 +214,13 @@ function SumStat({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
+
+const sidebarStyle: React.CSSProperties = {
+  width: 260,
+  background: '#FAFAF8',
+  borderLeft: '1px solid #E0DDD5',
+  display: 'flex',
+  flexDirection: 'column',
+  flexShrink: 0,
+  overflow: 'hidden',
+};

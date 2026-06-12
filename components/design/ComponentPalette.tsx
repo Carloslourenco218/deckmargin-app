@@ -10,6 +10,10 @@ interface Props {
   isDirty: boolean;
   onSave: () => void;
   onExport: () => void;
+  /** True when viewport is mobile — renders a horizontal tap-to-add strip instead of sidebar */
+  isMobile?: boolean;
+  /** Called when the user taps an add button on mobile */
+  onAdd?: (type: 'deck_section' | 'stair' | 'landing') => void;
 }
 
 interface PaletteItem {
@@ -81,12 +85,144 @@ export default function ComponentPalette({
   isDirty,
   onSave,
   onExport,
+  isMobile = false,
+  onAdd,
 }: Props) {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, type: string) => {
     e.dataTransfer.setData('componentType', type);
     e.dataTransfer.effectAllowed = 'copy';
   };
 
+  // ── Mobile: horizontal scrollable strip ───────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div
+        style={{
+          background: '#FAFAF8',
+          borderBottom: '1px solid #E0DDD5',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '8px 12px',
+          overflowX: 'auto',
+          flexShrink: 0,
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {/* Add-component tap buttons */}
+        {PALETTE_ITEMS.map((item) => (
+          <button
+            key={item.type}
+            onClick={() => onAdd?.(item.type)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '7px 12px',
+              borderRadius: 8,
+              border: `1.5px solid ${item.borderColor}`,
+              background: item.color,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              fontSize: 12,
+              fontWeight: 600,
+              color: '#1A1915',
+              flexShrink: 0,
+              userSelect: 'none',
+            }}
+          >
+            + {item.label}
+          </button>
+        ))}
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 26, background: '#D3D1C7', flexShrink: 0 }} />
+
+        {/* Snap grid buttons */}
+        {SNAP_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => dispatch({ type: 'SET_SNAP', snap_ft: opt.value })}
+            style={{
+              padding: '5px 9px',
+              fontSize: 11,
+              border: `1px solid ${snapFt === opt.value ? '#185FA5' : '#D3D1C7'}`,
+              borderRadius: 5,
+              background: snapFt === opt.value ? '#185FA5' : '#FFFFFF',
+              color: snapFt === opt.value ? '#FFFFFF' : '#4A4840',
+              cursor: 'pointer',
+              flexShrink: 0,
+              fontWeight: snapFt === opt.value ? 700 : 400,
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 26, background: '#D3D1C7', flexShrink: 0 }} />
+
+        {/* Undo / Redo */}
+        <button
+          onClick={() => dispatch({ type: 'UNDO' })}
+          disabled={!canUndo}
+          style={mobileToolBtn(!canUndo)}
+        >
+          ↩
+        </button>
+        <button
+          onClick={() => dispatch({ type: 'REDO' })}
+          disabled={!canRedo}
+          style={mobileToolBtn(!canRedo)}
+        >
+          ↪
+        </button>
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 26, background: '#D3D1C7', flexShrink: 0 }} />
+
+        {/* Save */}
+        <button
+          onClick={onSave}
+          style={{
+            padding: '6px 12px',
+            fontSize: 11,
+            fontWeight: 600,
+            border: 'none',
+            borderRadius: 6,
+            background: isDirty ? '#185FA5' : '#D3D1C7',
+            color: '#FFFFFF',
+            cursor: isDirty ? 'pointer' : 'default',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {isDirty ? '● Save' : '✓ Saved'}
+        </button>
+
+        {/* Export */}
+        <button
+          onClick={onExport}
+          style={{
+            padding: '6px 12px',
+            fontSize: 11,
+            fontWeight: 500,
+            border: '1px solid #D3D1C7',
+            borderRadius: 6,
+            background: '#FFFFFF',
+            color: '#4A4840',
+            cursor: 'pointer',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Export CSV
+        </button>
+      </div>
+    );
+  }
+
+  // ── Desktop: vertical sidebar ─────────────────────────────────────────────────
   return (
     <aside
       style={{
@@ -107,7 +243,7 @@ export default function ComponentPalette({
         </p>
       </div>
 
-      {/* Palette items */}
+      {/* Palette items — draggable */}
       <div style={{ padding: '12px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {PALETTE_ITEMS.map((item) => (
           <div
@@ -249,5 +385,18 @@ function toolBtn(disabled: boolean): React.CSSProperties {
     background: '#FFFFFF',
     color: disabled ? '#C4C2B8' : '#4A4840',
     cursor: disabled ? 'not-allowed' : 'pointer',
+  };
+}
+
+function mobileToolBtn(disabled: boolean): React.CSSProperties {
+  return {
+    padding: '6px 10px',
+    fontSize: 13,
+    border: `1px solid ${disabled ? '#E0DDD5' : '#D3D1C7'}`,
+    borderRadius: 5,
+    background: '#FFFFFF',
+    color: disabled ? '#C4C2B8' : '#4A4840',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    flexShrink: 0,
   };
 }

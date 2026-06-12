@@ -5,6 +5,8 @@ import type { DesignComponent, DesignAction, MaterialType, JoistSpacing, Decking
 interface Props {
   component: DesignComponent | null;
   dispatch: React.Dispatch<DesignAction>;
+  /** Optional style overrides for the root aside — useful for mobile full-width layout */
+  style?: React.CSSProperties;
 }
 
 const MATERIAL_OPTIONS: Array<{ value: MaterialType; label: string }> = [
@@ -51,10 +53,12 @@ const EDGES: Array<{ value: Edge; label: string }> = [
   { value: 'right', label: 'Right' },
 ];
 
-export default function PropertiesPanel({ component, dispatch }: Props) {
+export default function PropertiesPanel({ component, dispatch, style }: Props) {
+  const mergedStyle = { ...panelStyle, ...style };
+
   if (!component) {
     return (
-      <aside style={panelStyle}>
+      <aside style={mergedStyle}>
         <div style={{ padding: '16px', borderBottom: '1px solid #E0DDD5' }}>
           <p style={sectionLabel}>PROPERTIES</p>
         </div>
@@ -74,7 +78,7 @@ export default function PropertiesPanel({ component, dispatch }: Props) {
   };
 
   return (
-    <aside style={panelStyle}>
+    <aside style={mergedStyle}>
       {/* Header */}
       <div
         style={{

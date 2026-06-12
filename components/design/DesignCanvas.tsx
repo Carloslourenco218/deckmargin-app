@@ -12,7 +12,6 @@ import {
   componentColor,
   componentLabel,
   generateId,
-  PX_PER_FT,
   CANVAS_WIDTH_FT,
   CANVAS_HEIGHT_FT,
 } from '@/lib/design/canvasUtils';
@@ -20,12 +19,14 @@ import {
 interface Props {
   state: DesignState;
   dispatch: React.Dispatch<DesignAction>;
+  /** Canvas scale factor — 1 on desktop, <1 on mobile to fit screen width */
+  scale?: number;
 }
 
 const CANVAS_W_PX = ftToPx(CANVAS_WIDTH_FT);
 const CANVAS_H_PX = ftToPx(CANVAS_HEIGHT_FT);
 
-export default function DesignCanvas({ state, dispatch }: Props) {
+export default function DesignCanvas({ state, dispatch, scale = 1 }: Props) {
   const stageRef = useRef<any>(null);
 
   // Build grid lines — major every 5ft, minor every 1ft
@@ -75,6 +76,7 @@ export default function DesignCanvas({ state, dispatch }: Props) {
     [dispatch]
   );
 
+  // HTML5 drop handler — used on desktop; on mobile we use tap-to-add via ComponentPalette
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -85,8 +87,9 @@ export default function DesignCanvas({ state, dispatch }: Props) {
       if (!stage) return;
 
       const stageBox = stage.container().getBoundingClientRect();
-      const rawX = pxToFt(e.clientX - stageBox.left);
-      const rawY = pxToFt(e.clientY - stageBox.top);
+      // Divide by scale so drop position is correct when canvas is scaled down
+      const rawX = pxToFt((e.clientX - stageBox.left) / scale);
+      const rawY = pxToFt((e.clientY - stageBox.top) / scale);
       const pos = snapPosition({ x: rawX, y: rawY }, state.snap_ft);
 
       let component: DesignComponent;
@@ -132,7 +135,7 @@ export default function DesignCanvas({ state, dispatch }: Props) {
 
       dispatch({ type: 'ADD_COMPONENT', component });
     },
-    [state.snap_ft, dispatch]
+    [state.snap_ft, dispatch, scale]
   );
 
   return (
@@ -141,10 +144,17 @@ export default function DesignCanvas({ state, dispatch }: Props) {
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
     >
+      {/*
+        Stage sized to scale * logical canvas size.
+        scaleX/scaleY tell Konva to render in 1200×1000 coordinate space
+        but output to a smaller canvas element on mobile.
+      */}
       <Stage
         ref={stageRef}
-        width={CANVAS_W_PX}
-        height={CANVAS_H_PX}
+        width={CANVAS_W_PX * scale}
+        height={CANVAS_H_PX * scale}
+        scaleX={scale}
+        scaleY={scale}
         onClick={handleStageClick}
       >
         {/* Grid layer — non-interactive */}
@@ -165,6 +175,10 @@ export default function DesignCanvas({ state, dispatch }: Props) {
             const h = ftToPx(bounds.height);
             const label = componentLabel(comp);
 
+            // Scale-corrected font: keep text legible at all zoom levels
+            // Target ~11 CSS pixels; divide by scale to get Konva units, cap at w/5
+            const fontSize = Math.min(w / 5, Math.max(9, 11 / Math.max(scale, 0.25)));
+
             return (
               <Group
                 key={comp.id}
@@ -175,6 +189,10 @@ export default function DesignCanvas({ state, dispatch }: Props) {
                   e.cancelBubble = true;
                   dispatch({ type: 'SELECT_COMPONENT', id: comp.id });
                 }}
+                onTap={(e) => {
+                  e.cancelBubble = true;
+                  dispatch({ type: 'SELECT_COMPONENT', id: comp.id });
+                }}
                 onDragEnd={(e) => handleDragEnd(comp, e)}
               >
                 <Rect
@@ -182,7 +200,7 @@ export default function DesignCanvas({ state, dispatch }: Props) {
                   height={h}
                   fill={colors.fill}
                   stroke={isSelected ? '#185FA5' : colors.stroke}
-                  strokeWidth={isSelected ? 2 : 1}
+                  strokeWidth={isSelected ? 2 / scale : 1 / scale}
                   cornerRadius={3}
                 />
                 <Text
@@ -191,7 +209,7 @@ export default function DesignCanvas({ state, dispatch }: Props) {
                   height={h}
                   align="center"
                   verticalAlign="middle"
-                  fontSize={Math.max(9, Math.min(12, w / 8))}
+                  fontSize={fontSize}
                   fill={colors.textColor}
                   lineHeight={1.4}
                   listening={false}
@@ -202,7 +220,7 @@ export default function DesignCanvas({ state, dispatch }: Props) {
                     width={w}
                     height={h}
                     stroke="#185FA5"
-                    strokeWidth={1.5}
+                    strokeWidth={1.5 / scale}
                     dash={[5, 3]}
                     fill="transparent"
                     cornerRadius={3}

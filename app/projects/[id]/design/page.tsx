@@ -9,7 +9,12 @@ import ComponentPalette from '@/components/design/ComponentPalette';
 import PropertiesPanel from '@/components/design/PropertiesPanel';
 import TakeoffSidebar from '@/components/design/TakeoffSidebar';
 import { calculateMaterials } from '@/lib/design/calculateMaterials';
+import { generateId } from '@/lib/design/canvasUtils';
 import type { DesignComponent, DeckSection, StairModule } from '@/lib/design/types';
+
+// Logical canvas size — must match canvasUtils constants (CANVAS_WIDTH_FT=60, PX_PER_FT=20)
+const CANVAS_W_PX = 1200;
+const CANVAS_H_PX = 1000;
 
 // Rough material cost per sq ft by material type (for estimate only)
 const MATERIAL_COST_PER_SQFT: Record<string, number> = {
@@ -50,6 +55,22 @@ export default function DesignPage() {
   const [applyStatus, setApplyStatus] = useState<'idle' | 'applying' | 'success' | 'error'>('idle');
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSavingRef = useRef(false);
+
+  // ─── Responsive layout state ──────────────────────────────────────────────────
+  const [windowWidth, setWindowWidth] = useState(1024); // safe SSR default
+  const [mobileTab, setMobileTab] = useState<'properties' | 'takeoff'>('properties');
+
+  useEffect(() => {
+    // Set actual window width after mount
+    setWindowWidth(window.innerWidth);
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
+  // Scale canvas to fit available width on mobile; never scale up on desktop
+  const canvasScale = isMobile ? Math.min(1, windowWidth / CANVAS_W_PX) : 1;
 
   // ─── Load existing design from Supabase ──────────────────────────────────────
   useEffect(() => {
@@ -173,6 +194,59 @@ export default function DesignPage() {
     }
   }, [state.components, projectId, supabase]);
 
+  // ─── Mobile tap-to-add ────────────────────────────────────────────────────────
+  const addToCenter = useCallback(
+    (componentType: 'deck_section' | 'stair' | 'landing') => {
+      // Place near canvas center; offset slightly so multiple adds don't stack exactly
+      const offset = state.components.length * 2;
+      const pos = { x: Math.min(28 + offset, 42), y: Math.min(18 + offset, 32) };
+
+      let component: DesignComponent;
+
+      if (componentType === 'deck_section') {
+        component = {
+          id: generateId('deck'),
+          type: 'deck_section',
+          position: pos,
+          width_ft: 12,
+          length_ft: 16,
+          material: 'trex',
+          joist_spacing: 16,
+          decking_direction: 'perpendicular',
+          board_width_in: 5.5,
+          height_tier: 'standard',
+          railings: [],
+        };
+      } else if (componentType === 'stair') {
+        component = {
+          id: generateId('stair'),
+          type: 'stair',
+          position: pos,
+          stair_count: 3,
+          width_ft: 4,
+          rise_in: 7.5,
+          run_in: 11,
+          material: 'pt',
+          include_railing: false,
+        };
+      } else {
+        component = {
+          id: generateId('landing'),
+          type: 'landing',
+          position: pos,
+          width_ft: 5,
+          length_ft: 5,
+          material: 'trex',
+          joist_spacing: 16,
+          height_tier: 'ground',
+        };
+      }
+
+      dispatch({ type: 'ADD_COMPONENT', component });
+    },
+    [state.components.length, dispatch]
+  );
+
   // ─── Export takeoff as CSV ────────────────────────────────────────────────────
   const exportTakeoff = useCallback(() => {
     const takeoff = calculateMaterials(state.components);
@@ -222,47 +296,51 @@ export default function DesignPage() {
   const canUndo = state.history_index >= 0;
   const canRedo = state.history_index < state.history.length - 1;
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'Inter, system-ui, sans-serif', background: '#F1EFE8' }}>
-      {/* Top nav bar */}
-      <header
+  // ─── Shared header bar ────────────────────────────────────────────────────────
+  const headerBar = (
+    <header
+      style={{
+        height: 48,
+        background: '#1A1915',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 12px',
+        gap: isMobile ? 8 : 16,
+        flexShrink: 0,
+        borderBottom: '1px solid #333',
+        overflowX: isMobile ? 'auto' : 'visible',
+      }}
+    >
+      <button
+        onClick={() => router.back()}
         style={{
-          height: 48,
-          background: '#1A1915',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 20px',
-          gap: 16,
+          background: 'none',
+          border: 'none',
+          color: '#9B9890',
+          cursor: 'pointer',
+          fontSize: 13,
+          padding: '4px 8px',
+          borderRadius: 4,
           flexShrink: 0,
-          borderBottom: '1px solid #333',
         }}
       >
-        <button
-          onClick={() => router.back()}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#9B9890',
-            cursor: 'pointer',
-            fontSize: 13,
-            padding: '4px 8px',
-            borderRadius: 4,
-          }}
-        >
-          ← Back
-        </button>
+        ← Back
+      </button>
 
-        <div style={{ height: 20, width: 1, background: '#333' }} />
+      <div style={{ height: 20, width: 1, background: '#333', flexShrink: 0 }} />
 
-        <span style={{ color: '#F1EFE8', fontWeight: 600, fontSize: 14 }}>Deck Designer</span>
+      <span style={{ color: '#F1EFE8', fontWeight: 600, fontSize: 14, flexShrink: 0 }}>
+        {isMobile ? 'Designer' : 'Deck Designer'}
+      </span>
 
-        {state.is_dirty && (
-          <span style={{ fontSize: 11, color: '#9B9890' }}>● Unsaved changes</span>
-        )}
+      {state.is_dirty && !isMobile && (
+        <span style={{ fontSize: 11, color: '#9B9890' }}>● Unsaved changes</span>
+      )}
 
-        <div style={{ flex: 1 }} />
+      <div style={{ flex: 1 }} />
 
-        {/* Component count badge */}
+      {/* Component count badge — hide on mobile to save space */}
+      {!isMobile && (
         <span
           style={{
             fontSize: 11,
@@ -274,39 +352,147 @@ export default function DesignPage() {
         >
           {state.components.length} component{state.components.length !== 1 ? 's' : ''}
         </span>
+      )}
 
-        {/* Apply to Estimate button */}
-        {state.components.length > 0 && (
-          <button
-            onClick={applyToEstimate}
-            disabled={applyStatus === 'applying'}
-            style={{
-              padding: '6px 14px',
-              fontSize: 12,
-              fontWeight: 600,
-              border: 'none',
-              borderRadius: 6,
-              cursor: applyStatus === 'applying' ? 'wait' : 'pointer',
-              background:
-                applyStatus === 'success' ? '#1A7A3C' :
-                applyStatus === 'error' ? '#8B1A1A' :
-                '#2D6A4F',
-              color: '#FFFFFF',
-              transition: 'background 0.2s',
-            }}
-          >
-            {applyStatus === 'applying' ? 'Applying…' :
-             applyStatus === 'success' ? '✓ Applied!' :
-             applyStatus === 'error' ? '✕ Failed' :
-             '⬆ Apply to Estimate'}
-          </button>
-        )}
+      {/* Apply to Estimate button */}
+      {state.components.length > 0 && (
+        <button
+          onClick={applyToEstimate}
+          disabled={applyStatus === 'applying'}
+          style={{
+            padding: isMobile ? '5px 10px' : '6px 14px',
+            fontSize: isMobile ? 11 : 12,
+            fontWeight: 600,
+            border: 'none',
+            borderRadius: 6,
+            cursor: applyStatus === 'applying' ? 'wait' : 'pointer',
+            background:
+              applyStatus === 'success' ? '#1A7A3C' :
+              applyStatus === 'error' ? '#8B1A1A' :
+              '#2D6A4F',
+            color: '#FFFFFF',
+            transition: 'background 0.2s',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {applyStatus === 'applying' ? 'Applying…' :
+           applyStatus === 'success' ? '✓ Applied!' :
+           applyStatus === 'error' ? '✕ Failed' :
+           isMobile ? '⬆ Apply' : '⬆ Apply to Estimate'}
+        </button>
+      )}
 
-        {/* Keyboard hint */}
-        <span style={{ fontSize: 10, color: '#6B6860' }}>
+      {/* Keyboard hint — desktop only */}
+      {!isMobile && (
+        <span style={{ fontSize: 10, color: '#6B6860', flexShrink: 0 }}>
           ⌘Z undo · Delete removes selected
         </span>
-      </header>
+      )}
+    </header>
+  );
+
+  // ─── Mobile layout ────────────────────────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100dvh', // dynamic viewport height — handles mobile browser chrome
+          fontFamily: 'Inter, system-ui, sans-serif',
+          background: '#F1EFE8',
+          overflow: 'hidden',
+        }}
+      >
+        {headerBar}
+
+        {/* Palette strip — horizontal, tap-to-add */}
+        <ComponentPalette
+          dispatch={dispatch}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          snapFt={state.snap_ft}
+          isDirty={state.is_dirty}
+          onSave={saveDesign}
+          onExport={exportTakeoff}
+          isMobile={true}
+          onAdd={addToCenter}
+        />
+
+        {/* Canvas — fills remaining vertical space, scrollable */}
+        <div style={{ flex: 1, overflow: 'auto', background: '#F1EFE8', minHeight: 0 }}>
+          <DesignCanvas state={state} dispatch={dispatch} scale={canvasScale} />
+        </div>
+
+        {/* Bottom panel — tabbed Properties / Takeoff */}
+        <div
+          style={{
+            height: 240,
+            borderTop: '1px solid #E0DDD5',
+            display: 'flex',
+            flexDirection: 'column',
+            background: '#FAFAF8',
+            flexShrink: 0,
+          }}
+        >
+          {/* Tab buttons */}
+          <div style={{ display: 'flex', borderBottom: '1px solid #E0DDD5' }}>
+            {(['properties', 'takeoff'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setMobileTab(tab)}
+                style={{
+                  flex: 1,
+                  padding: '9px 0',
+                  fontSize: 12,
+                  fontWeight: mobileTab === tab ? 700 : 500,
+                  border: 'none',
+                  borderBottom: `2px solid ${mobileTab === tab ? '#185FA5' : 'transparent'}`,
+                  background: 'transparent',
+                  color: mobileTab === tab ? '#185FA5' : '#6B6860',
+                  cursor: 'pointer',
+                  transition: 'color 0.15s',
+                }}
+              >
+                {tab === 'properties' ? 'Properties' : 'Takeoff'}
+              </button>
+            ))}
+          </div>
+
+          {/* Panel content */}
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            {mobileTab === 'properties' ? (
+              <PropertiesPanel
+                component={selectedComponent}
+                dispatch={dispatch}
+                style={{
+                  width: '100%',
+                  borderLeft: 'none',
+                  flexShrink: 1,
+                  overflow: 'auto',
+                }}
+              />
+            ) : (
+              <TakeoffSidebar
+                components={state.components}
+                style={{
+                  width: '100%',
+                  borderLeft: 'none',
+                  flexShrink: 1,
+                }}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Desktop layout ───────────────────────────────────────────────────────────
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'Inter, system-ui, sans-serif', background: '#F1EFE8' }}>
+      {headerBar}
 
       {/* Three-panel body */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
