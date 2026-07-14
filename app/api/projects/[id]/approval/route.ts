@@ -9,8 +9,9 @@ import { createClient } from '@/lib/supabaseServer';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
@@ -40,7 +41,7 @@ export async function POST(
   const { data: project, error: fetchErr } = await supabase
     .from('projects')
     .select('id, org_id, approval_status')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('org_id', profile.org_id)
     .single();
 
@@ -65,7 +66,7 @@ export async function POST(
       approval_resolved_by:  user.id,
       approval_notes:        notes ?? null,
     })
-    .eq('id', params.id)
+    .eq('id', id)
     .select('id, approval_status, approval_resolved_at, approval_notes')
     .single();
 

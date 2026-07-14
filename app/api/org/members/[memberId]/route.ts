@@ -9,8 +9,9 @@ import type { OrgRole, MemberStatus } from '@/lib/org/types';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { memberId: string } }
+  { params }: { params: Promise<{ memberId: string }> }
 ) {
+  const { memberId } = await params;
   const supabase = await createClient();
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser();
@@ -46,7 +47,7 @@ export async function PATCH(
   const { data: target, error: fetchErr } = await supabase
     .from('org_members')
     .select('id, org_id, user_id, role, status')
-    .eq('id', params.memberId)
+    .eq('id', memberId)
     .eq('org_id', profile.org_id)
     .single();
 
@@ -66,7 +67,7 @@ export async function PATCH(
   const { data: updated, error: updateErr } = await supabase
     .from('org_members')
     .update(updates)
-    .eq('id', params.memberId)
+    .eq('id', memberId)
     .select()
     .single();
 
