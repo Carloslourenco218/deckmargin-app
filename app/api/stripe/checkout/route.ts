@@ -89,6 +89,17 @@ export async function POST() {
           quantity: 1,
         },
       ],
+      // Collect phone number as a required field
+      phone_number_collection: { enabled: true },
+      // Collect business name as a required custom field
+      custom_fields: [
+        {
+          key: "business_name",
+          label: { type: "custom", custom: "Business name" },
+          type: "text",
+          optional: false,
+        },
+      ],
       // No card required to start the trial
       payment_method_collection: "if_required",
       success_url: `${appUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,

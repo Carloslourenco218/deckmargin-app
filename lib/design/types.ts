@@ -14,6 +14,8 @@ export type Edge = 'top' | 'right' | 'bottom' | 'left';
 export type ComponentType = 'deck_section' | 'stair' | 'landing';
 export type MaterialCategory = 'decking' | 'framing' | 'posts' | 'hardware' | 'concrete' | 'railing' | 'stairs';
 export type Unit = 'ea' | 'lf' | 'bf' | 'bag' | 'lb';
+/** Deck elevation level — used to model multi-level decks. Level 1 = ground/main, 2 = upper, 3 = top. */
+export type DeckLevel = 1 | 2 | 3;
 
 // ─── Design Components ────────────────────────────────────────────────────────
 
@@ -44,6 +46,7 @@ export interface DeckSection {
   height_tier: HeightTier;
   railings: EdgeRailing[];
   label?: string;              // optional user label ("Main Deck", "Upper Level")
+  level?: DeckLevel;           // elevation level for multi-level decks (default: 1)
 }
 
 /** Stair module — attaches to a deck section edge */
@@ -71,6 +74,7 @@ export interface LandingModule {
   material: MaterialType;
   joist_spacing: JoistSpacing;
   height_tier: HeightTier;
+  level?: DeckLevel;           // elevation level (default: 1)
 }
 
 export type DesignComponent = DeckSection | StairModule | LandingModule;

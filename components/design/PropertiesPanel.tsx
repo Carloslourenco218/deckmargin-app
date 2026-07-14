@@ -1,6 +1,6 @@
 'use client';
 
-import type { DesignComponent, DesignAction, MaterialType, JoistSpacing, DeckingDirection, BoardWidth, HeightTier, RailingType, Edge } from '@/lib/design/types';
+import type { DesignComponent, DesignAction, MaterialType, JoistSpacing, DeckingDirection, BoardWidth, HeightTier, RailingType, Edge, DeckLevel } from '@/lib/design/types';
 
 interface Props {
   component: DesignComponent | null;
@@ -12,6 +12,8 @@ interface Props {
 const MATERIAL_OPTIONS: Array<{ value: MaterialType; label: string }> = [
   { value: 'pt', label: 'Pressure Treated' },
   { value: 'trex', label: 'Trex Composite' },
+  { value: 'timbertech', label: 'TimberTech' },
+  { value: 'pvc', label: 'PVC / Azek' },
   { value: 'cedar', label: 'Cedar' },
 ];
 
@@ -198,6 +200,19 @@ export default function PropertiesPanel({ component, dispatch, style }: Props) {
             </fieldset>
 
             <fieldset style={fieldsetStyle}>
+              <legend style={legendStyle}>Deck Level</legend>
+              <Select
+                value={String(component.level ?? 1)}
+                options={[
+                  { value: '1', label: 'Level 1 — Ground / Main' },
+                  { value: '2', label: 'Level 2 — Upper' },
+                  { value: '3', label: 'Level 3 — Top' },
+                ]}
+                onChange={(v) => update({ level: Number(v) as DeckLevel })}
+              />
+            </fieldset>
+
+            <fieldset style={fieldsetStyle}>
               <legend style={legendStyle}>Railings</legend>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {EDGES.map(({ value: edge, label }) => {
@@ -330,6 +345,19 @@ export default function PropertiesPanel({ component, dispatch, style }: Props) {
                 value={component.height_tier}
                 options={HEIGHT_TIER_OPTIONS}
                 onChange={(v) => update({ height_tier: v as HeightTier })}
+              />
+            </fieldset>
+
+            <fieldset style={fieldsetStyle}>
+              <legend style={legendStyle}>Deck Level</legend>
+              <Select
+                value={String(component.level ?? 1)}
+                options={[
+                  { value: '1', label: 'Level 1 — Ground / Main' },
+                  { value: '2', label: 'Level 2 — Upper' },
+                  { value: '3', label: 'Level 3 — Top' },
+                ]}
+                onChange={(v) => update({ level: Number(v) as DeckLevel })}
               />
             </fieldset>
 

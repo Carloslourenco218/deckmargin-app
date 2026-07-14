@@ -34,10 +34,19 @@ export default function NewQuoteWizardPage() {
 
     const finalName = name.trim() || "Untitled Quote";
 
+    // Fetch org_id for multi-user attribution
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("org_id")
+      .eq("id", user.id)
+      .single();
+
     const { data, error } = await supabase
       .from("projects")
       .insert({
         user_id: user.id,
+        org_id: profileData?.org_id ?? null,
+        created_by: user.id,
         name: finalName,
         client_name: clientName || null,
         client_email: clientEmail || null,

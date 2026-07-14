@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
+import { checkGuardrails, approvalStatusFromGuardrail } from "@/lib/org/guardrails";
 
 const REGION_MULTIPLIERS: Record<string, { material: number; labor: number }> = {
   national:   { material: 1.00, labor: 1.00 },
@@ -405,7 +406,12 @@ export default function EditProjectPage() {
     setErr("");
     setSuccess("");
 
-    const payload = {
+    // Get current user for attribution + guardrail check
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const targetMarginDecimal = parseMarginInput(form.target_margin) ?? 0.3;
+
+    const payload: Record<string, unknown> = {
       name:   form.name   || "Untitled Quote",
       status: form.status || "open",
       job_type: form.job_type || "new_build",
@@ -450,19 +456,38 @@ export default function EditProjectPage() {
       total_job_cost: Number(form.total_job_cost  || 0),
       final_price:     Number(form.final_price     || 0),
       expected_profit: Number(form.expected_profit || 0),
-      target_margin:   parseMarginInput(form.target_margin) ?? 0.3,
+      target_margin:   targetMarginDecimal,
       client_name:  form.client_name  || null,
       client_email: form.client_email || null,
       client_phone: form.client_phone || null,
       site_address: form.site_address || null,
       notes:        form.notes        || null,
       updated_at: new Date().toISOString(),
+      // Attribution
+      last_edited_by: user?.id ?? null,
     };
+
+    // ── Guardrail check ──────────────────────────────────────────────
+    let approvalFlagged = false;
+    if (user) {
+      const guardrailResult = await checkGuardrails(supabase, user.id, {
+        target_margin: targetMarginDecimal,
+      });
+      payload.approval_status = approvalStatusFromGuardrail(guardrailResult);
+      if (guardrailResult.violated) {
+        approvalFlagged = true;
+      }
+    }
 
     const { error } = await supabase.from("projects").update(payload).eq("id", id);
     if (error) { setErr(error.message); setSaving(false); return; }
-    setSuccess("Saved successfully.");
-    setTimeout(() => { router.push(`/projects/${id}`); router.refresh(); }, 400);
+
+    if (approvalFlagged) {
+      setSuccess("Saved. This quote has been flagged for owner approval — margin is below the minimum guardrail.");
+    } else {
+      setSuccess("Saved successfully.");
+    }
+    setTimeout(() => { router.push(`/projects/${id}`); router.refresh(); }, 1200);
   }
 
   if (loading) {

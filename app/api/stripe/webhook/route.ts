@@ -94,6 +94,43 @@ export async function POST(request: Request) {
             subscription,
             session.client_reference_id
           );
+
+          // ── Persist business name + phone collected at checkout ────
+          const stripeCustomerId =
+            typeof session.customer === "string"
+              ? session.customer
+              : session.customer.id;
+
+          const businessName =
+            (session.custom_fields as Array<{ key: string; text?: { value?: string | null } }> | null)
+              ?.find((f) => f.key === "business_name")
+              ?.text?.value ?? null;
+
+          const phone = session.customer_details?.phone ?? null;
+
+          // Keep the Stripe customer record in sync
+          if (businessName || phone) {
+            await stripe.customers.update(stripeCustomerId, {
+              ...(businessName ? { name: businessName } : {}),
+              ...(phone ? { phone } : {}),
+            });
+          }
+
+          // Write back to Supabase — update the user's organization
+          const userId = session.client_reference_id;
+          if (userId && (businessName || phone)) {
+            const supabase = createServiceClient();
+            const updates: Record<string, string> = {
+              updated_at: new Date().toISOString(),
+            };
+            if (businessName) updates.name = businessName;
+            if (phone) updates.phone = phone;
+
+            await supabase
+              .from("organizations")
+              .update(updates)
+              .eq("owner_id", userId);
+          }
         }
         break;
       }

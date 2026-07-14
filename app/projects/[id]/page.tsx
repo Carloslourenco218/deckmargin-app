@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabaseServer";
 import MaterialTakeoff from "./MaterialTakeoff";
+import ApprovalBanner from "@/components/approval/ApprovalBanner";
+import type { OrgRole, ApprovalStatus } from "@/lib/org/types";
 
 type ProjectRow = {
   id: string;
@@ -44,6 +46,8 @@ type ProjectRow = {
   notes: string | null;
   created_at: string | null;
   updated_at: string | null;
+  approval_status: ApprovalStatus | null;
+  approval_notes: string | null;
 };
 
 function money(n: number | null | undefined) {
@@ -89,6 +93,16 @@ export default async function ProjectPage({
     );
   }
 
+  // Fetch the user's org role so we can show owner vs field-user UI
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("org_role")
+    .eq("id", user.id)
+    .single();
+  const orgRole = (profile?.org_role ?? null) as OrgRole | null;
+
+  // RLS now enforces access: owners see all org projects, field users see their own.
+  // We no longer need .eq("user_id", user.id) which would break owners viewing team projects.
   const { data: project, error } = await supabase
     .from("projects")
     .select(`
@@ -102,10 +116,10 @@ export default async function ProjectPage({
       built_ins_enabled, built_ins_cost, built_ins_description,
       material_cost, labor_cost, permit_cost, equipment_cost,
       overhead_cost, total_job_cost,
-      notes, created_at, updated_at
+      notes, created_at, updated_at,
+      approval_status, approval_notes
     `)
     .eq("id", resolvedParams.id)
-    .eq("user_id", user.id)
     .limit(1)
     .maybeSingle<ProjectRow>();
 
@@ -127,6 +141,14 @@ export default async function ProjectPage({
   return (
     <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
       <div className="mx-auto max-w-6xl">
+
+        {/* ── Approval banner (shown when approval_status is set) ── */}
+        <ApprovalBanner
+          projectId={project.id}
+          approvalStatus={project.approval_status}
+          approvalNotes={project.approval_notes}
+          orgRole={orgRole}
+        />
 
         {/* ── Header ── */}
         <div className="mb-8 flex items-start justify-between">

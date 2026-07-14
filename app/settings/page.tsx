@@ -235,6 +235,13 @@ export default function SettingsPage() {
           <Link href="/dashboard" className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800">Back to Dashboard</Link>
         </div>
 
+        {/* ── Settings navigation ── */}
+        <div className="mb-6 flex gap-2">
+          <Link href="/settings" className="rounded-lg border border-white/30 bg-white/10 px-4 py-2 text-sm text-white">Estimator</Link>
+          <Link href="/settings/team" className="rounded-lg border border-white/15 px-4 py-2 text-sm text-gray-300 hover:bg-white/5">Team</Link>
+          <Link href="/settings/guardrails" className="rounded-lg border border-white/15 px-4 py-2 text-sm text-gray-300 hover:bg-white/5">Guardrails</Link>
+        </div>
+
         {err ? <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{err}</div> : null}
         {msg ? <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{msg}</div> : null}
 
