@@ -23,6 +23,28 @@ function money(n: number | null | undefined) {
   });
 }
 
+function statusBadge(status: string | null) {
+  const s = (status ?? "open").toLowerCase();
+  const map: Record<string, string> = {
+    draft:       "bg-gray-800 text-gray-400",
+    open:        "bg-blue-500/20 text-blue-300",
+    sent:        "bg-violet-500/20 text-violet-300",
+    viewed:      "bg-cyan-500/20 text-cyan-300",
+    "follow-up": "bg-amber-500/20 text-amber-300",
+    approved:    "bg-emerald-500/20 text-emerald-300",
+    accepted:    "bg-emerald-500/20 text-emerald-300",
+    won:         "bg-green-500/20 text-green-300",
+    declined:    "bg-red-500/20 text-red-300",
+    lost:        "bg-red-500/20 text-red-300",
+    "on-hold":   "bg-gray-700 text-gray-300",
+    expired:     "bg-gray-700 text-gray-300",
+  };
+  const cls = map[s] ?? "bg-gray-700 text-gray-200";
+  return (
+    <span className={`rounded-full px-3 py-1 text-xs ${cls}`}>{s}</span>
+  );
+}
+
 function pct(n: number | null | undefined) {
   if (n == null || Number.isNaN(n)) return "—";
   return `${Math.round(n * 100)}%`;
@@ -35,6 +57,7 @@ export default function DashboardPage() {
   const [rows, setRows] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [duplicating, setDuplicating] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -85,6 +108,18 @@ export default function DashboardPage() {
     load();
   }
 
+  async function handleDuplicate(id: string) {
+    setDuplicating(id);
+    try {
+      const res = await fetch(`/api/projects/${id}/duplicate`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) { alert(json.error ?? "Could not duplicate quote"); return; }
+      router.push(`/projects/${json.id}/edit`);
+    } finally {
+      setDuplicating(null);
+    }
+  }
+
   async function handleLogout() {
     await supabase.auth.signOut();
     router.push("/login");
@@ -102,8 +137,8 @@ export default function DashboardPage() {
       ? rows.reduce((sum, r) => sum + (r.target_margin ?? 0), 0) / rows.length
       : null;
 
-  const wonCount = rows.filter((r) => (r.status ?? "").toLowerCase() === "won").length;
-  const lostCount = rows.filter((r) => (r.status ?? "").toLowerCase() === "lost").length;
+  const wonCount = rows.filter((r) => ["won", "accepted"].includes((r.status ?? "").toLowerCase())).length;
+  const lostCount = rows.filter((r) => ["lost", "declined"].includes((r.status ?? "").toLowerCase())).length;
 
   return (
     <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
@@ -229,9 +264,7 @@ export default function DashboardPage() {
                   <td className="px-6 py-4">{p.name ?? "Untitled Quote"}</td>
 
                   <td className="px-6 py-4">
-                    <span className="rounded-full bg-gray-700 px-3 py-1 text-xs text-gray-200">
-                      {(p.status ?? "open").toLowerCase()}
-                    </span>
+                    {statusBadge(p.status)}
                   </td>
 
                   <td className="px-6 py-4">{money(p.final_price)}</td>
@@ -248,42 +281,4 @@ export default function DashboardPage() {
 
                     <Link
                       href={`/projects/${p.id}/edit`}
-                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
-                    >
-                      Edit
-                    </Link>
-
-                    <Link
-                      href={`/projects/${p.id}/preview`}
-                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
-                    >
-                      Preview
-                    </Link>
-
-                    <a
-                      href={`/api/proposal/${p.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
-                    >
-                      PDF
-                    </a>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(p.id)}
-                      className="rounded-md border border-red-500/40 px-3 py-1 text-xs text-red-300 hover:bg-red-500/10"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </main>
-  );
-}
-
+                      

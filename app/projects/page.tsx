@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
 type ProjectRow = {
@@ -13,6 +14,30 @@ type ProjectRow = {
   target_margin: number | null;
   created_at: string | null;
 };
+
+function statusBadge(status: string | null) {
+  const s = (status ?? "open").toLowerCase();
+  const map: Record<string, string> = {
+    draft:       "border-white/20 bg-white/5 text-white/50",
+    open:        "border-blue-500/30 bg-blue-500/10 text-blue-300",
+    sent:        "border-violet-500/30 bg-violet-500/10 text-violet-300",
+    viewed:      "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
+    "follow-up": "border-amber-500/30 bg-amber-500/10 text-amber-300",
+    approved:    "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+    accepted:    "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+    won:         "border-green-500/30 bg-green-500/10 text-green-300",
+    declined:    "border-red-500/30 bg-red-500/10 text-red-300",
+    lost:        "border-red-500/30 bg-red-500/10 text-red-300",
+    "on-hold":   "border-gray-500/30 bg-gray-500/10 text-gray-300",
+    expired:     "border-gray-500/30 bg-gray-500/10 text-gray-300",
+  };
+  const cls = map[s] ?? "border-white/20 bg-white/5 text-white/70";
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${cls}`}>
+      {s}
+    </span>
+  );
+}
 
 function money(value: number | null) {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
@@ -30,9 +55,11 @@ function percent(value: number | null) {
 
 export default function ProjectsPage() {
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [duplicating, setDuplicating] = useState<string | null>(null);
 
   async function loadProjects() {
     setLoading(true);
@@ -53,6 +80,18 @@ export default function ProjectsPage() {
     }
 
     setLoading(false);
+  }
+
+  async function handleDuplicate(id: string) {
+    setDuplicating(id);
+    try {
+      const res = await fetch(`/api/projects/${id}/duplicate`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) { alert(json.error ?? "Could not duplicate quote"); return; }
+      router.push(`/projects/${json.id}/edit`);
+    } finally {
+      setDuplicating(null);
+    }
   }
 
   useEffect(() => {
@@ -113,50 +152,7 @@ export default function ProjectsPage() {
                       </td>
 
                       <td className="py-4 pr-4">
-                        <span className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-xs text-white/80">
-                          {project.status ?? "open"}
-                        </span>
+                        {statusBadge(project.status)}
                       </td>
 
-                      <td className="py-4 pr-4">{money(project.final_price)}</td>
-                      <td className="py-4 pr-4">{money(project.expected_profit)}</td>
-                      <td className="py-4 pr-4">{percent(project.target_margin)}</td>
-
-                      <td className="py-4">
-                        <div className="flex justify-end gap-2">
-                          <Link
-                            href={`/projects/${project.id}`}
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
-                          >
-                            Open
-                          </Link>
-
-                          <Link
-                            href={`/projects/${project.id}/edit`}
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
-                          >
-                            Edit
-                          </Link>
-
-                          <a
-                            href={`/api/proposal/${project.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
-                          >
-                            PDF
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
-  );
-}
-
+                      <td className="py-4 

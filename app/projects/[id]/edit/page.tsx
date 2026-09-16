@@ -556,7 +556,18 @@ export default function EditProjectPage() {
             <div>
               <FieldLabel label="Status" help="Track where this quote is in your sales process." />
               <select value={form.status} onChange={(e) => updateField("status", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
-                <option value="open">open</option><option value="sent">sent</option><option value="approved">approved</option><option value="won">won</option><option value="lost">lost</option>
+                <option value="draft">draft</option>
+                <option value="open">open</option>
+                <option value="sent">sent</option>
+                <option value="viewed">viewed</option>
+                <option value="follow-up">follow-up</option>
+                <option value="approved">approved</option>
+                <option value="accepted">accepted</option>
+                <option value="won">won</option>
+                <option value="declined">declined</option>
+                <option value="lost">lost</option>
+                <option value="on-hold">on-hold</option>
+                <option value="expired">expired</option>
               </select>
             </div>
             <div><FieldLabel label="Client Name" help="The homeowner or customer name this proposal is for." /><input value={form.client_name} onChange={(e) => updateField("client_name", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
