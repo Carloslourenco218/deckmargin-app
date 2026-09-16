@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabaseClient";
 
@@ -237,7 +237,6 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         <p className="mt-1 text-sm text-white/50">Shape, size, and height of the deck.</p>
       </div>
 
-      {/* Shape */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Shape</div>
         <div className="grid grid-cols-4 gap-2">
@@ -247,7 +246,6 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         </div>
       </div>
 
-      {/* Dimensions */}
       {form.deckShape === "rectangle" && (
         <div>
           <div className="mb-2 text-xs font-medium text-white/55">Dimensions</div>
@@ -267,7 +265,6 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         </div>
       )}
 
-      {/* Area override */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">
           {form.deckShape !== "rectangle" ? "Approximate Area (sq ft)" : "Override Area (optional — for irregular shapes)"}
@@ -281,7 +278,6 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         )}
       </div>
 
-      {/* Height */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Deck Height</div>
         <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
@@ -300,7 +296,6 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         )}
       </div>
 
-      {/* Attachment */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Structure</div>
         <div className="grid grid-cols-3 gap-2">
@@ -310,7 +305,6 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         </div>
       </div>
 
-      {/* Ledger condition when attached */}
       {(form.deckAttachment === "attached" || form.deckAttachment === "combination") && (
         <div>
           <div className="mb-2 text-xs font-medium text-white/55">Ledger Condition</div>
@@ -347,7 +341,6 @@ function StepMaterials({ form, set }: { form: WizardForm; set: (k: keyof WizardF
         </p>
       </div>
 
-      {/* Decking material */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Decking Material</div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -369,7 +362,6 @@ function StepMaterials({ form, set }: { form: WizardForm; set: (k: keyof WizardF
         <p className="mt-2 text-xs text-white/40">Pricing uses your company settings. You can adjust on the estimate review.</p>
       </div>
 
-      {/* Decking pattern */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Decking Pattern</div>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -405,7 +397,6 @@ function StepRailing({ form, set }: { form: WizardForm; set: (k: keyof WizardFor
         <p className="mt-1 text-sm text-white/50">How much railing does this deck need?</p>
       </div>
 
-      {/* Coverage */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Railing Amount</div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -433,7 +424,6 @@ function StepRailing({ form, set }: { form: WizardForm; set: (k: keyof WizardFor
         )}
       </div>
 
-      {/* Railing type — only if not "none" */}
       {form.railingCoverage !== "none" && (
         <div>
           <div className="mb-2 text-xs font-medium text-white/55">Railing Type</div>
@@ -451,7 +441,6 @@ function StepRailing({ form, set }: { form: WizardForm; set: (k: keyof WizardFor
         </div>
       )}
 
-      {/* Stair railing */}
       {form.railingCoverage !== "none" && (
         <div>
           <div className="mb-2 text-xs font-medium text-white/55">Stair Railing</div>
@@ -495,7 +484,6 @@ function StepStairs({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
 
       {form.hasStairs && (
         <div className="space-y-5 rounded-xl border border-white/10 bg-[#111827] p-5">
-          {/* Configuration */}
           <div>
             <div className="mb-2 text-xs font-medium text-white/55">Configuration</div>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -510,7 +498,6 @@ function StepStairs({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
             </div>
           </div>
 
-          {/* Width */}
           <div>
             <div className="mb-2 text-xs font-medium text-white/55">Stair Width</div>
             <div className="grid grid-cols-4 gap-2">
@@ -525,7 +512,6 @@ function StepStairs({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
             </div>
           </div>
 
-          {/* Estimated steps */}
           <FieldRow label="Estimated Number of Steps">
             <div className="flex items-center gap-3">
               <Input value={form.stairCount} onChange={(v) => set("stairCount", v)} placeholder="8" type="number" />
@@ -533,7 +519,6 @@ function StepStairs({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
             </div>
           </FieldRow>
 
-          {/* Landing */}
           <div>
             <div className="mb-2 text-xs font-medium text-white/55">Landing</div>
             <div className="grid grid-cols-3 gap-2">
@@ -590,7 +575,7 @@ function StepSite({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
 
       {(form.siteDifficulty === "moderate" || form.siteDifficulty === "difficult") && (
         <div>
-          <div className="mb-2 text-xs font-medium text-white/55">What&apos;s making it challenging? <span className="text-white/30">(select all that apply)</span></div>
+          <div className="mb-2 text-xs font-medium text-white/55">{"What's making it challenging?"} <span className="text-white/30">(select all that apply)</span></div>
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
             {OBSTACLE_OPTIONS.map((obs) => (
               <label key={obs} className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-all ${
@@ -678,31 +663,115 @@ function StepExtras({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
   );
 }
 
-function StepNotes({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, v: any) => void }) {
+function StepNotes({
+  form,
+  set,
+  projectId,
+}: {
+  form: WizardForm;
+  set: (k: keyof WizardForm, v: any) => void;
+  projectId?: string | null;
+}) {
+  const supabase = useMemo(() => createClient(), []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState("");
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!projectId || !e.target.files?.length) return;
+    setUploading(true);
+    setUploadErr("");
+    const newUrls: string[] = [];
+
+    for (const file of Array.from(e.target.files)) {
+      if (!file.type.startsWith("image/")) { setUploadErr("Only image files are allowed."); continue; }
+      if (file.size > 20 * 1024 * 1024) { setUploadErr("Each photo must be under 20MB."); continue; }
+      const path = `${projectId}/${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+      const { error } = await supabase.storage.from("project-photos").upload(path, file, { upsert: false, contentType: file.type });
+      if (error) { setUploadErr(error.message); continue; }
+      const { data: urlData } = supabase.storage.from("project-photos").getPublicUrl(path);
+      newUrls.push(urlData.publicUrl);
+    }
+
+    if (newUrls.length > 0) {
+      const merged = [...photoUrls, ...newUrls];
+      setPhotoUrls(merged);
+      await supabase.from("projects").update({ photo_urls: merged, updated_at: new Date().toISOString() }).eq("id", projectId);
+    }
+
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function removePhoto(url: string) {
+    if (!projectId) return;
+    const updated = photoUrls.filter((u) => u !== url);
+    setPhotoUrls(updated);
+    await supabase.from("projects").update({ photo_urls: updated, updated_at: new Date().toISOString() }).eq("id", projectId);
+  }
+
   return (
     <div className="space-y-5">
       <div>
         <h2 className="text-2xl font-semibold">Notes & Photos</h2>
-        <p className="mt-1 text-sm text-white/50">Add any site notes, scope reminders, or special conditions.</p>
+        <p className="mt-1 text-sm text-white/50">Add site notes, scope reminders, or special conditions.</p>
       </div>
+
+      <FieldRow label="Internal Notes">
+        <textarea
+          value={form.notes}
+          onChange={(e) => set("notes", e.target.value)}
+          rows={5}
+          placeholder="Tree roots near northeast footing. Check ledger attachment detail. Client wants composite decking but considering budget..."
+          className="w-full rounded-lg border border-white/10 bg-[#111827] px-3 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-blue-500/50 resize-none" />
+      </FieldRow>
+
       <div>
-        <FieldRow label="Internal Notes">
-          <textarea
-            value={form.notes}
-            onChange={(e) => set("notes", e.target.value)}
-            rows={6}
-            placeholder="Tree roots near northeast footing. Check ledger attachment detail. Client wants composite decking but considering budget..."
-            className="w-full rounded-lg border border-white/10 bg-[#111827] px-3 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-blue-500/50 resize-none" />
-        </FieldRow>
-      </div>
-      <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-xl">📷</div>
-          <div>
-            <div className="text-sm font-medium text-white">Photos</div>
-            <div className="text-xs text-white/40">Photo upload coming soon — note site conditions above for now.</div>
+        <div className="mb-2 text-xs font-medium text-white/55">Site Photos</div>
+        {projectId ? (
+          <div className="space-y-3">
+            <div
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-6 transition-colors ${
+                uploading ? "border-white/15 opacity-60" : "border-white/15 hover:border-blue-500/40 hover:bg-blue-500/5"}`}>
+              <div className="mb-1 text-2xl">📷</div>
+              <div className="text-sm font-medium text-white/70">
+                {uploading ? "Uploading…" : "Click to add site photos"}
+              </div>
+              <div className="mt-1 text-xs text-white/35">JPG, PNG, HEIC · Max 20 MB each · Multiple OK</div>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handlePhotoUpload} />
+
+            {uploadErr && <p className="text-xs text-red-400">{uploadErr}</p>}
+
+            {photoUrls.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {photoUrls.map((url) => (
+                  <div key={url} className="group relative">
+                    <img src={url} alt="Site photo" className="h-24 w-full rounded-lg object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(url)}
+                      className="absolute right-1 top-1 hidden rounded-full bg-black/70 px-1.5 py-0.5 text-xs text-white group-hover:block">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="rounded-xl border border-white/10 bg-[#111827] px-4 py-3 text-xs text-white/40">
+            Save the quote first (complete Step 1) to enable photo upload.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -719,7 +788,7 @@ function ScopeSummary({ form }: { form: WizardForm }) {
 
   const height = HEIGHT_OPTIONS.find((h) => h.value === form.heightCategory)?.label ?? "—";
   const jobLabel = JOB_TYPES.find((j) => j.value === form.jobType)?.label ?? "—";
-  const matLabel = { "pressure-treated": "Pressure Treated", trex: "Trex", timbertech: "TimberTech", pvc: "PVC" }[form.materialType] ?? form.materialType;
+  const matLabel = ({ "pressure-treated": "Pressure Treated", trex: "Trex", timbertech: "TimberTech", pvc: "PVC" } as Record<string,string>)[form.materialType] ?? form.materialType;
 
   const items = [
     sqft ? `${sqft} sq ft deck` : null,
@@ -740,7 +809,7 @@ function ScopeSummary({ form }: { form: WizardForm }) {
 
   return (
     <div className="rounded-xl border border-white/10 bg-[#0b1220] p-5">
-      <div className="mb-3 text-xs font-medium text-white/55">Scope Summary</div>
+      <div className="mb-3 text-xs font-medium text-white/55">Does this look right?</div>
       <div className="mb-2 font-semibold text-white">{jobLabel} — {form.clientName || "Client TBD"}</div>
       <ul className="space-y-1">
         {items.map((item) => (
@@ -750,7 +819,7 @@ function ScopeSummary({ form }: { form: WizardForm }) {
         ))}
       </ul>
       <p className="mt-4 text-xs text-white/40">
-        You&apos;ll set pricing, margin, and review the full cost breakdown on the next screen.
+        {"You'll set pricing, margin, and review the full cost breakdown on the next screen."}
       </p>
     </div>
   );
@@ -778,7 +847,6 @@ export default function NewQuoteWizard() {
   const isFirst = currentIdx === 0;
   const isLast = currentIdx === visibleStepIds.length - 1;
 
-  // Recalculate sqft when dimensions change
   const calcSqft = useMemo(() => {
     if (form.deckSqftOverride) return Number(form.deckSqftOverride);
     if (form.deckLength && form.deckWidth) return Math.round(Number(form.deckLength) * Number(form.deckWidth));
@@ -794,7 +862,6 @@ export default function NewQuoteWizard() {
       if (userError || !user) { setErr("You must be logged in."); return; }
 
       if (step === 1) {
-        // Fetch org_id
         const { data: profile } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
 
         const { data, error } = await supabase.from("projects").insert({
@@ -818,12 +885,10 @@ export default function NewQuoteWizard() {
         setProjectId(data.id);
 
       } else if (projectId) {
-        // Build update payload for current step
         const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
         if (step === 2) {
           payload.job_type = form.jobType;
-
         } else if (step === 3) {
           payload.deck_shape = form.deckShape;
           payload.deck_length = form.deckLength ? Number(form.deckLength) : null;
@@ -834,28 +899,23 @@ export default function NewQuoteWizard() {
           payload.height_tier = mapHeightTier(form.heightCategory);
           payload.deck_attachment = form.deckAttachment;
           payload.ledger_condition = form.ledgerCondition || null;
-
         } else if (step === 4) {
           payload.material_type   = form.materialType;
           payload.decking_pattern = form.deckingPattern;
-
         } else if (step === 5) {
           payload.railing_coverage = form.railingCoverage;
           payload.railing_lf       = form.railingLf ? Number(form.railingLf) : null;
           payload.railing_type     = form.railingCoverage !== "none" ? form.railingType : "none";
           payload.stair_railing    = form.stairRailing;
-
         } else if (step === 6) {
           payload.stair_count  = form.hasStairs ? Number(form.stairCount || 0) : 0;
           payload.stair_config = form.hasStairs ? form.stairConfig : null;
           payload.stair_width  = form.hasStairs ? form.stairWidth  : null;
           payload.has_landing  = form.hasStairs ? form.hasLanding  : false;
           payload.landing_size = form.hasStairs && form.hasLanding ? form.landingSize : null;
-
         } else if (step === 7) {
           payload.site_difficulty = form.siteDifficulty;
           payload.site_obstacles  = form.siteObstacles;
-
         } else if (step === 8) {
           payload.lighting_enabled  = form.lightingEnabled;
           payload.lighting_cost     = form.lightingEnabled ? Number(form.lightingCost || 0)  : 0;
@@ -868,7 +928,6 @@ export default function NewQuoteWizard() {
           payload.dumpster_cost     = form.dumpsterEnabled ? Number(form.dumpsterCost || 0) : 0;
           payload.demolition_enabled = form.demolitionEnabled;
           payload.demolition_cost    = form.demolitionEnabled ? Number(form.demolitionCost || 0) : 0;
-
         } else if (step === 9) {
           payload.notes = form.notes || null;
         }
@@ -876,14 +935,12 @@ export default function NewQuoteWizard() {
         const { error } = await supabase.from("projects").update(payload).eq("id", projectId);
         if (error) { setErr(error.message); return; }
 
-        // If this is the last step, redirect to edit page for full cost review
         if (isLast) {
           router.push(`/projects/${projectId}/edit`);
           return;
         }
       }
 
-      // Advance to next visible step
       if (!isLast) {
         setStep(visibleStepIds[currentIdx + 1]);
       }
@@ -912,7 +969,7 @@ export default function NewQuoteWizard() {
       case 9: return (
         <div className="space-y-6">
           <ScopeSummary form={form} />
-          <StepNotes form={form} set={set} />
+          <StepNotes form={form} set={set} projectId={projectId} />
         </div>
       );
       default: return null;
@@ -923,7 +980,6 @@ export default function NewQuoteWizard() {
     <main className="min-h-screen bg-[#0b0f19] px-4 py-8 text-white">
       <div className="mx-auto max-w-3xl">
 
-        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">New Quote</h1>
@@ -935,20 +991,16 @@ export default function NewQuoteWizard() {
           </button>
         </div>
 
-        {/* Progress */}
         <ProgressBar steps={visibleSteps} currentId={step} />
 
-        {/* Error */}
         {err && (
           <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{err}</div>
         )}
 
-        {/* Step content */}
         <div className="rounded-2xl border border-white/10 bg-white/3 p-6 backdrop-blur-sm">
           {renderStep()}
         </div>
 
-        {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
           <button type="button" onClick={handleBack} disabled={isFirst}
             className="rounded-lg border border-white/15 px-5 py-2.5 text-sm text-white/60 hover:bg-white/5 disabled:opacity-30">
@@ -964,7 +1016,6 @@ export default function NewQuoteWizard() {
           </div>
         </div>
 
-        {/* Step hint */}
         <p className="mt-4 text-center text-xs text-white/25">
           Step {currentIdx + 1} of {visibleSteps.length} — you can edit anything later
         </p>
