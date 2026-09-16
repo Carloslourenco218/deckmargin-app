@@ -220,7 +220,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
           <div className="text-sm text-gray-300">Recent Quotes</div>
           <div className="text-xs text-gray-500">
-            {loading ? "Loading…" : `Showing ${rows.length} record(s)`}
+            {loading ? "Loading..." : `Showing ${rows.length} record(s)`}
           </div>
         </div>
 
@@ -246,7 +246,7 @@ export default function DashboardPage() {
             {loading ? (
               <tr>
                 <td className="px-6 py-6 text-gray-400" colSpan={6}>
-                  Loading recent quotes…
+                  Loading recent quotes...
                 </td>
               </tr>
             ) : rows.length === 0 ? (
@@ -281,4 +281,50 @@ export default function DashboardPage() {
 
                     <Link
                       href={`/projects/${p.id}/edit`}
-                      
+                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                    >
+                      Edit
+                    </Link>
+
+                    <Link
+                      href={`/projects/${p.id}/preview`}
+                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                    >
+                      Preview
+                    </Link>
+
+                    <a
+                      href={`/api/proposal/${p.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                    >
+                      PDF
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDuplicate(p.id)}
+                      disabled={duplicating === p.id}
+                      className="rounded-md border border-white/20 px-3 py-1 text-xs hover:bg-gray-700 disabled:opacity-50"
+                    >
+                      {duplicating === p.id ? "..." : "Duplicate"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(p.id)}
+                      className="rounded-md border border-red-500/40 px-3 py-1 text-xs text-red-300 hover:bg-red-500/10"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  );
+}

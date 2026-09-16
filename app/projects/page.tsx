@@ -123,7 +123,7 @@ export default function ProjectsPage() {
           </div>
 
           {loading ? (
-            <div className="py-6 text-sm text-white/60">Loading…</div>
+            <div className="py-6 text-sm text-white/60">Loading...</div>
           ) : err ? (
             <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
               {err}
@@ -155,4 +155,53 @@ export default function ProjectsPage() {
                         {statusBadge(project.status)}
                       </td>
 
-                      <td className="py-4 
+                      <td className="py-4 pr-4">{money(project.final_price)}</td>
+                      <td className="py-4 pr-4">{money(project.expected_profit)}</td>
+                      <td className="py-4 pr-4">{percent(project.target_margin)}</td>
+
+                      <td className="py-4">
+                        <div className="flex justify-end gap-2">
+                          <Link
+                            href={`/projects/${project.id}`}
+                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
+                          >
+                            Open
+                          </Link>
+
+                          <Link
+                            href={`/projects/${project.id}/edit`}
+                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
+                          >
+                            Edit
+                          </Link>
+
+                          <a
+                            href={`/api/proposal/${project.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
+                          >
+                            PDF
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDuplicate(project.id)}
+                            disabled={duplicating === project.id}
+                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10 disabled:opacity-50"
+                          >
+                            {duplicating === project.id ? "..." : "Duplicate"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
