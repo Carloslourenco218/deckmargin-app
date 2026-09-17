@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 
 export default function QuoteActions({
   projectId,
-  clientEmail,
   proposalTokenActive,
-  initialStatus,
 }: {
   projectId: string;
-  clientEmail: string | null;
+  clientEmail: string | null;   // kept in props signature for compat, unused now
   proposalTokenActive: boolean | null;
-  initialStatus: string | null;
+  initialStatus: string | null; // kept for compat
 }) {
   const router = useRouter();
 
@@ -21,11 +19,6 @@ export default function QuoteActions({
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [linkActive, setLinkActive] = useState(proposalTokenActive ?? false);
-
-  // Email state
-  const [emailing, setEmailing] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [emailErr, setEmailErr] = useState("");
 
   // Duplicate state
   const [duplicating, setDuplicating] = useState(false);
@@ -53,25 +46,6 @@ export default function QuoteActions({
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }
-
-  async function handleEmail() {
-    if (!clientEmail) return;
-    setEmailing(true);
-    setEmailErr("");
-    const res = await fetch("/api/email/send-proposal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectId }),
-    });
-    const body = await res.json();
-    if (!res.ok) {
-      setEmailErr(body.error ?? "Failed to send email");
-    } else {
-      setEmailSent(true);
-      router.refresh(); // re-fetch status change (open → sent)
-    }
-    setEmailing(false);
   }
 
   async function handleDuplicate() {
@@ -111,7 +85,7 @@ export default function QuoteActions({
                 </button>
               </div>
             ) : (
-              <p className="text-xs text-white/50">Link is active. Generate it again to copy.</p>
+              <p className="text-xs text-white/50">Link is active. Click below to copy it.</p>
             )}
             <div className="flex gap-2">
               <button
@@ -141,31 +115,9 @@ export default function QuoteActions({
             {sharing ? "Generating…" : "🔗 Generate Shareable Link"}
           </button>
         )}
-      </div>
-
-      {/* ── Email section ── */}
-      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-        <div className="mb-2 text-xs font-medium text-white/55">Email Proposal to Client</div>
-        {emailSent ? (
-          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
-            ✓ Proposal emailed to {clientEmail}. Status updated to "sent".
-          </div>
-        ) : clientEmail ? (
-          <div className="space-y-2">
-            <p className="text-xs text-white/50">Sends to: <span className="text-white/80">{clientEmail}</span></p>
-            {emailErr && <p className="text-xs text-red-400">{emailErr}</p>}
-            <button
-              type="button"
-              onClick={handleEmail}
-              disabled={emailing}
-              className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-60"
-            >
-              {emailing ? "Sending…" : "✉ Send Email to Client"}
-            </button>
-          </div>
-        ) : (
-          <p className="text-xs text-white/40">Add a client email on the edit page to enable email delivery.</p>
-        )}
+        <p className="mt-2 text-xs text-white/30">
+          Client opens the link, reviews the proposal, and can accept online. Copy and send it yourself via text or your own email.
+        </p>
       </div>
 
       {/* ── Duplicate ── */}
