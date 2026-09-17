@@ -105,6 +105,8 @@ type FormState = {
   final_price: string; expected_profit: string; target_margin: string;
   client_name: string; client_email: string; client_phone: string;
   site_address: string; notes: string;
+  railing_lf: string;
+  proposal_expires_at: string; // ISO date "YYYY-MM-DD" or ""
 };
 
 function numOrNull(v: string) { if (!v.trim()) return null; const n = Number(v); return Number.isFinite(n) ? n : null; }
@@ -295,6 +297,8 @@ export default function EditProjectPage() {
     tax_rate: "0", tax_applies_to: "materials_and_labor", tax_amount: "0",
     final_price: "", expected_profit: "", target_margin: "0.30",
     client_name: "", client_email: "", client_phone: "", site_address: "", notes: "",
+    railing_lf: "",
+    proposal_expires_at: "",
   });
 
   // ── Load ─────────────────────────────────────────────────────────────────
@@ -365,7 +369,8 @@ export default function EditProjectPage() {
           permit_electrical_enabled, permit_electrical_cost,
           permit_engineering_enabled, permit_engineering_cost,
           permit_hoa_enabled, permit_hoa_cost,
-          client_name, client_email, client_phone, site_address, notes
+          client_name, client_email, client_phone, site_address, notes,
+          railing_lf, proposal_expires_at
         `)
         .eq("id", id)
         .single();
@@ -424,6 +429,10 @@ export default function EditProjectPage() {
         client_phone:   data.client_phone ?? "",
         site_address:   data.site_address ?? "",
         notes:          data.notes        ?? "",
+        railing_lf:     integerString(data.railing_lf ?? ""),
+        proposal_expires_at: data.proposal_expires_at
+          ? new Date(data.proposal_expires_at).toISOString().slice(0, 10)
+          : "",
       });
 
       setLoading(false);
@@ -579,6 +588,10 @@ export default function EditProjectPage() {
       client_phone: form.client_phone || null,
       site_address: form.site_address || null,
       notes:        form.notes        || null,
+      railing_lf:   numOrNull(form.railing_lf),
+      proposal_expires_at: form.proposal_expires_at
+        ? new Date(form.proposal_expires_at).toISOString()
+        : null,
       updated_at: new Date().toISOString(),
       // Attribution
       last_edited_by: user?.id ?? null,
@@ -692,6 +705,47 @@ export default function EditProjectPage() {
             <div><FieldLabel label="Client Phone" help="Client's best contact number." /><input value={form.client_phone} onChange={(e) => updateField("client_phone", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
             <div><FieldLabel label="Client Email" help="Client's email for proposal delivery." /><input value={form.client_email} onChange={(e) => updateField("client_email", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
             <div><FieldLabel label="Site Address" help="The job site where the deck will be built." /><input value={form.site_address} onChange={(e) => updateField("site_address", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div>
+              <FieldLabel label="Proposal Expires" help="Date this proposal expires. Clients see a countdown on the proposal page. Leave blank for no expiry." />
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={form.proposal_expires_at}
+                  onChange={(e) => updateField("proposal_expires_at", e.target.value)}
+                  className="flex-1 rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-white"
+                />
+                <button
+                  type="button"
+                  title={`Auto-fill: today + ${settings.proposal_expiry_days ?? 30} days`}
+                  onClick={() => {
+                    const days = settings.proposal_expiry_days ?? 30;
+                    const d = new Date();
+                    d.setDate(d.getDate() + days);
+                    updateField("proposal_expires_at", d.toISOString().slice(0, 10));
+                  }}
+                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/60 hover:bg-white/10"
+                >
+                  +{settings.proposal_expiry_days ?? 30}d
+                </button>
+                {form.proposal_expires_at && (
+                  <button
+                    type="button"
+                    onClick={() => updateField("proposal_expires_at", "")}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {form.proposal_expires_at && (() => {
+                const days = Math.round((new Date(form.proposal_expires_at).getTime() - Date.now()) / 86_400_000);
+                return (
+                  <p className={`mt-1 text-xs ${days < 0 ? "text-red-400" : days <= 7 ? "text-amber-400" : "text-white/40"}`}>
+                    {days < 0 ? `Expired ${Math.abs(days)}d ago` : days === 0 ? "Expires today" : `Expires in ${days} day${days !== 1 ? "s" : ""}`}
+                  </p>
+                );
+              })()}
+            </div>
           </div>
 
           {/* ── Deck Size ── */}
@@ -731,6 +785,18 @@ export default function EditProjectPage() {
                 </div>
                 {showStairs && (
                   <div><FieldLabel label="Stair Count" help="Number of stair sections in the build." /><input value={form.stair_count} onChange={(e) => updateField("stair_count", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+                )}
+                {form.railing_type !== "none" && (
+                  <div>
+                    <FieldLabel label="Railing Linear Feet (LF)" help="Total linear feet of railing. Used for hardware auto-calculation and labor breakdown." />
+                    <input
+                      type="number" min="0" step="1"
+                      value={form.railing_lf}
+                      onChange={(e) => updateField("railing_lf", e.target.value)}
+                      className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                      placeholder="0"
+                    />
+                  </div>
                 )}
               </div>
             </>
@@ -781,49 +847,4 @@ export default function EditProjectPage() {
             {/* Built-ins */}
             <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
               <label className="flex items-center gap-3 text-sm font-medium text-white">
-                <input type="checkbox" checked={form.built_ins_enabled} onChange={(e) => updateField("built_ins_enabled", e.target.checked)} />
-                <span>Built-ins</span>
-                <FieldHelp text="Benches, planters, pergolas, privacy walls, or other custom integrated features." />
-              </label>
-              {form.built_ins_enabled && (
-                <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="md:col-span-2"><FieldLabel label="Built-ins Description" help="Describe the feature." /><input value={form.built_ins_description} onChange={(e) => updateField("built_ins_description", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="Bench seating, pergola, planter boxes..." /></div>
-                  <div><FieldLabel label="Built-ins Cost" help="Total cost allowance for all built-in features." /><input value={form.built_ins_cost} onChange={(e) => updateField("built_ins_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" /></div>
-                </div>
-              )}
-            </div>
-
-            {/* Dumpster */}
-            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
-              <label className="flex items-center gap-3 text-sm font-medium text-white">
-                <input type="checkbox" checked={form.dumpster_enabled}
-                  onChange={(e) => {
-                    const on = e.target.checked;
-                    const defaults = settingsRef.current ?? settings;
-                    updateField("dumpster_enabled", on);
-                    if (on && (!form.dumpster_cost || Number(form.dumpster_cost) === 0)) {
-                      updateField("dumpster_cost", moneyString(defaults.dumpster_default));
-                    }
-                  }} />
-                <span>Dumpster Required</span>
-                <FieldHelp text="Add a dumpster rental cost to the job. Pre-fills from your settings default." />
-              </label>
-              {form.dumpster_enabled && (
-                <div className="mt-3"><FieldLabel label="Dumpster Cost" help="Total dumpster rental cost for this job." /><input value={form.dumpster_cost} onChange={(e) => updateField("dumpster_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" /></div>
-              )}
-            </div>
-
-          </div>
-
-          {/* ── Permits ── */}
-          <div className="mt-8 mb-4 flex items-center justify-between">
-            <div className="text-sm font-medium text-white/80">Permits & Approvals</div>
-            {permitTotal > 0 && <div className="text-sm font-medium text-emerald-400">Total: ${permitTotal.toFixed(2)}</div>}
-          </div>
-          <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
-            <p className="mb-4 text-xs text-white/50">Toggle each permit that applies. Costs pre-fill from your settings defaults.</p>
-            <div className="space-y-3">
-              {PERMIT_TYPES.map(({ key, label }) => (
-                <div key={key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
-                  <label className="flex items-center gap-3 text-sm font-medium text-white">
-                    <input type="checkbox" checked={permits[key].enabled} onChange={(e) => togglePermit(key, e.target
+                <input type="checkbox" checked={form.built_ins_enabled} onChange={(e) =>

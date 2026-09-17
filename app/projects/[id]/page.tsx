@@ -39,8 +39,13 @@ function dt(value: string | null | undefined) {
   return new Date(value).toLocaleDateString("en-US");
 }
 
-type QcSeverity = "error" | "warn" | "info";
+// ── QC Engine ────────────────────────────────────────────────────────────────
+// Three tiers: "blocking" (must fix), "review" (should check), "note" (advisory)
+// Tier displayed in the banner: Missing Information / Review Recommended / Ready to Send
+type QcSeverity = "blocking" | "review" | "note";
 type QcFlag = { severity: QcSeverity; message: string };
+
+type QcTier = "missing_information" | "review_recommended" | "ready_to_send";
 
 function computeQcFlags(p: ProjectRow): QcFlag[] {
   const flags: QcFlag[] = [];
@@ -48,29 +53,66 @@ function computeQcFlags(p: ProjectRow): QcFlag[] {
   const pricePerSqft = p.deck_sqft && p.deck_sqft > 0 && p.final_price
     ? p.final_price / p.deck_sqft : null;
 
-  if (margin < 0.20) flags.push({ severity: "error", message: `Margin ${pct(margin)} is critically low (below 20%)` });
-  else if (margin < 0.28) flags.push({ severity: "warn", message: `Margin ${pct(margin)} is below the recommended 28%` });
-  if (!p.final_price) flags.push({ severity: "error", message: "No final price set — quote is incomplete" });
-  if (!p.client_name) flags.push({ severity: "warn", message: "No client name — add before sending" });
-  if (!p.client_email && !p.client_phone) flags.push({ severity: "warn", message: "No client contact info — add email or phone" });
-  if (!p.site_address) flags.push({ severity: "info", message: "No site address on record" });
-  if (!p.deck_sqft || p.deck_sqft === 0) flags.push({ severity: "warn", message: "Deck sq ft is 0 — check dimensions" });
-  if (!p.material_type) flags.push({ severity: "warn", message: "Material type not set" });
-  if (!p.height_tier) flags.push({ severity: "info", message: "Height tier not set" });
-  if (!p.permit_cost || p.permit_cost === 0) flags.push({ severity: "info", message: "No permit costs — confirm permits not required" });
-  if (pricePerSqft !== null) {
-    if (pricePerSqft < 20) flags.push({ severity: "error", message: `Price/sq ft is $${pricePerSqft.toFixed(0)} — unusually low` });
-    else if (pricePerSqft > 200) flags.push({ severity: "warn", message: `Price/sq ft is $${pricePerSqft.toFixed(0)} — unusually high` });
-  }
+  // ── Blocking — must fix before sending ──
+  if (!p.final_price) flags.push({ severity: "blocking", message: "No final price set — quote is incomplete" });
+  if (margin < 0.20 && p.final_price) flags.push({ severity: "blocking", message: `Margin ${pct(margin)} is critically low — below 20%` });
+  if (pricePerSqft !== null && pricePerSqft < 20) flags.push({ severity: "blocking", message: `Price/sq ft $${pricePerSqft.toFixed(0)} is unusually low — verify costs` });
+
+  // ── Review — should resolve before sending ──
+  if (!p.client_name) flags.push({ severity: "review", message: "No client name — required before sending" });
+  if (!p.client_email && !p.client_phone) flags.push({ severity: "review", message: "No client contact info — add email or phone" });
+  if (!p.deck_sqft || p.deck_sqft === 0) flags.push({ severity: "review", message: "Deck sq ft is 0 — check dimensions" });
+  if (!p.material_type) flags.push({ severity: "review", message: "Material type not set" });
+  if (margin >= 0.01 && margin < 0.28 && margin >= 0.20) flags.push({ severity: "review", message: `Margin ${pct(margin)} is below the recommended 28%` });
+  if (pricePerSqft !== null && pricePerSqft > 200) flags.push({ severity: "review", message: `Price/sq ft $${pricePerSqft.toFixed(0)} is unusually high — double-check pricing` });
+
+  // ── Notes — advisory ──
+  if (!p.site_address) flags.push({ severity: "note", message: "No site address on record" });
+  if (!p.height_tier) flags.push({ severity: "note", message: "Height tier not set" });
+  if (!p.permit_cost || p.permit_cost === 0) flags.push({ severity: "note", message: "No permit costs — confirm permits are not required" });
+
   return flags;
 }
 
-const SEVERITY_STYLES: Record<QcSeverity, string> = {
-  error: "border-red-500/40 bg-red-500/10 text-red-300",
-  warn:  "border-amber-500/40 bg-amber-500/10 text-amber-300",
-  info:  "border-blue-500/30 bg-blue-500/8 text-blue-300",
+function getQcTier(flags: QcFlag[]): QcTier {
+  if (flags.some(f => f.severity === "blocking")) return "missing_information";
+  if (flags.some(f => f.severity === "review")) return "review_recommended";
+  return "ready_to_send";
+}
+
+const TIER_CONFIG: Record<QcTier, { label: string; icon: string; border: string; bg: string; text: string; badge: string }> = {
+  missing_information: {
+    label: "Missing Information",
+    icon: "✕",
+    border: "border-red-500/40",
+    bg: "bg-red-500/8",
+    text: "text-red-300",
+    badge: "bg-red-500/20 text-red-300",
+  },
+  review_recommended: {
+    label: "Review Recommended",
+    icon: "⚠",
+    border: "border-amber-500/40",
+    bg: "bg-amber-500/8",
+    text: "text-amber-300",
+    badge: "bg-amber-500/20 text-amber-300",
+  },
+  ready_to_send: {
+    label: "Ready to Send",
+    icon: "✓",
+    border: "border-emerald-500/40",
+    bg: "bg-emerald-500/8",
+    text: "text-emerald-300",
+    badge: "bg-emerald-500/20 text-emerald-300",
+  },
 };
-const SEVERITY_ICONS: Record<QcSeverity, string> = { error: "✕", warn: "⚠", info: "ℹ" };
+
+const FLAG_STYLES: Record<QcSeverity, string> = {
+  blocking: "border-red-500/40 bg-red-500/10 text-red-300",
+  review:   "border-amber-500/40 bg-amber-500/10 text-amber-300",
+  note:     "border-blue-500/30 bg-blue-500/8 text-blue-300",
+};
+const FLAG_ICONS: Record<QcSeverity, string> = { blocking: "✕", review: "⚠", note: "ℹ" };
 
 export default async function ProjectPage({
   params,
@@ -134,17 +176,11 @@ export default async function ProjectPage({
   }
 
   const qcFlags = computeQcFlags(project);
+  const qcTier  = getQcTier(qcFlags);
+  const qcCfg   = TIER_CONFIG[qcTier];
   const margin = project.target_margin ?? 0;
   const marginColor = margin < 0.20 ? "text-red-400" : margin < 0.28 ? "text-amber-400" : "text-emerald-400";
   const marginBg    = margin < 0.20 ? "border-red-500/30 bg-red-500/10" : margin < 0.28 ? "border-amber-500/30 bg-amber-500/10" : "border-emerald-500/30 bg-emerald-500/10";
-
-  const hasErrors = qcFlags.some(f => f.severity === "error");
-  const hasWarns  = qcFlags.some(f => f.severity === "warn");
-  const qcBannerStyle = hasErrors
-    ? "border-red-500/40 bg-red-500/10"
-    : hasWarns
-    ? "border-amber-500/40 bg-amber-500/10"
-    : "border-emerald-500/40 bg-emerald-500/10";
 
   return (
     <main className="min-h-screen bg-[#0e0e10] px-4 py-6 text-white md:px-10">
@@ -181,22 +217,38 @@ export default async function ProjectPage({
           </div>
         </div>
 
-        {/* ── QC Flags ── */}
-        {qcFlags.length > 0 && (
-          <div className={`mb-6 rounded-xl border p-4 ${qcBannerStyle}`}>
-            <div className="mb-2 text-sm font-medium">
-              {hasErrors ? "⚠ Requires attention before sending" : hasWarns ? "Review before sending" : "✓ Quote looks good"}
-            </div>
-            <ul className="space-y-1">
+        {/* ── QC Engine ── */}
+        <div className={`mb-6 rounded-xl border p-4 ${qcCfg.border} ${qcCfg.bg}`}>
+          {/* Tier banner */}
+          <div className="mb-3 flex items-center gap-3">
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${qcCfg.badge}`}>
+              {qcCfg.icon} {qcCfg.label}
+            </span>
+            {qcTier === "ready_to_send" && qcFlags.length === 0 && (
+              <span className="text-xs text-emerald-400/70">All checks passed — this quote is ready to share with your client.</span>
+            )}
+            {qcTier === "ready_to_send" && qcFlags.length > 0 && (
+              <span className="text-xs text-emerald-400/70">Core checks passed — minor notes below.</span>
+            )}
+            {qcTier === "review_recommended" && (
+              <span className="text-xs text-amber-400/70">Sendable, but review the items below first.</span>
+            )}
+            {qcTier === "missing_information" && (
+              <span className="text-xs text-red-400/70">Resolve blocking issues before sending to your client.</span>
+            )}
+          </div>
+          {/* Flag list */}
+          {qcFlags.length > 0 && (
+            <ul className="space-y-1.5">
               {qcFlags.map((f, i) => (
-                <li key={i} className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs ${SEVERITY_STYLES[f.severity]}`}>
-                  <span className="font-bold">{SEVERITY_ICONS[f.severity]}</span>
-                  {f.message}
+                <li key={i} className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${FLAG_STYLES[f.severity]}`}>
+                  <span className="mt-px font-bold shrink-0">{FLAG_ICONS[f.severity]}</span>
+                  <span>{f.message}</span>
                 </li>
               ))}
             </ul>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* ── Two-column layout on desktop ── */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -298,53 +350,4 @@ export default async function ProjectPage({
             {/* Material Takeoff */}
             <MaterialTakeoff
               deckLength={project.deck_length}
-              deckWidth={project.deck_width}
-              deckSqft={project.deck_sqft}
-              heightTier={project.height_tier}
-              materialType={project.material_type}
-              railingType={project.railing_type}
-              stairCount={project.stair_count}
-              jobType={project.job_type}
-            />
-
-            {/* Notes */}
-            <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-2 text-base font-semibold">Internal Notes</h2>
-              <div className="text-sm text-white/80">{project.notes?.trim() || "—"}</div>
-            </div>
-          </div>
-
-          {/* Right sidebar: actions */}
-          <div className="space-y-4">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="mb-3 text-sm font-semibold">Quick Links</div>
-              <div className="space-y-2">
-                <Link href={`/projects/${project.id}/edit`} className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
-                  ✏ Edit Quote
-                </Link>
-                <Link href={`/projects/${project.id}/design`} className="block w-full rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-center text-sm text-emerald-300 hover:bg-emerald-500/20">
-                  🎨 Design Canvas
-                </Link>
-                <a href={`/api/proposal/${project.id}`} target="_blank" rel="noreferrer" className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
-                  ↓ Download PDF
-                </a>
-                <a href={`/projects/${project.id}/materials`} target="_blank" rel="noreferrer" className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
-                  🖨 Material List
-                </a>
-              </div>
-            </div>
-
-            {/* Client actions: Share / Email / Duplicate */}
-            <QuoteActions
-              projectId={project.id}
-              clientEmail={project.client_email}
-              proposalTokenActive={project.proposal_token_active}
-              initialStatus={project.status}
-            />
-          </div>
-
-        </div>
-      </div>
-    </main>
-  );
-}
+   
