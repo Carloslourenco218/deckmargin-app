@@ -39,7 +39,7 @@ export async function POST(
     return NextResponse.json({ error: updateErr?.message ?? "Update failed" }, { status: 500 });
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://app.deckmargin.com";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://deckmargin.com";
   return NextResponse.json({ url: `${baseUrl}/p/${updated.proposal_token}` });
 }
 

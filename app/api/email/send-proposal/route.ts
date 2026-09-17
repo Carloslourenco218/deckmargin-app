@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   // Build shareable URL if token is active
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://app.deckmargin.com";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://deckmargin.com";
   const shareUrl = project.proposal_token_active && project.proposal_token
     ? `${baseUrl}/p/${project.proposal_token}`
     : null;
