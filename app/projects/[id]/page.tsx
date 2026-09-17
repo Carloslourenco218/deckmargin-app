@@ -350,4 +350,53 @@ export default async function ProjectPage({
             {/* Material Takeoff */}
             <MaterialTakeoff
               deckLength={project.deck_length}
-   
+              deckWidth={project.deck_width}
+              deckSqft={project.deck_sqft}
+              heightTier={project.height_tier}
+              materialType={project.material_type}
+              railingType={project.railing_type}
+              stairCount={project.stair_count}
+              jobType={project.job_type}
+            />
+
+            {/* Notes */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+              <h2 className="mb-2 text-base font-semibold">Internal Notes</h2>
+              <div className="text-sm text-white/80">{project.notes?.trim() || "—"}</div>
+            </div>
+          </div>
+
+          {/* Right sidebar: actions */}
+          <div className="space-y-4">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="mb-3 text-sm font-semibold">Quick Links</div>
+              <div className="space-y-2">
+                <Link href={`/projects/${project.id}/edit`} className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
+                  ✏ Edit Quote
+                </Link>
+                <Link href={`/projects/${project.id}/design`} className="block w-full rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-center text-sm text-emerald-300 hover:bg-emerald-500/20">
+                  🎨 Design Canvas
+                </Link>
+                <a href={`/api/proposal/${project.id}`} target="_blank" rel="noreferrer" className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
+                  ↓ Download PDF
+                </a>
+                <a href={`/projects/${project.id}/materials`} target="_blank" rel="noreferrer" className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
+                  🖨 Material List
+                </a>
+              </div>
+            </div>
+
+            {/* Client actions: Share / Email / Duplicate */}
+            <QuoteActions
+              projectId={project.id}
+              clientEmail={project.client_email}
+              proposalTokenActive={project.proposal_token_active}
+              initialStatus={project.status}
+            />
+          </div>
+
+        </div>
+      </div>
+    </main>
+  );
+}

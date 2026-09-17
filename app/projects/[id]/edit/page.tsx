@@ -847,4 +847,169 @@ export default function EditProjectPage() {
             {/* Built-ins */}
             <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
               <label className="flex items-center gap-3 text-sm font-medium text-white">
-                <input type="checkbox" checked={form.built_ins_enabled} onChange={(e) =>
+                <input type="checkbox" checked={form.built_ins_enabled} onChange={(e) => updateField("built_ins_enabled", e.target.checked)} />
+                <span>Built-ins</span>
+                <FieldHelp text="Benches, planters, pergolas, privacy walls, or other custom integrated features." />
+              </label>
+              {form.built_ins_enabled && (
+                <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="md:col-span-2"><FieldLabel label="Built-ins Description" help="Describe the feature." /><input value={form.built_ins_description} onChange={(e) => updateField("built_ins_description", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="Bench seating, pergola, planter boxes..." /></div>
+                  <div><FieldLabel label="Built-ins Cost" help="Total cost allowance for all built-in features." /><input value={form.built_ins_cost} onChange={(e) => updateField("built_ins_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" /></div>
+                </div>
+              )}
+            </div>
+
+            {/* Dumpster */}
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input type="checkbox" checked={form.dumpster_enabled}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    const defaults = settingsRef.current ?? settings;
+                    updateField("dumpster_enabled", on);
+                    if (on && (!form.dumpster_cost || Number(form.dumpster_cost) === 0)) {
+                      updateField("dumpster_cost", moneyString(defaults.dumpster_default));
+                    }
+                  }} />
+                <span>Dumpster Required</span>
+                <FieldHelp text="Add a dumpster rental cost to the job. Pre-fills from your settings default." />
+              </label>
+              {form.dumpster_enabled && (
+                <div className="mt-3"><FieldLabel label="Dumpster Cost" help="Total dumpster rental cost for this job." /><input value={form.dumpster_cost} onChange={(e) => updateField("dumpster_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" /></div>
+              )}
+            </div>
+
+          </div>
+
+          {/* ── Permits ── */}
+          <div className="mt-8 mb-4 flex items-center justify-between">
+            <div className="text-sm font-medium text-white/80">Permits & Approvals</div>
+            {permitTotal > 0 && <div className="text-sm font-medium text-emerald-400">Total: ${permitTotal.toFixed(2)}</div>}
+          </div>
+          <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+            <p className="mb-4 text-xs text-white/50">Toggle each permit that applies. Costs pre-fill from your settings defaults.</p>
+            <div className="space-y-3">
+              {PERMIT_TYPES.map(({ key, label }) => (
+                <div key={key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
+                  <label className="flex items-center gap-3 text-sm font-medium text-white">
+                    <input type="checkbox" checked={permits[key].enabled} onChange={(e) => togglePermit(key, e.target.checked)} className="h-4 w-4 rounded accent-blue-500" />
+                    <span>{label}</span>
+                  </label>
+                  {permits[key].enabled && (
+                    <div className="mt-2">
+                      <FieldLabel label="Cost ($)" help={`Cost for ${label} on this project.`} />
+                      <input type="number" min="0" step="0.01" value={permits[key].cost} onChange={(e) => updatePermitCost(key, e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm" placeholder="0.00" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {permitTotal > 0 && (
+              <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                <span className="text-sm text-white/70">Permits subtotal</span>
+                <span className="text-sm font-semibold text-emerald-400">${permitTotal.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Hardware & Fasteners ── */}
+          <div className="mt-8 mb-6 flex items-center justify-between">
+            <div className="text-sm font-medium text-white/80">Hardware &amp; Fasteners</div>
+            <div className="flex items-center gap-3">
+              {settings.auto_hardware && (
+                <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-xs text-blue-300">Auto-calculated</span>
+              )}
+              {hardwareTotal > 0 && <div className="text-sm font-medium text-emerald-400">Total: ${hardwareTotal.toFixed(2)}</div>}
+            </div>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+            {settings.auto_hardware ? (
+              <p className="mb-4 text-xs text-white/50">Hardware quantities auto-calculated from deck geometry. Enable/disable individual items or adjust costs as needed.</p>
+            ) : (
+              <p className="mb-4 text-xs text-white/50">Check each item that applies. Total is added to your job cost automatically. Enable Auto-calculate Hardware in Settings to compute quantities from deck geometry.</p>
+            )}
+            <div className="space-y-3">
+              {hardwareItems.map((item) => (
+                <div key={item.key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
+                  <label className="flex items-center gap-3 text-sm font-medium text-white">
+                    <input type="checkbox" checked={item.enabled} onChange={(e) => updateHardwareEnabled(item.key, e.target.checked)} className="h-4 w-4 rounded accent-blue-500" />
+                    <span>{item.label}</span>
+                  </label>
+                  {item.enabled && (
+                    <div className="mt-2"><FieldLabel label="Cost ($)" help={`Enter the cost for ${item.label} on this project.`} /><input type="number" min="0" step="0.01" value={item.cost} onChange={(e) => updateHardwareCost(item.key, e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm" placeholder="0.00" /></div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {hardwareTotal > 0 && (
+              <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                <span className="text-sm text-white/70">Hardware subtotal</span>
+                <span className="text-sm font-semibold text-emerald-400">${hardwareTotal.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Cost Breakdown ── */}
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Cost Breakdown</div>
+
+          {/* Material waste factor callout */}
+          {Number(form.deck_sqft) > 0 && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/60">
+              <span>Waste factor:</span>
+              <span className="font-medium text-white/80">{((settings.waste_factor ?? 1.10) * 100 - 100).toFixed(0)}% applied to materials</span>
+              <span className="text-white/40">— Set in Settings → Pricing</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div><FieldLabel label="Material Cost" help="Auto-calculated from deck size × material rate × waste factor × regional multiplier." /><input value={form.material_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+            <div>
+              <FieldLabel label="Labor Cost" help="Auto-calculated from deck size, height tier, stair count, and your regional labor multiplier." />
+              <input value={form.labor_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" />
+              {/* Labor phase breakdown */}
+              {laborPhases.length > 0 && (
+                <div className="mt-2 rounded-lg border border-white/10 bg-[#0b1220] p-3">
+                  <div className="mb-2 text-xs font-medium text-white/50">Estimated hours by phase</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                    {laborPhases.map((p) => (
+                      <div key={p.phase} className="flex items-center justify-between text-xs">
+                        <span className="text-white/50">{p.phase}</span>
+                        <span className="text-white/70">{p.hours}h</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2 text-xs">
+                    <span className="font-medium text-white/70">Total est. hours</span>
+                    <span className="font-semibold text-white">{totalLaborHours.toFixed(1)}h × {settings.crew_size} crew</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <FieldLabel label="Sales Tax" help="Calculated from your tax rate and applies-to setting." />
+              <input value={`$${Number(form.tax_amount || 0).toFixed(2)} (${form.tax_rate}% on ${form.tax_applies_to.replace(/_/g, " ")})`} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80 text-sm" />
+            </div>
+            <div><FieldLabel label="Permits Total" help="Sum of all toggled permit costs." /><input value={permitTotal.toFixed(2)} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+            <div><FieldLabel label="Equipment Cost" help="Rentals, specialty tools, delivery equipment." /><input value={form.equipment_cost} onChange={(e) => updateField("equipment_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><FieldLabel label="Overhead Cost" help="Admin time, travel, insurance, project management." /><input value={form.overhead_cost} onChange={(e) => updateField("overhead_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><FieldLabel label="Total Job Cost" help="Full internal cost including all line items, tax, permits, and add-ons." /><input value={form.total_job_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+          </div>
+
+          {/* ── Pricing ── */}
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Pricing</div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div><FieldLabel label="Final Price" help="Client-facing total based on your costs and target margin." /><input value={form.final_price} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+            <div><FieldLabel label="Expected Profit" help="Projected profit after subtracting total job cost from final price." /><input value={form.expected_profit} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
+            <div><FieldLabel label="Target Margin" help="Enter your desired margin as 0.30 or 30." /><input value={form.target_margin} onChange={(e) => updateField("target_margin", e.target.value)} placeholder="0.30 or 30" className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+          </div>
+
+          <div className="mt-8">
+            <FieldLabel label="Notes" help="Internal reminders, scope clarifications, or special conditions." />
+            <textarea value={form.notes} onChange={(e) => updateField("notes", e.target.value)} rows={5} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+          </div>
+
+        </div>
+      </div>
+    </main>
+  );
+}

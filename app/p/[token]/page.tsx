@@ -68,4 +68,30 @@ export default async function PublicProposalPage({ params }: Props) {
     return (
       <main className="min-h-screen bg-[#f6f7fb] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <div classNam
+          <div className="text-4xl mb-4">⏰</div>
+          <h1 className="text-xl font-semibold text-gray-800 mb-2">Proposal Expired</h1>
+          <p className="text-gray-500 text-sm">This proposal has passed its expiration date. Please contact your contractor for a current quote.</p>
+        </div>
+      </main>
+    );
+  }
+
+  // Fetch company info
+  const { data: company } = await supabaseAdmin
+    .from("user_settings")
+    .select("company_name, company_phone, company_email, company_website, company_address, logo_url, standard_assumptions, standard_exclusions")
+    .eq("user_id", project.user_id)
+    .maybeSingle();
+
+  // Fire-and-forget viewed tracking (non-blocking)
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://deckmargin.com";
+  fetch(`${baseUrl}/api/projects/${project.id}/viewed`, { method: "POST" }).catch(() => {});
+
+  return (
+    <PublicProposalClient
+      project={project}
+      company={company}
+      token={token}
+    />
+  );
+}

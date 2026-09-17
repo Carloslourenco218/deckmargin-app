@@ -265,4 +265,132 @@ export default function DashboardPage() {
         </div>
 
         <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wid
+          <div className="text-xs uppercase tracking-wide text-gray-400">Quotes Sent</div>
+          <div className="mt-2 text-2xl font-semibold">{quotesSent}</div>
+          <div className="mt-1 text-xs text-gray-500">total across all time</div>
+        </div>
+
+        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
+          <div className="text-xs uppercase tracking-wide text-gray-400">Won</div>
+          <div className="mt-2 text-2xl font-semibold text-emerald-400">{wonCount}</div>
+        </div>
+
+        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
+          <div className="text-xs uppercase tracking-wide text-gray-400">Lost / Declined</div>
+          <div className="mt-2 text-2xl font-semibold text-red-400">{lostCount}</div>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-gray-700">
+        <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
+          <div className="text-sm text-gray-300">Recent Quotes</div>
+          <div className="text-xs text-gray-500">
+            {loading ? "Loading…" : `Showing ${recentRows.length} of ${rows.length} quote${rows.length !== 1 ? "s" : ""}`}
+          </div>
+        </div>
+
+        {err && (
+          <div className="border-b border-gray-700 bg-red-950/30 p-6 text-sm text-red-300">
+            Error: {err}
+          </div>
+        )}
+
+        <table className="w-full text-sm">
+          <thead className="bg-[#151518] text-gray-400">
+            <tr>
+              <th className="px-6 py-3 text-left">Project</th>
+              <th className="px-6 py-3 text-left">Status</th>
+              <th className="px-6 py-3 text-left">Price</th>
+              <th className="px-6 py-3 text-left">Profit</th>
+              <th className="px-6 py-3 text-left">Margin</th>
+              <th className="px-6 py-3 text-left">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {loading ? (
+              <tr>
+                <td className="px-6 py-6 text-gray-400" colSpan={6}>
+                  Loading recent quotes…
+                </td>
+              </tr>
+            ) : recentRows.length === 0 ? (
+              <tr>
+                <td className="px-6 py-6 text-gray-400" colSpan={6}>
+                  No quotes yet. Create your first quote.
+                </td>
+              </tr>
+            ) : (
+              recentRows.map((p) => (
+                <tr
+                  key={p.id}
+                  className="border-t border-gray-800 hover:bg-[#151518]"
+                >
+                  <td className="px-6 py-4">{p.name ?? "Untitled Quote"}</td>
+
+                  <td className="px-6 py-4">
+                    {statusBadge(p.status)}
+                  </td>
+
+                  <td className="px-6 py-4">{money(p.final_price)}</td>
+                  <td className="px-6 py-4">{money(p.expected_profit)}</td>
+                  <td className="px-6 py-4">{pct(p.target_margin)}</td>
+
+                  <td className="flex gap-2 px-6 py-4">
+                    <Link
+                      href={`/projects/${p.id}`}
+                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                    >
+                      Open
+                    </Link>
+
+                    <Link
+                      href={`/projects/${p.id}/edit`}
+                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                    >
+                      Edit
+                    </Link>
+
+                    <Link
+                      href={`/projects/${p.id}/preview`}
+                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                    >
+                      Preview
+                    </Link>
+
+                    <a
+                      href={`/api/proposal/${p.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                    >
+                      PDF
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDuplicate(p.id)}
+                      disabled={duplicating === p.id}
+                      className="rounded-md border border-white/20 px-3 py-1 text-xs hover:bg-gray-700 disabled:opacity-50"
+                    >
+                      {duplicating === p.id ? "…" : "Duplicate"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(p.id)}
+                      className="rounded-md border border-red-500/40 px-3 py-1 text-xs text-red-300 hover:bg-red-500/10"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  );
+}
+
