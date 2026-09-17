@@ -17,6 +17,7 @@ const REGION_MULTIPLIERS: Record<string, { material: number; labor: number }> = 
 
 const JOB_TYPES = [
   { value: "new_build",    label: "New Build",   description: "Full deck construction — framing, footings, surface, railing, stairs" },
+  { value: "rebuild",      label: "Rebuild",     description: "Complete tear-down + replacement — includes demo, disposal, and full new build pricing" },
   { value: "resurface",    label: "Resurface",   description: "Surface boards only on existing frame — no framing, footings, or structural labor" },
   { value: "railing_only", label: "Railing Only",description: "Railing materials and installation labor only" },
   { value: "repair",       label: "Repair",      description: "Custom line items only — all auto-calculations zeroed out" },
@@ -42,6 +43,17 @@ type SettingsRow = {
   permit_electrical_default: number;
   permit_engineering_default: number;
   permit_hoa_default: number;
+  // Phase 4 additions
+  waste_factor: number;
+  auto_hardware: boolean;
+  crew_size: number;
+  crew_hourly_rate: number;
+  concrete_bag_price: number;
+  joist_hanger_price: number;
+  post_base_price: number;
+  hurricane_tie_price: number;
+  lag_bolt_price: number;
+  proposal_expiry_days: number;
 };
 
 type HardwareItem = { key: string; label: string; enabled: boolean; cost: string };
@@ -127,22 +139,83 @@ function calcTax(material: number, labor: number, taxRate: number, taxAppliesTo:
   return (material + labor) * rate;
 }
 
+// ── Auto-hardware calculation from geometry ────────────────────────────────
+function autoCalcHardware(
+  sqft: number, length: number, width: number,
+  isAttached: boolean, settings: SettingsRow
+): HardwareItem[] {
+  if (!sqft || sqft < 1 || !length || !width) return DEFAULT_HARDWARE;
+  const joist_spacing_in = 16; // 16" on center standard
+  const joist_count = Math.ceil((width * 12) / joist_spacing_in) + 1;
+  const posts_along_length = Math.ceil(length / 8) + 1;
+  const beam_rows = Math.ceil(width / 8) + 1;
+  const post_count = posts_along_length * beam_rows;
+  const concrete_bags = post_count * 2;
+  const joist_hangers = joist_count * 2;
+  const hurricane_ties = joist_count * 2;
+  const post_bases = post_count;
+  const lag_bolts = isAttached ? Math.ceil(length / 1.5) : 0;
+  const fastener_cost = Math.round(sqft * 0.35);
+  const flashing_lf = isAttached ? Math.round(length) : 0;
+  return [
+    { key: "fasteners_screws", label: "Fasteners / screws",                    enabled: true,        cost: String(fastener_cost) },
+    { key: "joist_hangers",    label: `Joist hangers (${joist_hangers}× qty)`, enabled: true,        cost: String(Math.round(joist_hangers * (settings.joist_hanger_price ?? 1.75))) },
+    { key: "post_bases",       label: `Post bases (${post_bases}× qty)`,        enabled: true,        cost: String(Math.round(post_bases * (settings.post_base_price ?? 12))) },
+    { key: "concrete_bags",    label: `Concrete bags (${concrete_bags}× 80lb)`, enabled: true,        cost: String(Math.round(concrete_bags * (settings.concrete_bag_price ?? 8.50))) },
+    { key: "hurricane_ties",   label: `Hurricane ties (${hurricane_ties}× qty)`,enabled: true,        cost: String(Math.round(hurricane_ties * (settings.hurricane_tie_price ?? 2.50))) },
+    { key: "lag_bolts",        label: `Lag bolts (${isAttached ? lag_bolts : "N/A — freestanding"})`, enabled: isAttached, cost: String(Math.round(lag_bolts * (settings.lag_bolt_price ?? 0.75))) },
+    { key: "flashing",         label: `Flashing (${flashing_lf} LF)`,           enabled: isAttached,  cost: String(Math.round(flashing_lf * 3.50)) },
+    { key: "misc_hardware",    label: "Misc hardware",                          enabled: true,        cost: String(Math.round(sqft * 0.50)) },
+  ];
+}
+
+// ── Labor phase informational breakdown ───────────────────────────────────
+function laborPhaseBreakdown(
+  sqft: number, length: number, width: number,
+  stairCount: number, railingLf: number,
+  jobType: string, settings: SettingsRow
+): Array<{ phase: string; hours: number }> {
+  if (!sqft || sqft < 1) return [];
+  const postCount = (Math.ceil(length / 8) + 1) * (Math.ceil(width / 8) + 1);
+  const isDemo = jobType === "rebuild";
+  const phasesBase = [
+    { phase: "Site prep",     hours: Math.round(sqft * 0.008 * 10) / 10 },
+    ...(isDemo ? [{ phase: "Demo / removal", hours: Math.round(sqft * 0.025 * 10) / 10 }] : []),
+    { phase: "Footings",      hours: Math.round(postCount * 1.5 * 10) / 10 },
+    { phase: "Framing",       hours: Math.round(sqft * 0.05 * 10) / 10 },
+    { phase: "Decking",       hours: Math.round(sqft * 0.04 * 10) / 10 },
+    ...(railingLf > 0 ? [{ phase: "Railing", hours: Math.round(railingLf * 0.2 * 10) / 10 }] : []),
+    ...(stairCount > 0 ? [{ phase: "Stairs", hours: Math.round(stairCount * 1.5 * 10) / 10 }] : []),
+    { phase: "Cleanup",       hours: Math.round(sqft * 0.008 * 10) / 10 },
+  ];
+  if (jobType === "resurface") {
+    return [
+      { phase: "Surface removal", hours: Math.round(sqft * 0.015 * 10) / 10 },
+      { phase: "Decking",         hours: Math.round(sqft * 0.04 * 10) / 10 },
+      { phase: "Cleanup",         hours: Math.round(sqft * 0.008 * 10) / 10 },
+    ];
+  }
+  return phasesBase;
+}
+
 function calcCosts(form: FormState, settings: SettingsRow, hardwareItems: HardwareItem[], permits: PermitState) {
   const sqft = Number(form.deck_sqft || 0);
   const regionMult = REGION_MULTIPLIERS[settings.region] ?? { material: 1, labor: 1 };
   const matRate = materialRate(form.material_type, settings);
+  const wasteFactor = settings.waste_factor ?? 1.10;
   const laborBase = settings.labor_rate_per_sqft * regionMult.labor;
   const jobType = form.job_type || "new_build";
 
   let material = 0, labor = 0;
-  if (jobType === "new_build") {
-    material = sqft * matRate;
-    labor = sqft * laborBase * laborMultiplier(form.height_tier) + Number(form.stair_count || 0) * settings.stair_cost;
+  if (jobType === "new_build" || jobType === "rebuild") {
+    material = sqft * matRate * wasteFactor;
+    const demoSurcharge = jobType === "rebuild" ? sqft * laborBase * 0.25 : 0;
+    labor = sqft * laborBase * laborMultiplier(form.height_tier) + Number(form.stair_count || 0) * settings.stair_cost + demoSurcharge;
   } else if (jobType === "resurface") {
-    material = sqft * matRate;
+    material = sqft * matRate * wasteFactor;
     labor = sqft * laborBase * 0.45;
   } else if (jobType === "addition") {
-    material = sqft * matRate;
+    material = sqft * matRate * wasteFactor;
     labor = sqft * laborBase * laborMultiplier(form.height_tier) * 0.60 + Number(form.stair_count || 0) * settings.stair_cost;
   }
 
@@ -197,6 +270,12 @@ export default function EditProjectPage() {
     region: "national", tax_rate: 0, tax_applies_to: "materials_and_labor",
     dumpster_default: 0, permit_building_default: 0, permit_septic_default: 0,
     permit_electrical_default: 0, permit_engineering_default: 0, permit_hoa_default: 0,
+    // Phase 4
+    waste_factor: 1.10, auto_hardware: false,
+    crew_size: 2, crew_hourly_rate: 65,
+    concrete_bag_price: 8.50, joist_hanger_price: 1.75, post_base_price: 12.00,
+    hurricane_tie_price: 2.50, lag_bolt_price: 0.75,
+    proposal_expiry_days: 30,
   });
 
   const [hardwareItems, setHardwareItems] = useState<HardwareItem[]>(DEFAULT_HARDWARE);
@@ -204,7 +283,7 @@ export default function EditProjectPage() {
   const settingsRef = useRef<SettingsRow | null>(null);
 
   const [form, setForm] = useState<FormState>({
-    name: "", status: "open", job_type: "new_build",
+    name: "", status: "ready_to_send", job_type: "new_build",
     deck_length: "", deck_width: "", deck_sqft: "",
     height_tier: "standard", material_type: "pressure-treated", railing_type: "none", stair_count: "0",
     lighting_enabled: false, lighting_cost: "0",
@@ -249,6 +328,17 @@ export default function EditProjectPage() {
             permit_electrical_default: Number(sd.permit_electrical_default ?? 0),
             permit_engineering_default:Number(sd.permit_engineering_default?? 0),
             permit_hoa_default:        Number(sd.permit_hoa_default        ?? 0),
+            // Phase 4
+            waste_factor:         Number(sd.waste_factor         ?? 1.10),
+            auto_hardware:        Boolean(sd.auto_hardware        ?? false),
+            crew_size:            Number(sd.crew_size            ?? 2),
+            crew_hourly_rate:     Number(sd.crew_hourly_rate     ?? 65),
+            concrete_bag_price:   Number(sd.concrete_bag_price   ?? 8.50),
+            joist_hanger_price:   Number(sd.joist_hanger_price   ?? 1.75),
+            post_base_price:      Number(sd.post_base_price      ?? 12.00),
+            hurricane_tie_price:  Number(sd.hurricane_tie_price  ?? 2.50),
+            lag_bolt_price:       Number(sd.lag_bolt_price       ?? 0.75),
+            proposal_expiry_days: Number(sd.proposal_expiry_days ?? 30),
           };
           setSettings(s);
           settingsRef.current = s;
@@ -299,7 +389,7 @@ export default function EditProjectPage() {
 
       setForm({
         name:          data.name    ?? "",
-        status:        data.status  ?? "open",
+        status:        data.status === "open" ? "ready_to_send" : (data.status ?? "ready_to_send"),
         job_type:      data.job_type ?? "new_build",
         deck_length:   moneyString(data.deck_length),
         deck_width:    moneyString(data.deck_width),
@@ -341,7 +431,22 @@ export default function EditProjectPage() {
     if (id) loadEverything();
   }, [id, supabase]);
 
-  // ── Recalculate ───────────────────────────────────────────────────────────
+  // ── Auto-hardware: recalculate whenever geometry changes ─────────────────
+  useEffect(() => {
+    if (!settings.auto_hardware) return;
+    const sqft = Number(form.deck_length || 0) * Number(form.deck_width || 0);
+    if (!sqft) return;
+    const computed = autoCalcHardware(
+      sqft,
+      Number(form.deck_length || 0),
+      Number(form.deck_width  || 0),
+      true, // TODO: connect deck_attachment from wizard data
+      settings
+    );
+    setHardwareItems(computed);
+  }, [form.deck_length, form.deck_width, settings]);
+
+  // ── Recalculate costs ─────────────────────────────────────────────────────
   useEffect(() => {
     const sqft = Number(form.deck_length || 0) * Number(form.deck_width || 0);
     setForm((prev) => {
@@ -401,6 +506,18 @@ export default function EditProjectPage() {
   const showStairs    = !isRepair && !isRailingOnly;
   const showDimensions= !isRepair && !isRailingOnly;
 
+  // Labor phase informational display
+  const laborPhases = laborPhaseBreakdown(
+    Number(form.deck_sqft || 0),
+    Number(form.deck_length || 0),
+    Number(form.deck_width  || 0),
+    Number(form.stair_count || 0),
+    0, // railing LF — not captured on this page yet
+    form.job_type,
+    settings
+  );
+  const totalLaborHours = laborPhases.reduce((s, p) => s + p.hours, 0);
+
   async function handleSave() {
     setSaving(true);
     setErr("");
@@ -413,7 +530,7 @@ export default function EditProjectPage() {
 
     const payload: Record<string, unknown> = {
       name:   form.name   || "Untitled Quote",
-      status: form.status || "open",
+      status: form.status || "ready_to_send",
       job_type: form.job_type || "new_build",
       deck_length: numOrNull(form.deck_length),
       deck_width:  numOrNull(form.deck_width),
@@ -529,12 +646,14 @@ export default function EditProjectPage() {
 
           <div className={`mt-4 rounded-lg border px-4 py-3 text-sm ${
             form.job_type === "new_build"    ? "border-blue-500/20 bg-blue-500/5 text-blue-300" :
+            form.job_type === "rebuild"      ? "border-orange-500/20 bg-orange-500/5 text-orange-300" :
             form.job_type === "resurface"    ? "border-amber-500/20 bg-amber-500/5 text-amber-300" :
             form.job_type === "railing_only" ? "border-purple-500/20 bg-purple-500/5 text-purple-300" :
             form.job_type === "repair"       ? "border-red-500/20 bg-red-500/5 text-red-300" :
                                                "border-emerald-500/20 bg-emerald-500/5 text-emerald-300"}`}>
             <span className="font-medium">{selectedJobType.label}:</span>{" "}
             {form.job_type === "new_build"    && "Full calculation active — all fields apply."}
+            {form.job_type === "rebuild"      && "Full new-build pricing + 25% demo/disposal labor surcharge applied. Enable Dumpster below to add haul-away cost."}
             {form.job_type === "resurface"    && "Framing, footings, and structural labor zeroed out. Surface materials and labor only."}
             {form.job_type === "railing_only" && "Deck surface calculation zeroed. Use permit and equipment fields to enter railing material and labor costs."}
             {form.job_type === "repair"       && "All auto-calculations zeroed. Enter all costs manually."}
@@ -556,18 +675,17 @@ export default function EditProjectPage() {
             <div>
               <FieldLabel label="Status" help="Track where this quote is in your sales process." />
               <select value={form.status} onChange={(e) => updateField("status", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
-                <option value="draft">draft</option>
-                <option value="open">open</option>
-                <option value="sent">sent</option>
-                <option value="viewed">viewed</option>
-                <option value="follow-up">follow-up</option>
-                <option value="approved">approved</option>
-                <option value="accepted">accepted</option>
-                <option value="won">won</option>
-                <option value="declined">declined</option>
-                <option value="lost">lost</option>
-                <option value="on-hold">on-hold</option>
-                <option value="expired">expired</option>
+                <option value="draft">Draft</option>
+                <option value="ready_to_send">Ready to Send</option>
+                <option value="sent">Sent</option>
+                <option value="viewed">Viewed</option>
+                <option value="follow-up">Follow-Up</option>
+                <option value="accepted">Accepted</option>
+                <option value="declined">Declined</option>
+                <option value="on-hold">On Hold</option>
+                <option value="expired">Expired</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
               </select>
             </div>
             <div><FieldLabel label="Client Name" help="The homeowner or customer name this proposal is for." /><input value={form.client_name} onChange={(e) => updateField("client_name", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
@@ -708,84 +826,4 @@ export default function EditProjectPage() {
               {PERMIT_TYPES.map(({ key, label }) => (
                 <div key={key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
                   <label className="flex items-center gap-3 text-sm font-medium text-white">
-                    <input type="checkbox" checked={permits[key].enabled} onChange={(e) => togglePermit(key, e.target.checked)} className="h-4 w-4 rounded accent-blue-500" />
-                    <span>{label}</span>
-                  </label>
-                  {permits[key].enabled && (
-                    <div className="mt-2">
-                      <FieldLabel label="Cost ($)" help={`Cost for ${label} on this project.`} />
-                      <input type="number" min="0" step="0.01" value={permits[key].cost} onChange={(e) => updatePermitCost(key, e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm" placeholder="0.00" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            {permitTotal > 0 && (
-              <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
-                <span className="text-sm text-white/70">Permits subtotal</span>
-                <span className="text-sm font-semibold text-emerald-400">${permitTotal.toFixed(2)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* ── Hardware & Fasteners ── */}
-          <div className="mt-8 mb-6 flex items-center justify-between">
-            <div className="text-sm font-medium text-white/80">Hardware &amp; Fasteners</div>
-            {hardwareTotal > 0 && <div className="text-sm font-medium text-emerald-400">Total: ${hardwareTotal.toFixed(2)}</div>}
-          </div>
-          <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
-            <p className="mb-4 text-xs text-white/50">Check each item that applies. Total is added to your job cost automatically.</p>
-            <div className="space-y-3">
-              {hardwareItems.map((item) => (
-                <div key={item.key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
-                  <label className="flex items-center gap-3 text-sm font-medium text-white">
-                    <input type="checkbox" checked={item.enabled} onChange={(e) => updateHardwareEnabled(item.key, e.target.checked)} className="h-4 w-4 rounded accent-blue-500" />
-                    <span>{item.label}</span>
-                  </label>
-                  {item.enabled && (
-                    <div className="mt-2"><FieldLabel label="Cost ($)" help={`Enter the cost for ${item.label} on this project.`} /><input type="number" min="0" step="0.01" value={item.cost} onChange={(e) => updateHardwareCost(item.key, e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm" placeholder="0.00" /></div>
-                  )}
-                </div>
-              ))}
-            </div>
-            {hardwareTotal > 0 && (
-              <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
-                <span className="text-sm text-white/70">Hardware subtotal</span>
-                <span className="text-sm font-semibold text-emerald-400">${hardwareTotal.toFixed(2)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* ── Cost Breakdown ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Cost Breakdown</div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div><FieldLabel label="Material Cost" help="Auto-calculated from deck size, material type, and your regional multiplier." /><input value={form.material_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
-            <div><FieldLabel label="Labor Cost" help="Auto-calculated from deck size, height tier, stair count, and your regional labor multiplier." /><input value={form.labor_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
-            <div>
-              <FieldLabel label="Sales Tax" help="Calculated from your tax rate and applies-to setting." />
-              <input value={`$${Number(form.tax_amount || 0).toFixed(2)} (${form.tax_rate}% on ${form.tax_applies_to.replace(/_/g, " ")})`} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80 text-sm" />
-            </div>
-            <div><FieldLabel label="Permits Total" help="Sum of all toggled permit costs." /><input value={permitTotal.toFixed(2)} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
-            <div><FieldLabel label="Equipment Cost" help="Rentals, specialty tools, delivery equipment." /><input value={form.equipment_cost} onChange={(e) => updateField("equipment_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-            <div><FieldLabel label="Overhead Cost" help="Admin time, travel, insurance, project management." /><input value={form.overhead_cost} onChange={(e) => updateField("overhead_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-            <div><FieldLabel label="Total Job Cost" help="Full internal cost including all line items, tax, permits, and add-ons." /><input value={form.total_job_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
-          </div>
-
-          {/* ── Pricing ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Pricing</div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div><FieldLabel label="Final Price" help="Client-facing total based on your costs and target margin." /><input value={form.final_price} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
-            <div><FieldLabel label="Expected Profit" help="Projected profit after subtracting total job cost from final price." /><input value={form.expected_profit} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" /></div>
-            <div><FieldLabel label="Target Margin" help="Enter your desired margin as 0.30 or 30." /><input value={form.target_margin} onChange={(e) => updateField("target_margin", e.target.value)} placeholder="0.30 or 30" className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-          </div>
-
-          <div className="mt-8">
-            <FieldLabel label="Notes" help="Internal reminders, scope clarifications, or special conditions." />
-            <textarea value={form.notes} onChange={(e) => updateField("notes", e.target.value)} rows={5} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
-          </div>
-
-        </div>
-      </div>
-    </main>
-  );
-}
+                    <input type="checkbox" checked={permits[key].enabled} onChange={(e) => togglePermit(key, e.target

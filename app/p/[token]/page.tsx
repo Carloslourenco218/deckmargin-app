@@ -5,6 +5,7 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import PublicProposalClient from "./PublicProposalClient";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -41,8 +42,9 @@ export default async function PublicProposalPage({ params }: Props) {
       permit_electrical_enabled, permit_electrical_cost,
       permit_engineering_enabled, permit_engineering_cost,
       permit_hoa_enabled, permit_hoa_cost,
-      proposal_token, proposal_token_active,
+      proposal_token, proposal_token_active, proposal_expires_at,
       accepted_at, accepted_by_name,
+      assumptions, exclusions,
       user_id, created_at
     `)
     .eq("proposal_token", token)
@@ -61,18 +63,9 @@ export default async function PublicProposalPage({ params }: Props) {
     );
   }
 
-  // Fetch company info
-  const { data: company } = await supabaseAdmin
-    .from("user_settings")
-    .select("company_name, company_phone, company_email, company_website, company_address, logo_url")
-    .eq("user_id", project.user_id)
-    .maybeSingle();
-
-  return (
-    <PublicProposalClient
-      project={project}
-      company={company}
-      token={token}
-    />
-  );
-}
+  // Check expiration
+  if (project.proposal_expires_at && new Date(project.proposal_expires_at) < new Date()) {
+    return (
+      <main className="min-h-screen bg-[#f6f7fb] flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div classNam

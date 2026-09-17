@@ -25,6 +25,9 @@ type Project = {
   permit_engineering_enabled: boolean | null; permit_engineering_cost: number | null;
   permit_hoa_enabled: boolean | null; permit_hoa_cost: number | null;
   accepted_at: string | null; accepted_by_name: string | null;
+  proposal_expires_at: string | null;
+  assumptions: string[] | null;
+  exclusions: string[] | null;
   created_at: string | null;
 };
 
@@ -32,6 +35,8 @@ type Company = {
   company_name: string | null; company_phone: string | null;
   company_email: string | null; company_website: string | null;
   company_address: string | null; logo_url: string | null;
+  standard_assumptions: string[] | null;
+  standard_exclusions: string[] | null;
 } | null;
 
 const MATERIAL_LABELS: Record<string, string> = {
@@ -48,12 +53,45 @@ const HEIGHT_LABELS: Record<string, string> = {
 };
 
 const JOB_LABELS: Record<string, string> = {
-  new_build: "New Deck Build",
-  resurface: "Resurface",
+  new_build:    "New Deck Build",
+  rebuild:      "Full Deck Rebuild",
+  resurface:    "Deck Resurface",
   railing_only: "Railing Installation",
-  repair: "Repair",
-  addition: "Deck Addition",
+  repair:       "Deck Repair",
+  addition:     "Deck Addition",
 };
+
+// Auto-generate standard assumptions from project scope
+function buildAssumptions(project: Project): string[] {
+  const items: string[] = [
+    "Normal site access assumed (vehicle and equipment access to work area).",
+    "All work performed per applicable local building codes and regulations.",
+    "Price is valid as quoted — any scope changes will require a revised proposal.",
+    "Homeowner responsible for marking any underground utilities prior to footing work.",
+  ];
+  if (project.height_tier === "standard") items.push("Deck height is at or near grade — no specialized lift equipment required.");
+  if (project.height_tier === "raised" || project.height_tier === "high") items.push("Existing ground conditions suitable for standard footing installation.");
+  if (project.material_type === "pressure-treated") items.push("All lumber is kiln-dried after treatment (KDAT) unless site conditions require otherwise.");
+  if (project.deck_sqft && project.deck_sqft > 200) items.push("Continuous work schedule assumed — delays due to homeowner access may affect timeline.");
+  return items;
+}
+
+// Auto-generate standard exclusions from project scope
+function buildExclusions(project: Project): string[] {
+  const items: string[] = [
+    "Landscaping, grading, or site restoration beyond the immediate work area.",
+    "Repair of any pre-existing structural deficiencies not part of this scope.",
+    "Interior permits, HOA submissions, or coordination unless listed above.",
+    "Furnishings, planters, decorative pots, or personal property.",
+  ];
+  if (project.job_type !== "rebuild") {
+    items.push("Removal or disposal of existing deck structure (not included in this scope).");
+  }
+  if (!project.lighting_enabled) items.push("Electrical wiring, conduit, or deck lighting.");
+  if (project.railing_type === "none") items.push("Railing or guardrail installation (not in scope — to be quoted separately if required).");
+  items.push("Any work not explicitly described in this proposal.");
+  return items;
+}
 
 function taxLabel(t: string | null) {
   if (t === "materials_only") return "materials only";
@@ -79,6 +117,21 @@ export default function PublicProposalClient({
   const [showAcceptForm, setShowAcceptForm] = useState(false);
 
   const companyName = company?.company_name ?? "Your Deck Contractor";
+
+  // Build assumptions and exclusions (project-level overrides company defaults, then auto-gen)
+  const assumptions: string[] = (project.assumptions?.length ? project.assumptions : null)
+    ?? company?.standard_assumptions
+    ?? buildAssumptions(project);
+
+  const exclusions: string[] = (project.exclusions?.length ? project.exclusions : null)
+    ?? company?.standard_exclusions
+    ?? buildExclusions(project);
+
+  // Expiration
+  const expiresAt = project.proposal_expires_at ? new Date(project.proposal_expires_at) : null;
+  const daysUntilExpiry = expiresAt
+    ? Math.ceil((expiresAt.getTime() - Date.now()) / 86_400_000)
+    : null;
 
   const permitLines: { label: string; cost: number }[] = [];
   if (project.permit_building_enabled && project.permit_building_cost)
@@ -142,8 +195,22 @@ export default function PublicProposalClient({
             <div className="text-sm font-medium">
               {project.created_at ? new Date(project.created_at).toLocaleDateString("en-US", { dateStyle: "long" }) : "—"}
             </div>
+            {expiresAt && (
+              <div className={`mt-1 text-xs font-medium ${daysUntilExpiry !== null && daysUntilExpiry <= 7 ? "text-red-500" : "text-gray-400"}`}>
+                {daysUntilExpiry !== null && daysUntilExpiry > 0
+                  ? `Expires in ${daysUntilExpiry} day${daysUntilExpiry === 1 ? "" : "s"}`
+                  : "Expires " + expiresAt.toLocaleDateString("en-US", { dateStyle: "medium" })}
+              </div>
+            )}
           </div>
         </div>
+
+        {/* ── Expiry warning banner ── */}
+        {expiresAt && daysUntilExpiry !== null && daysUntilExpiry <= 7 && !accepted && (
+          <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            ⚠️ <strong>This proposal expires in {daysUntilExpiry} day{daysUntilExpiry === 1 ? "" : "s"}</strong> — accept before {expiresAt.toLocaleDateString("en-US", { dateStyle: "long" })} to lock in this price.
+          </div>
+        )}
 
         {/* ── Accepted banner ── */}
         {accepted && (
@@ -254,90 +321,4 @@ export default function PublicProposalClient({
                 {(project.tax_amount ?? 0) > 0 && (
                   <div className="flex items-center justify-between px-4 py-3 text-sm border-b border-gray-100 bg-gray-50">
                     <span className="text-gray-600">
-                      Sales Tax ({project.tax_rate}% on {taxLabel(project.tax_applies_to)})
-                    </span>
-                    <span className="font-medium">{money(project.tax_amount)}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between px-4 py-4 font-bold text-base bg-white">
-                  <span>Total Quoted Price</span>
-                  <span className="text-emerald-700">{money(project.final_price)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            {project.notes && (
-              <div>
-                <h2 className="text-base font-semibold mb-2">Notes</h2>
-                <div className="rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 leading-relaxed">
-                  {project.notes}
-                </div>
-              </div>
-            )}
-
-            {/* Accept section */}
-            {!accepted && (
-              <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-6">
-                {!showAcceptForm ? (
-                  <div className="text-center">
-                    <div className="font-semibold text-gray-800 mb-2">Ready to move forward?</div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Click below to accept this proposal. Your acceptance is recorded digitally with your name and timestamp.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setShowAcceptForm(true)}
-                      className="rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-                    >
-                      Accept Proposal
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="font-semibold text-gray-800 mb-1">Accept this Proposal</div>
-                    <p className="text-xs text-gray-500 mb-4">
-                      By typing your full name and clicking "I Accept", you agree to the quoted scope and price above.
-                    </p>
-                    <label className="block text-xs text-gray-600 mb-1">Your full name *</label>
-                    <input
-                      value={acceptName}
-                      onChange={(e) => setAcceptName(e.target.value)}
-                      placeholder="Jane Smith"
-                      className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-blue-500 mb-3"
-                    />
-                    {acceptErr && <p className="text-xs text-red-500 mb-3">{acceptErr}</p>}
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setShowAcceptForm(false)}
-                        className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-100"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleAccept}
-                        disabled={accepting}
-                        className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-                      >
-                        {accepting ? "Saving…" : "I Accept This Proposal"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-6 text-center text-xs text-gray-400">
-          Proposal generated by {companyName} via DeckMargin · {company?.company_email ?? ""}
-        </div>
-
-      </div>
-    </main>
-  );
-}
+                      Sales Tax ({project.tax_rate}% on {taxLabel(pro
