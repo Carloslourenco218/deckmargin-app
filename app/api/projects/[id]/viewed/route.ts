@@ -7,9 +7,9 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
   // Fetch current project status so we only advance in one direction
