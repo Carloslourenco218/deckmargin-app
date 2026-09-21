@@ -40,7 +40,9 @@ type WizardForm = {
   heightCategory: string; deckAttachment: string; ledgerCondition: string;
   materialType: string; deckingPattern: string;
   railingCoverage: string; railingLf: string; railingType: string; stairRailing: string;
-  hasStairs: boolean; stairConfig: string; stairWidth: string; stairCount: string;
+  hasStairs: boolean; stairConfig: string; stairWidth: string;
+  staircaseCount: string;  // number of separate stair flights
+  riserCount: string;      // risers per flight (drives geometry & labor)
   hasLanding: boolean; landingSize: string;
   siteDifficulty: string; siteObstacles: string[];
   lightingEnabled: boolean; lightingCost: string;
@@ -58,7 +60,8 @@ const INITIAL: WizardForm = {
   heightCategory: "under30", deckAttachment: "attached", ledgerCondition: "new",
   materialType: "pressure-treated", deckingPattern: "standard",
   railingCoverage: "full-perimeter", railingLf: "", railingType: "wood", stairRailing: "none",
-  hasStairs: false, stairConfig: "straight", stairWidth: "4ft", stairCount: "8",
+  hasStairs: false, stairConfig: "straight", stairWidth: "4ft",
+  staircaseCount: "0", riserCount: "4",
   hasLanding: false, landingSize: "none",
   siteDifficulty: "easy", siteObstacles: [],
   lightingEnabled: false, lightingCost: "",
@@ -237,6 +240,7 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         <p className="mt-1 text-sm text-white/50">Shape, size, and height of the deck.</p>
       </div>
 
+      {/* Shape */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Shape</div>
         <div className="grid grid-cols-4 gap-2">
@@ -246,6 +250,7 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         </div>
       </div>
 
+      {/* Dimensions */}
       {form.deckShape === "rectangle" && (
         <div>
           <div className="mb-2 text-xs font-medium text-white/55">Dimensions</div>
@@ -265,6 +270,7 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         </div>
       )}
 
+      {/* Area override */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">
           {form.deckShape !== "rectangle" ? "Approximate Area (sq ft)" : "Override Area (optional — for irregular shapes)"}
@@ -278,6 +284,7 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         )}
       </div>
 
+      {/* Height */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Deck Height</div>
         <div className="grid grid-cols-1 gap-2 md:grid-cols-5">
@@ -296,6 +303,7 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         )}
       </div>
 
+      {/* Attachment */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Structure</div>
         <div className="grid grid-cols-3 gap-2">
@@ -305,6 +313,7 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         </div>
       </div>
 
+      {/* Ledger condition when attached */}
       {(form.deckAttachment === "attached" || form.deckAttachment === "combination") && (
         <div>
           <div className="mb-2 text-xs font-medium text-white/55">Ledger Condition</div>
@@ -341,6 +350,7 @@ function StepMaterials({ form, set }: { form: WizardForm; set: (k: keyof WizardF
         </p>
       </div>
 
+      {/* Decking material */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Decking Material</div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -362,6 +372,7 @@ function StepMaterials({ form, set }: { form: WizardForm; set: (k: keyof WizardF
         <p className="mt-2 text-xs text-white/40">Pricing uses your company settings. You can adjust on the estimate review.</p>
       </div>
 
+      {/* Decking pattern */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Decking Pattern</div>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -397,6 +408,7 @@ function StepRailing({ form, set }: { form: WizardForm; set: (k: keyof WizardFor
         <p className="mt-1 text-sm text-white/50">How much railing does this deck need?</p>
       </div>
 
+      {/* Coverage */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Railing Amount</div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -424,6 +436,7 @@ function StepRailing({ form, set }: { form: WizardForm; set: (k: keyof WizardFor
         )}
       </div>
 
+      {/* Railing type — only if not "none" */}
       {form.railingCoverage !== "none" && (
         <div>
           <div className="mb-2 text-xs font-medium text-white/55">Railing Type</div>
@@ -441,6 +454,7 @@ function StepRailing({ form, set }: { form: WizardForm; set: (k: keyof WizardFor
         </div>
       )}
 
+      {/* Stair railing */}
       {form.railingCoverage !== "none" && (
         <div>
           <div className="mb-2 text-xs font-medium text-white/55">Stair Railing</div>
@@ -484,6 +498,7 @@ function StepStairs({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
 
       {form.hasStairs && (
         <div className="space-y-5 rounded-xl border border-white/10 bg-[#111827] p-5">
+          {/* Configuration */}
           <div>
             <div className="mb-2 text-xs font-medium text-white/55">Configuration</div>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -498,6 +513,7 @@ function StepStairs({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
             </div>
           </div>
 
+          {/* Width */}
           <div>
             <div className="mb-2 text-xs font-medium text-white/55">Stair Width</div>
             <div className="grid grid-cols-4 gap-2">
@@ -512,13 +528,24 @@ function StepStairs({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
             </div>
           </div>
 
-          <FieldRow label="Estimated Number of Steps">
-            <div className="flex items-center gap-3">
-              <Input value={form.stairCount} onChange={(v) => set("stairCount", v)} placeholder="8" type="number" />
-              <span className="text-xs text-white/40">Estimated from deck height — adjust as needed</span>
-            </div>
-          </FieldRow>
+          {/* Assembly model: flights + risers */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <FieldRow label="Stair Flights">
+              <Input value={form.staircaseCount} onChange={(v) => set("staircaseCount", v)} placeholder="1" type="number" />
+            </FieldRow>
+            <FieldRow label="Risers per Flight">
+              <div>
+                <Input value={form.riserCount} onChange={(v) => set("riserCount", v)} placeholder="4" type="number" />
+                <p className="mt-1 text-xs text-white/35">
+                  {form.heightCategory === "4-8ft" ? "~8 risers for a raised deck (≈5 ft)" :
+                   form.heightCategory === "8plus"  ? "~13 risers for a high deck (≈8+ ft)" :
+                                                      "~4 risers for a low deck (≈30″)"}
+                </p>
+              </div>
+            </FieldRow>
+          </div>
 
+          {/* Landing */}
           <div>
             <div className="mb-2 text-xs font-medium text-white/55">Landing</div>
             <div className="grid grid-cols-3 gap-2">
@@ -575,7 +602,7 @@ function StepSite({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
 
       {(form.siteDifficulty === "moderate" || form.siteDifficulty === "difficult") && (
         <div>
-          <div className="mb-2 text-xs font-medium text-white/55">{"What's making it challenging?"} <span className="text-white/30">(select all that apply)</span></div>
+          <div className="mb-2 text-xs font-medium text-white/55">What&apos;s making it challenging? <span className="text-white/30">(select all that apply)</span></div>
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
             {OBSTACLE_OPTIONS.map((obs) => (
               <label key={obs} className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-all ${
@@ -727,6 +754,7 @@ function StepNotes({
           className="w-full rounded-lg border border-white/10 bg-[#111827] px-3 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-blue-500/50 resize-none" />
       </FieldRow>
 
+      {/* ── Photo upload ── */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">Site Photos</div>
         {projectId ? (
@@ -788,7 +816,7 @@ function ScopeSummary({ form }: { form: WizardForm }) {
 
   const height = HEIGHT_OPTIONS.find((h) => h.value === form.heightCategory)?.label ?? "—";
   const jobLabel = JOB_TYPES.find((j) => j.value === form.jobType)?.label ?? "—";
-  const matLabel = ({ "pressure-treated": "Pressure Treated", trex: "Trex", timbertech: "TimberTech", pvc: "PVC" } as Record<string,string>)[form.materialType] ?? form.materialType;
+  const matLabel = { "pressure-treated": "Pressure Treated", trex: "Trex", timbertech: "TimberTech", pvc: "PVC" }[form.materialType] ?? form.materialType;
 
   const items = [
     sqft ? `${sqft} sq ft deck` : null,
@@ -798,7 +826,7 @@ function ScopeSummary({ form }: { form: WizardForm }) {
     matLabel,
     form.deckingPattern !== "standard" ? `${form.deckingPattern} pattern` : null,
     form.railingCoverage !== "none" ? `${form.railingType} railing (${form.railingCoverage})` : "No railing",
-    form.hasStairs ? `${form.stairCount} step stairs (${form.stairWidth} wide)` : "No stairs",
+    form.hasStairs ? `${form.staircaseCount} flight${Number(form.staircaseCount) !== 1 ? "s" : ""}, ${form.riserCount} risers (${form.stairWidth} wide)` : "No stairs",
     form.siteDifficulty !== "easy" ? `${form.siteDifficulty} site` : null,
     form.lightingEnabled ? "Lighting" : null,
     form.stainingEnabled ? "Staining / Sealing" : null,
@@ -809,7 +837,7 @@ function ScopeSummary({ form }: { form: WizardForm }) {
 
   return (
     <div className="rounded-xl border border-white/10 bg-[#0b1220] p-5">
-      <div className="mb-3 text-xs font-medium text-white/55">Does this look right?</div>
+      <div className="mb-3 text-xs font-medium text-white/55">Scope Summary</div>
       <div className="mb-2 font-semibold text-white">{jobLabel} — {form.clientName || "Client TBD"}</div>
       <ul className="space-y-1">
         {items.map((item) => (
@@ -819,7 +847,7 @@ function ScopeSummary({ form }: { form: WizardForm }) {
         ))}
       </ul>
       <p className="mt-4 text-xs text-white/40">
-        {"You'll set pricing, margin, and review the full cost breakdown on the next screen."}
+        You&apos;ll set pricing, margin, and review the full cost breakdown on the next screen.
       </p>
     </div>
   );
@@ -847,6 +875,7 @@ export default function NewQuoteWizard() {
   const isFirst = currentIdx === 0;
   const isLast = currentIdx === visibleStepIds.length - 1;
 
+  // Recalculate sqft when dimensions change
   const calcSqft = useMemo(() => {
     if (form.deckSqftOverride) return Number(form.deckSqftOverride);
     if (form.deckLength && form.deckWidth) return Math.round(Number(form.deckLength) * Number(form.deckWidth));
@@ -862,6 +891,7 @@ export default function NewQuoteWizard() {
       if (userError || !user) { setErr("You must be logged in."); return; }
 
       if (step === 1) {
+        // Fetch org_id
         const { data: profile } = await supabase.from("profiles").select("org_id").eq("id", user.id).single();
 
         const { data, error } = await supabase.from("projects").insert({
@@ -885,10 +915,12 @@ export default function NewQuoteWizard() {
         setProjectId(data.id);
 
       } else if (projectId) {
+        // Build update payload for current step
         const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
         if (step === 2) {
           payload.job_type = form.jobType;
+
         } else if (step === 3) {
           payload.deck_shape = form.deckShape;
           payload.deck_length = form.deckLength ? Number(form.deckLength) : null;
@@ -899,23 +931,31 @@ export default function NewQuoteWizard() {
           payload.height_tier = mapHeightTier(form.heightCategory);
           payload.deck_attachment = form.deckAttachment;
           payload.ledger_condition = form.ledgerCondition || null;
+
         } else if (step === 4) {
           payload.material_type   = form.materialType;
           payload.decking_pattern = form.deckingPattern;
+
         } else if (step === 5) {
           payload.railing_coverage = form.railingCoverage;
           payload.railing_lf       = form.railingLf ? Number(form.railingLf) : null;
           payload.railing_type     = form.railingCoverage !== "none" ? form.railingType : "none";
           payload.stair_railing    = form.stairRailing;
+
         } else if (step === 6) {
-          payload.stair_count  = form.hasStairs ? Number(form.stairCount || 0) : 0;
-          payload.stair_config = form.hasStairs ? form.stairConfig : null;
-          payload.stair_width  = form.hasStairs ? form.stairWidth  : null;
-          payload.has_landing  = form.hasStairs ? form.hasLanding  : false;
-          payload.landing_size = form.hasStairs && form.hasLanding ? form.landingSize : null;
+          // P0: assembly model — stair_count kept at 0 (legacy field no longer used for pricing)
+          payload.stair_count      = 0;
+          payload.staircase_count  = form.hasStairs ? Number(form.staircaseCount || 1) : 0;
+          payload.riser_count      = form.hasStairs ? Number(form.riserCount     || 4) : 0;
+          payload.stair_config     = form.hasStairs ? form.stairConfig : null;
+          payload.stair_width      = form.hasStairs ? form.stairWidth  : null;
+          payload.has_landing      = form.hasStairs ? form.hasLanding  : false;
+          payload.landing_size     = form.hasStairs && form.hasLanding ? form.landingSize : null;
+
         } else if (step === 7) {
           payload.site_difficulty = form.siteDifficulty;
           payload.site_obstacles  = form.siteObstacles;
+
         } else if (step === 8) {
           payload.lighting_enabled  = form.lightingEnabled;
           payload.lighting_cost     = form.lightingEnabled ? Number(form.lightingCost || 0)  : 0;
@@ -928,6 +968,7 @@ export default function NewQuoteWizard() {
           payload.dumpster_cost     = form.dumpsterEnabled ? Number(form.dumpsterCost || 0) : 0;
           payload.demolition_enabled = form.demolitionEnabled;
           payload.demolition_cost    = form.demolitionEnabled ? Number(form.demolitionCost || 0) : 0;
+
         } else if (step === 9) {
           payload.notes = form.notes || null;
         }
@@ -935,12 +976,14 @@ export default function NewQuoteWizard() {
         const { error } = await supabase.from("projects").update(payload).eq("id", projectId);
         if (error) { setErr(error.message); return; }
 
+        // If this is the last step, redirect to edit page for full cost review
         if (isLast) {
           router.push(`/projects/${projectId}/edit`);
           return;
         }
       }
 
+      // Advance to next visible step
       if (!isLast) {
         setStep(visibleStepIds[currentIdx + 1]);
       }
@@ -980,6 +1023,7 @@ export default function NewQuoteWizard() {
     <main className="min-h-screen bg-[#0b0f19] px-4 py-8 text-white">
       <div className="mx-auto max-w-3xl">
 
+        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">New Quote</h1>
@@ -991,16 +1035,20 @@ export default function NewQuoteWizard() {
           </button>
         </div>
 
+        {/* Progress */}
         <ProgressBar steps={visibleSteps} currentId={step} />
 
+        {/* Error */}
         {err && (
           <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{err}</div>
         )}
 
+        {/* Step content */}
         <div className="rounded-2xl border border-white/10 bg-white/3 p-6 backdrop-blur-sm">
           {renderStep()}
         </div>
 
+        {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
           <button type="button" onClick={handleBack} disabled={isFirst}
             className="rounded-lg border border-white/15 px-5 py-2.5 text-sm text-white/60 hover:bg-white/5 disabled:opacity-30">
@@ -1016,6 +1064,7 @@ export default function NewQuoteWizard() {
           </div>
         </div>
 
+        {/* Step hint */}
         <p className="mt-4 text-center text-xs text-white/25">
           Step {currentIdx + 1} of {visibleSteps.length} — you can edit anything later
         </p>
