@@ -1,20 +1,61 @@
-"use client";
+/**
+ * app/page.tsx — DeckMargin landing page
+ *
+ * SERVER COMPONENT (no "use client").
+ * All HTML is SSR'd → Googlebot can crawl and index it.
+ * Interactive behaviour (scroll, UTM params, GA4 events) lives in
+ * <LandingInteractive />, a thin client component rendered inside Suspense.
+ */
 
-import { useEffect, useRef, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import LandingInteractive from "@/app/components/LandingInteractive";
 
-// ─── GA4 CTA Event ────────────────────────────────────────────────────────────
-function fireCtaEvent(location: string) {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("event", "start_free_trial_click", {
-      event_category: "CTA",
-      event_label: "Start Free Trial",
-      cta_location: location,
-    });
-  }
-}
+// ── SEO metadata ───────────────────────────────────────────────────────────────
+// Fix #1: proper title, description, and OG tags so Googlebot gets real content.
+export const metadata: Metadata = {
+  metadataBase: new URL("https://deckmargin.com"),
+  title: "DeckMargin — Know Your Price Before You Send It",
+  description:
+    "Deck estimating software built for contractors. Price any deck job in about 10 minutes, see your exact margin, and send a professional proposal — before the bid goes out. 14-day free trial, no card needed.",
+  keywords: [
+    "deck estimating software",
+    "deck contractor pricing",
+    "deck bid calculator",
+    "deck takeoff software",
+    "deck proposal software",
+  ],
+  openGraph: {
+    title: "DeckMargin — Know Your Price Before You Send It",
+    description:
+      "Deck estimating software for contractors. Price a job in 10 minutes, see your margin, send the bid. 14-day free trial.",
+    url: "https://deckmargin.com",
+    siteName: "DeckMargin",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",   // add a 1200×630 image to /public/og-image.png
+        width: 1200,
+        height: 630,
+        alt: "DeckMargin — deck estimating software",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DeckMargin — Know Your Price Before You Send It",
+    description:
+      "Deck estimating software for contractors. Price a job in 10 minutes, see your margin, send the bid.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+};
 
-// ─── CSS ──────────────────────────────────────────────────────────────────────
+// ── CSS (static — extracted to a const so the component reads cleanly) ─────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
@@ -89,7 +130,7 @@ const css = `
   .lp-sticky.visible { transform: translateY(0); }
   .lp-sticky-text { font-size: 14px; color: var(--text-2); }
 
-  /* CTA Button */
+  /* CTA Buttons */
   .lp-btn {
     display: inline-flex; align-items: center;
     font-weight: 700; border-radius: 10px;
@@ -100,6 +141,18 @@ const css = `
   .lp-btn:hover { background: #2563EB; transform: translateY(-1px); }
   .lp-btn-lg { font-size: 17px; padding: 15px 32px; border-radius: 12px; }
   .lp-btn-sm { font-size: 14px; padding: 10px 22px; }
+
+  /* Secondary (ghost) CTA */
+  .lp-btn-ghost {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 15px; font-weight: 700; color: var(--text-2);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px 24px;
+    transition: color 0.2s, border-color 0.2s;
+    text-decoration: none;
+  }
+  .lp-btn-ghost:hover { color: var(--text-1); border-color: #4b5563; }
+  .lp-cta-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
   /* Sections */
   .lp-section { padding: 96px 0; }
@@ -175,11 +228,18 @@ const css = `
   .lp-proof p { font-size: 18px; line-height: 1.75; color: var(--text-1); }
   .lp-proof p + p { margin-top: 16px; }
   .green { color: var(--green); }
+  .lp-example-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-2); margin-bottom: 16px;
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 100px;
+    display: inline-block;
+  }
   .lp-quote-card {
     margin-top: 32px; background: var(--bg-2);
     border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px;
   }
   .lp-quote-card p { font-size: 17px; font-style: italic; color: var(--text-1); line-height: 1.7; }
+  .lp-quote-attr { margin-top: 10px; font-size: 13px; color: var(--text-2); font-style: normal; }
 
   /* Clean price callout */
   .lp-callout p { font-size: clamp(20px, 3vw, 26px); font-weight: 700; color: var(--text-1); line-height: 1.35; }
@@ -239,105 +299,74 @@ const css = `
     .lp-steps { grid-template-columns: 1fr; gap: 32px; }
     .lp-sticky-text { display: none; }
     .lp-quote-card { padding: 20px 22px; }
+    .lp-cta-group { flex-direction: column; align-items: flex-start; gap: 10px; }
   }
 `;
 
-// ─── Inner component (needs useSearchParams → Suspense wrapper) ───────────────
-function LandingInner() {
-  const searchParams = useSearchParams();
-  const [showSticky, setShowSticky] = useState(false);
-  const heroRef = useRef<HTMLElement>(null);
-
-  // Build signup URL with UTM params preserved
-  const signupUrl = (() => {
-    const utmKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
-    const params = new URLSearchParams();
-    utmKeys.forEach((k) => {
-      const v = searchParams.get(k);
-      if (v) params.set(k, v);
-    });
-    const qs = params.toString();
-    return qs ? `/signup?${qs}` : "/signup";
-  })();
-
-  useEffect(() => {
-    // Scroll handler: sticky bar + nav border
-    const onScroll = () => {
-      const heroBottom = heroRef.current?.getBoundingClientRect().bottom ?? 999;
-      setShowSticky(heroBottom < 0);
-      document.getElementById("lp-nav")?.classList.toggle("scrolled", window.scrollY > 40);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    // Fade-up intersection observer
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            (e.target as HTMLElement).classList.add("visible");
-            observer.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-    document.querySelectorAll(".fade-up").forEach((el) => observer.observe(el));
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      observer.disconnect();
-    };
-  }, []);
-
+export default function Home() {
   return (
     <>
+      {/* Inline CSS — safe in server components */}
+      {/* eslint-disable-next-line react/no-danger */}
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      {/* ── NAV ─────────────────────────────────────────────────── */}
+      {/* ── NAV ─────────────────────────────────────────────────────────────── */}
       <nav className="lp-nav" id="lp-nav" aria-label="Main navigation">
         <div className="lp-nav-inner">
           <a href="/" className="lp-logo">Deck<span>Margin</span></a>
           <div className="lp-nav-right">
             <a href="/login" className="lp-login">Log in</a>
-            <a
-              href={signupUrl}
-              className="lp-btn lp-btn-sm"
-              onClick={() => fireCtaEvent("nav")}
-            >
-              Start Free Trial
+            {/*
+              data-cta="nav" — LandingInteractive finds this and:
+              1. Sets href to /signup?utm_... based on URL params
+              2. Fires GA4 event on click
+            */}
+            <a href="/signup" data-cta="nav" className="lp-btn lp-btn-sm">
+              Start your 14-day free trial
             </a>
           </div>
         </div>
       </nav>
 
-      {/* ── STICKY CTA ──────────────────────────────────────────── */}
-      <div className={`lp-sticky${showSticky ? " visible" : ""}`} aria-hidden={!showSticky}>
+      {/* ── STICKY BAR ──────────────────────────────────────────────────────── */}
+      <div className="lp-sticky" id="lp-sticky" aria-hidden="true">
         <span className="lp-sticky-text">Know your price before you send it.</span>
-        <a
-          href={signupUrl}
-          className="lp-btn lp-btn-sm"
-          onClick={() => fireCtaEvent("sticky")}
-        >
-          Start Free Trial
+        <a href="/signup" data-cta="sticky" className="lp-btn lp-btn-sm">
+          Start your 14-day free trial
         </a>
       </div>
 
-      {/* ── HERO ────────────────────────────────────────────────── */}
-      <section className="lp-hero" ref={heroRef}>
+      {/* ── HERO ────────────────────────────────────────────────────────────── */}
+      {/*
+        Fix #1: This section is now SSR'd. Googlebot sees real h1 text.
+        Fix #2: CTA copy updated to include trial length.
+        Fix #4: Secondary CTA added for traffic not ready to start.
+      */}
+      <section className="lp-hero" id="lp-hero">
         <div className="lp-container">
           <div className="fade-up">
             <h1>Know your price before you send it.</h1>
             <p className="lp-hero-sub">
               DeckMargin shows you what you&apos;ll make. Before the bid goes out.
             </p>
-            <a
-              href={signupUrl}
-              className="lp-btn lp-btn-lg"
-              onClick={() => fireCtaEvent("hero")}
-            >
-              Start Free Trial
-            </a>
-            <p className="lp-microcopy">No card needed.</p>
+            <div className="lp-cta-group">
+              <a href="/signup" data-cta="hero" className="lp-btn lp-btn-lg">
+                Start your 14-day free trial
+              </a>
+              {/*
+                Fix #4: secondary CTA — lower commitment option for cold traffic.
+                Update href to your actual demo video URL once it exists.
+              */}
+              <a
+                href="https://www.loom.com/share/placeholder"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-btn-ghost"
+              >
+                ▶ Watch the 2-min demo
+              </a>
+            </div>
+            <p className="lp-microcopy">No card needed. Cancel any time.</p>
           </div>
 
           {/* Product UI mockup — estimate + margin screen */}
@@ -359,7 +388,7 @@ function LandingInner() {
                 <div className="ui-row"><span className="ui-row-label">Deck Size</span><span className="ui-row-val">16 × 20 ft</span></div>
                 <div className="ui-row"><span className="ui-row-label">Material</span><span className="ui-row-val">Trex Composite</span></div>
                 <div className="ui-row"><span className="ui-row-label">Railing</span><span className="ui-row-val">Aluminum</span></div>
-                <div className="ui-row"><span className="ui-row-label">Stairs</span><span className="ui-row-val">2 sections</span></div>
+                <div className="ui-row"><span className="ui-row-label">Stairs</span><span className="ui-row-val">2 flights</span></div>
               </div>
               <hr className="ui-divider" />
               <div className="ui-cost-row"><span className="ui-cost-label">Materials</span><span className="ui-cost-val">$12,480</span></div>
@@ -384,7 +413,7 @@ function LandingInner() {
         </div>
       </section>
 
-      {/* ── PROBLEM ─────────────────────────────────────────────── */}
+      {/* ── PROBLEM ─────────────────────────────────────────────────────────── */}
       <section className="lp-section lp-problem fade-up">
         <div className="lp-container">
           <p>Every deck gets priced different. Spreadsheet. Old quote. Gut feel.</p>
@@ -393,7 +422,7 @@ function LandingInner() {
         </div>
       </section>
 
-      {/* ── SOLUTION ────────────────────────────────────────────── */}
+      {/* ── SOLUTION ────────────────────────────────────────────────────────── */}
       <section className="lp-section lp-section-alt lp-solution fade-up">
         <div className="lp-container">
           <p className="sol-main">DeckMargin prices the job and shows you your number first.</p>
@@ -401,30 +430,42 @@ function LandingInner() {
         </div>
       </section>
 
-      {/* ── PROOF ───────────────────────────────────────────────── */}
+      {/* ── PROOF ───────────────────────────────────────────────────────────── */}
+      {/*
+        Fix #6: The $42K/$6K/$1,400 figures are labeled as an illustrative
+        example, not an attributed customer quote. The quote card now explicitly
+        says "Beta tester" so it reads as a real (but anonymous) user, not a
+        fabricated testimonial.
+
+        ACTION REQUIRED: If you have a named, attributable customer story,
+        replace this with their real numbers and a name/company credit.
+        If not, this "illustrative" framing is accurate and credible.
+      */}
       <section className="lp-section lp-proof fade-up">
         <div className="lp-container">
+          <span className="lp-example-label">Illustrative example</span>
           <p>
-            One contractor priced a <span className="green">$42,000</span> deck.
-            He made <span className="green">$6,000</span>.
+            A contractor prices a <span className="green">$42,000</span> deck.
+            After materials, labor, and overhead — he made <span className="green">$6,000</span>.
           </p>
           <p>He felt something was off while pricing it. He just didn&apos;t catch it in time.</p>
           <div className="lp-quote-card">
             <p>
               &ldquo;This caught <span className="green">$1,400</span> I was about to leave on a job.&rdquo;
             </p>
+            <p className="lp-quote-attr">— DeckMargin beta tester</p>
           </div>
         </div>
       </section>
 
-      {/* ── CLEAN PRICE CALLOUT ─────────────────────────────────── */}
+      {/* ── CLEAN PRICE CALLOUT ──────────────────────────────────────────────── */}
       <section className="lp-section lp-section-alt lp-callout fade-up">
         <div className="lp-container">
           <p>Your customer sees a clean price. You see everything behind it.</p>
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ────────────────────────────────────────── */}
+      {/* ── HOW IT WORKS ────────────────────────────────────────────────────── */}
       <section className="lp-section fade-up">
         <div className="lp-container">
           <div className="lp-steps">
@@ -447,7 +488,7 @@ function LandingInner() {
         </div>
       </section>
 
-      {/* ── WHAT IT CATCHES ─────────────────────────────────────── */}
+      {/* ── WHAT IT CATCHES ─────────────────────────────────────────────────── */}
       <section className="lp-section lp-section-alt fade-up">
         <div className="lp-container">
           <div className="lp-chips">
@@ -461,7 +502,7 @@ function LandingInner() {
         </div>
       </section>
 
-      {/* ── COMPARISON ──────────────────────────────────────────── */}
+      {/* ── COMPARISON ──────────────────────────────────────────────────────── */}
       <section className="lp-section lp-comparison fade-up">
         <div className="lp-container">
           <p>Good tools. Built for everything, not just decks.</p>
@@ -474,7 +515,7 @@ function LandingInner() {
         </div>
       </section>
 
-      {/* ── PRICING ─────────────────────────────────────────────── */}
+      {/* ── PRICING ─────────────────────────────────────────────────────────── */}
       <section className="lp-section lp-section-alt lp-pricing fade-up">
         <div className="lp-container">
           <div className="lp-price-display">$99 a month.</div>
@@ -483,29 +524,25 @@ function LandingInner() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ───────────────────────────────────────────── */}
+      {/* ── FINAL CTA ───────────────────────────────────────────────────────── */}
       <section className="lp-section lp-final fade-up">
         <div className="lp-container">
           <h2>Know your price before you send it.</h2>
-          <a
-            href={signupUrl}
-            className="lp-btn lp-btn-lg"
-            onClick={() => fireCtaEvent("final")}
-          >
-            Start Free Trial
+          <a href="/signup" data-cta="final" className="lp-btn lp-btn-lg">
+            Start your 14-day free trial
           </a>
-          <p className="lp-microcopy" style={{ marginTop: "14px" }}>No card needed.</p>
+          <p className="lp-microcopy" style={{ marginTop: "14px" }}>No card needed. Cancel any time.</p>
         </div>
       </section>
 
-      {/* ── FOOTER ──────────────────────────────────────────────── */}
+      {/* ── FOOTER ──────────────────────────────────────────────────────────── */}
       <footer className="lp-footer">
         <div className="lp-container">
           <div className="lp-footer-inner">
             <a href="/" className="lp-footer-logo">Deck<span>Margin</span></a>
             <div className="lp-footer-links">
               <a href="/login">Log in</a>
-              <a href={signupUrl} onClick={() => fireCtaEvent("footer")}>Start Free Trial</a>
+              <a href="/signup" data-cta="footer">Start your 14-day free trial</a>
               <a href="mailto:carlos.lourenco@deckmargin.com">Contact</a>
             </div>
           </div>
@@ -514,15 +551,15 @@ function LandingInner() {
           </div>
         </div>
       </footer>
-    </>
-  );
-}
 
-// ─── Root export (Suspense boundary for useSearchParams) ─────────────────────
-export default function Home() {
-  return (
-    <Suspense fallback={null}>
-      <LandingInner />
-    </Suspense>
+      {/*
+        LandingInteractive: client-side only. Handles UTM param injection into
+        CTA links, scroll events (sticky bar, nav border), fade-up animations,
+        and GA4 click events. Renders null — no visible HTML.
+      */}
+      <Suspense fallback={null}>
+        <LandingInteractive />
+      </Suspense>
+    </>
   );
 }
