@@ -55,6 +55,9 @@ export const metadata: Metadata = {
   },
 };
 
+// Force SSR on every request — prevents Vercel CDN from caching a stale shell
+export const dynamic = "force-dynamic";
+
 // ── CSS (static — extracted to a const so the component reads cleanly) ─────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
