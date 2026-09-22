@@ -27,10 +27,10 @@ const REGION_LABELS: Record<string, string> = {
 
 const JOB_TYPES = [
   { value: "new_build",    label: "New Build",    description: "Full deck construction: framing, footings, surface, railing, stairs" },
-  { value: "rebuild",      label: "Rebuild",      description: "Complete tear-down and replacement, includes demo, disposal, and full new build pricing" },
-  { value: "resurface",    label: "Resurface",    description: "Surface boards only on existing frame, no framing, footings, or structural labor" },
+  { value: "rebuild",      label: "Rebuild",      description: "Complete tear-down + replacement. Includes demo, disposal, and full new build pricing" },
+  { value: "resurface",    label: "Resurface",    description: "Surface boards only on existing frame. No framing, footings, or structural labor" },
   { value: "railing_only", label: "Railing Only", description: "Railing materials and installation labor only" },
-  { value: "repair",       label: "Repair",       description: "Custom line items only, all auto-calculations zeroed out" },
+  { value: "repair",       label: "Repair",       description: "Custom line items only. All auto-calculations zeroed out" },
   { value: "addition",     label: "Addition",     description: "Partial framing (60%) plus full surface, extending an existing deck" },
 ];
 
@@ -335,7 +335,7 @@ function autoCalcHardware(
     { key: "post_bases",       label: `Post bases (${post_bases}× qty)`,         enabled: true,       cost: String(Math.round(post_bases     * (settings.post_base_price     ?? 12))) },
     { key: "concrete_bags",    label: `Concrete bags (${concrete_bags}× 80lb)`,  enabled: true,       cost: String(Math.round(concrete_bags  * (settings.concrete_bag_price  ?? 8.50))) },
     { key: "hurricane_ties",   label: `Hurricane ties (${hurricane_ties}× qty)`, enabled: true,       cost: String(Math.round(hurricane_ties * (settings.hurricane_tie_price ?? 2.50))) },
-    { key: "lag_bolts",        label: `Lag bolts (${isAttached ? lag_bolts : "N/A freestanding"})`, enabled: isAttached, cost: String(Math.round(lag_bolts * (settings.lag_bolt_price ?? 0.75))) },
+    { key: "lag_bolts",        label: `Lag bolts (${isAttached ? lag_bolts : "N/A (freestanding)"})`, enabled: isAttached, cost: String(Math.round(lag_bolts * (settings.lag_bolt_price ?? 0.75))) },
     { key: "flashing",         label: `Flashing (${flashing_lf} LF)`,            enabled: isAttached, cost: String(Math.round(flashing_lf * 3.50)) },
     { key: "misc_hardware",    label: "Misc hardware",                           enabled: true,       cost: String(Math.round(sqft * 0.50)) },
   ];
@@ -933,4 +933,597 @@ export default function EditProjectPage() {
 
           {/* Regional pricing callout — now reflects project-level region */}
           {activeRegion !== "national" && (
-            <di
+            <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/60">
+              <span>Regional pricing active:</span>
+              <span className="font-medium text-white/80">{REGION_LABELS[activeRegion] ?? activeRegion}</span>
+              <span>Materials ×{regionMult.material.toFixed(2)}, labor ×{regionMult.labor.toFixed(2)}</span>
+              {form.project_region && (
+                <span className="ml-auto rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-blue-300">
+                  project override
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* ── Project & Client ── */}
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Project &amp; Client</div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <FieldLabel label="Quote Name" help="The internal name of the quote or project." />
+              <input value={form.name} onChange={(e) => updateField("name", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+            </div>
+            <div>
+              <FieldLabel label="Status" help="Track where this quote is in your sales process." />
+              <select value={form.status} onChange={(e) => updateField("status", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                <option value="draft">Draft</option>
+                <option value="ready_to_send">Ready to Send</option>
+                <option value="sent">Sent</option>
+                <option value="viewed">Viewed</option>
+                <option value="follow-up">Follow-Up</option>
+                <option value="accepted">Accepted</option>
+                <option value="declined">Declined</option>
+                <option value="on-hold">On Hold</option>
+                <option value="expired">Expired</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
+              </select>
+            </div>
+            <div>
+              <FieldLabel label="Client Name" help="The homeowner or customer name this proposal is for." />
+              <input value={form.client_name} onChange={(e) => updateField("client_name", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+            </div>
+            <div>
+              <FieldLabel label="Client Phone" help="Client's best contact number." />
+              <input value={form.client_phone} onChange={(e) => updateField("client_phone", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+            </div>
+            <div>
+              <FieldLabel label="Client Email" help="Client's email for proposal delivery." />
+              <input value={form.client_email} onChange={(e) => updateField("client_email", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+            </div>
+            <div>
+              <FieldLabel label="Site Address" help="The job site where the deck will be built." />
+              <input value={form.site_address} onChange={(e) => updateField("site_address", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+            </div>
+
+            {/* ── Project Region ── P0 fix: stored per-quote so Settings changes don't reprice it */}
+            <div>
+              <FieldLabel
+                label="Project Region"
+                help="Locks regional pricing to this quote. Changes to your global Settings region later won't affect this estimate. Leave blank to use your Settings region at save time."
+              />
+              <select
+                value={form.project_region}
+                onChange={(e) => updateField("project_region", e.target.value)}
+                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+              >
+                <option value="">Use Settings default ({REGION_LABELS[settings.region] ?? settings.region})</option>
+                {Object.entries(REGION_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+              {form.project_region && form.project_region !== settings.region && (
+                <p className="mt-1 text-xs text-blue-400">
+                  Override active: this quote uses {REGION_LABELS[form.project_region] ?? form.project_region} pricing
+                </p>
+              )}
+            </div>
+
+            <div>
+              <FieldLabel label="Proposal Expires" help="Date this proposal expires. Clients see a countdown on the proposal page. Leave blank for no expiry." />
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={form.proposal_expires_at}
+                  onChange={(e) => updateField("proposal_expires_at", e.target.value)}
+                  className="flex-1 rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-white"
+                />
+                <button
+                  type="button"
+                  title={`Auto-fill: today + ${settings.proposal_expiry_days ?? 30} days`}
+                  onClick={() => {
+                    const days = settings.proposal_expiry_days ?? 30;
+                    const d = new Date();
+                    d.setDate(d.getDate() + days);
+                    updateField("proposal_expires_at", d.toISOString().slice(0, 10));
+                  }}
+                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/60 hover:bg-white/10"
+                >
+                  +{settings.proposal_expiry_days ?? 30}d
+                </button>
+                {form.proposal_expires_at && (
+                  <button
+                    type="button"
+                    onClick={() => updateField("proposal_expires_at", "")}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {form.proposal_expires_at && (() => {
+                const days = Math.round((new Date(form.proposal_expires_at).getTime() - Date.now()) / 86_400_000);
+                return (
+                  <p className={`mt-1 text-xs ${days < 0 ? "text-red-400" : days <= 7 ? "text-amber-400" : "text-white/40"}`}>
+                    {days < 0 ? `Expired ${Math.abs(days)}d ago` : days === 0 ? "Expires today" : `Expires in ${days} day${days !== 1 ? "s" : ""}`}
+                  </p>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* ── Deck Size ── */}
+          {showDimensions && (
+            <>
+              <div className="mt-8 mb-6 text-sm font-medium text-white/80">Deck Size</div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                  <FieldLabel label="Deck Length (ft)" help="Full length of the deck in feet." />
+                  <input value={form.deck_length} onChange={(e) => updateField("deck_length", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+                </div>
+                <div>
+                  <FieldLabel label="Deck Width (ft)" help="Full width of the deck in feet." />
+                  <input value={form.deck_width} onChange={(e) => updateField("deck_width", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+                </div>
+                <div>
+                  <FieldLabel label="Deck Square Feet" help="Auto-calculated from length × width." />
+                  <input value={form.deck_sqft} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── Deck Build Inputs ── */}
+          {!isRepair && !isRailingOnly && (
+            <>
+              <div className="mt-8 mb-6 text-sm font-medium text-white/80">Deck Build Inputs</div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <FieldLabel label="Height Tier" help="Standard for low decks (≤30″), raised for mid-height (30″–8ft), high for elevated builds (8ft+). Applies a labor multiplier: standard×1.0, raised×1.15, high×1.30." />
+                  <select value={form.height_tier} onChange={(e) => updateField("height_tier", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                    <option value="standard">standard</option>
+                    <option value="raised">raised</option>
+                    <option value="high">high</option>
+                  </select>
+                </div>
+                <div>
+                  <FieldLabel label="Material Type" help="Main decking material, sets the per-SF material rate. Configure rates in Settings &rarr; Pricing." />
+                  <select value={form.material_type} onChange={(e) => updateField("material_type", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                    <option value="pressure-treated">pressure-treated</option>
+                    <option value="trex">trex</option>
+                    <option value="timbertech">timbertech</option>
+                    <option value="pvc">pvc</option>
+                  </select>
+                </div>
+                <div>
+                  <FieldLabel label="Railing Type" help="Railing style for the project. Select 'none' if no railing is included." />
+                  <select value={form.railing_type} onChange={(e) => updateField("railing_type", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                    <option value="none">none</option>
+                    <option value="wood">wood</option>
+                    <option value="composite">composite</option>
+                    <option value="metal">metal</option>
+                  </select>
+                </div>
+                {form.railing_type !== "none" && (
+                  <div>
+                    <FieldLabel label="Railing Linear Feet (LF)" help="Total linear feet of railing. Used for hardware auto-calculation and the informational labor phase breakdown." />
+                    <input
+                      type="number" min="0" step="1"
+                      value={form.railing_lf}
+                      onChange={(e) => updateField("railing_lf", e.target.value)}
+                      className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                      placeholder="0"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* ── Stairs (P0: assembly model) ── */}
+              {showStairs && (
+                <div className="mt-6">
+                  <div className="mb-4 text-sm font-medium text-white/70">Stairs</div>
+                  <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      <div>
+                        <FieldLabel
+                          label="Stair flights"
+                          help="Number of separate stair flights in this build. Most decks have 1. Enter 0 if stairs are not included."
+                        />
+                        <input
+                          type="number" min="0" max="6"
+                          value={form.staircase_count}
+                          onChange={(e) => updateField("staircase_count", e.target.value)}
+                          className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
+                          placeholder="0"
+                        />
+                      </div>
+
+                      {Number(form.staircase_count) > 0 && (
+                        <>
+                          <div>
+                            <FieldLabel
+                              label="Risers per flight"
+                              help="Number of vertical rises in each stair flight. DeckMargin uses 7.5″ per riser. A 30″ deck needs ~4 risers; a 5ft deck needs ~8 risers. This drives stringer length, tread count, and labor hours."
+                            />
+                            <input
+                              type="number" min="1" max="24"
+                              value={form.riser_count}
+                              onChange={(e) => updateField("riser_count", e.target.value)}
+                              className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
+                              placeholder="4"
+                            />
+                            <p className="mt-1 text-xs text-white/35">{riserSuggestion}</p>
+                          </div>
+                          <div>
+                            <FieldLabel
+                              label="Stair width (ft)"
+                              help="Width of the stair flight. 4 ft is standard residential. Wider stairs require additional stringers and proportionally more tread material and labor."
+                            />
+                            <input
+                              type="number" min="3" max="12" step="0.5"
+                              value={form.stair_width_ft}
+                              onChange={(e) => updateField("stair_width_ft", e.target.value)}
+                              className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2"
+                              placeholder="4"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {Number(form.staircase_count) > 0 && (
+                      <div className="mt-4 flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="stair_has_landing"
+                          checked={form.stair_has_landing}
+                          onChange={(e) => updateField("stair_has_landing", e.target.checked)}
+                          className="h-4 w-4 rounded accent-blue-500"
+                        />
+                        <label htmlFor="stair_has_landing" className="text-sm text-white/80">Landing included</label>
+                        <FieldHelp text="A landing platform at the base of the stairs. Adds a concrete footing, framing, and a deck-surface platform. Increases both material and labor cost." />
+                      </div>
+                    )}
+
+                    {/* Legacy migration notice */}
+                    {Number(form.stair_count) > 0 && Number(form.staircase_count) === 0 && (
+                      <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-300">
+                        <strong>Legacy stair data:</strong> This quote has an old stair count of {form.stair_count}.
+                        Stair pricing has been upgraded to an assembly model. Enter flights and risers above to get accurate pricing.
+                      </div>
+                    )}
+
+                    {/* Stair assembly preview */}
+                    {hasStairData && stairDisplay && stairDisplay.laborCost > 0 && (
+                      <div className="mt-4 rounded-lg border border-blue-500/15 bg-blue-500/5 p-3 text-xs">
+                        <div className="mb-2 font-medium text-blue-300">Stair assembly estimate</div>
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-white/55">
+                          <div>Stringers: {stairDisplay.stringerCount}× at {stairDisplay.stringerLengthFt.toFixed(1)}′ each</div>
+                          <div>Tread area: {stairDisplay.treadSqft.toFixed(1)} SF</div>
+                          <div>Stair material: <span className="text-white/80">${stairDisplay.materialCost.toFixed(2)}</span></div>
+                          <div>
+                            Stair labor:{" "}
+                            <span className="text-white/80">
+                              {stairDisplay.laborCrewHours.toFixed(1)} crew-hrs × ${settings.crew_hourly_rate}/hr × {settings.crew_size} = ${stairDisplay.laborCost.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {isRailingOnly && (
+            <>
+              <div className="mt-8 mb-6 text-sm font-medium text-white/80">Railing Specs</div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <FieldLabel label="Railing Type" help="Select the railing style being installed." />
+                  <select value={form.railing_type} onChange={(e) => updateField("railing_type", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+                    <option value="wood">wood</option>
+                    <option value="composite">composite</option>
+                    <option value="metal">metal</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── Add-ons ── */}
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Add-ons</div>
+          <div className="space-y-4">
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input type="checkbox" checked={form.lighting_enabled} onChange={(e) => updateField("lighting_enabled", e.target.checked)} />
+                <span>Lighting</span>
+                <FieldHelp text="Post lights, stair lights, transformers, or any deck lighting package." />
+              </label>
+              {form.lighting_enabled && (
+                <div className="mt-3">
+                  <FieldLabel label="Lighting Cost" help="Total cost allowance for deck lighting." />
+                  <input value={form.lighting_cost} onChange={(e) => updateField("lighting_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" />
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input type="checkbox" checked={form.staining_enabled} onChange={(e) => updateField("staining_enabled", e.target.checked)} />
+                <span>Staining / Sealing</span>
+                <FieldHelp text="Professional staining or sealing, usually for natural wood decks." />
+              </label>
+              {form.staining_enabled && (
+                <div className="mt-3">
+                  <FieldLabel label="Staining Cost" help="Total staining or sealing cost." />
+                  <input value={form.staining_cost} onChange={(e) => updateField("staining_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" />
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input type="checkbox" checked={form.built_ins_enabled} onChange={(e) => updateField("built_ins_enabled", e.target.checked)} />
+                <span>Built-ins</span>
+                <FieldHelp text="Benches, planters, pergolas, privacy walls, or other custom integrated features." />
+              </label>
+              {form.built_ins_enabled && (
+                <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <FieldLabel label="Built-ins Description" help="Describe the feature." />
+                    <input value={form.built_ins_description} onChange={(e) => updateField("built_ins_description", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="Bench seating, pergola, planter boxes..." />
+                  </div>
+                  <div>
+                    <FieldLabel label="Built-ins Cost" help="Total cost allowance for all built-in features." />
+                    <input value={form.built_ins_cost} onChange={(e) => updateField("built_ins_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+              <label className="flex items-center gap-3 text-sm font-medium text-white">
+                <input
+                  type="checkbox"
+                  checked={form.dumpster_enabled}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    const defaults = settingsRef.current ?? settings;
+                    updateField("dumpster_enabled", on);
+                    if (on && (!form.dumpster_cost || Number(form.dumpster_cost) === 0)) {
+                      updateField("dumpster_cost", moneyString(defaults.dumpster_default));
+                    }
+                  }}
+                />
+                <span>Dumpster Required</span>
+                <FieldHelp text="Add a dumpster rental cost to the job. Pre-fills from your settings default." />
+              </label>
+              {form.dumpster_enabled && (
+                <div className="mt-3">
+                  <FieldLabel label="Dumpster Cost" help="Total dumpster rental cost for this job." />
+                  <input value={form.dumpster_cost} onChange={(e) => updateField("dumpster_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2" placeholder="0.00" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Permits ── */}
+          <div className="mt-8 mb-4 flex items-center justify-between">
+            <div className="text-sm font-medium text-white/80">Permits &amp; Approvals</div>
+            {permitTotal > 0 && <div className="text-sm font-medium text-emerald-400">Total: ${permitTotal.toFixed(2)}</div>}
+          </div>
+          <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+            <p className="mb-4 text-xs text-white/50">Toggle each permit that applies. Costs pre-fill from your settings defaults.</p>
+            <div className="space-y-3">
+              {PERMIT_TYPES.map(({ key, label }) => (
+                <div key={key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
+                  <label className="flex items-center gap-3 text-sm font-medium text-white">
+                    <input type="checkbox" checked={permits[key].enabled} onChange={(e) => togglePermit(key, e.target.checked)} className="h-4 w-4 rounded accent-blue-500" />
+                    <span>{label}</span>
+                  </label>
+                  {permits[key].enabled && (
+                    <div className="mt-2">
+                      <FieldLabel label="Cost ($)" help={`Cost for ${label} on this project.`} />
+                      <input type="number" min="0" step="0.01" value={permits[key].cost} onChange={(e) => updatePermitCost(key, e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm" placeholder="0.00" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {permitTotal > 0 && (
+              <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                <span className="text-sm text-white/70">Permits subtotal</span>
+                <span className="text-sm font-semibold text-emerald-400">${permitTotal.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Hardware & Fasteners ── */}
+          <div className="mt-8 mb-6 flex items-center justify-between">
+            <div className="text-sm font-medium text-white/80">Hardware &amp; Fasteners</div>
+            <div className="flex items-center gap-3">
+              {settings.auto_hardware && (
+                <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-xs text-blue-300">Auto-calculated</span>
+              )}
+              {hardwareTotal > 0 && <div className="text-sm font-medium text-emerald-400">Total: ${hardwareTotal.toFixed(2)}</div>}
+            </div>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
+            <p className="mb-4 text-xs text-white/50">
+              {settings.auto_hardware
+                ? "Hardware quantities auto-calculated from deck geometry. Adjust costs or disable items as needed."
+                : "Check each item that applies. Enable Auto-calculate Hardware in Settings to compute quantities from deck geometry."}
+            </p>
+            <div className="space-y-3">
+              {hardwareItems.map((item) => (
+                <div key={item.key} className="rounded-lg border border-white/10 bg-[#0b1220] p-3">
+                  <label className="flex items-center gap-3 text-sm font-medium text-white">
+                    <input type="checkbox" checked={item.enabled} onChange={(e) => updateHardwareEnabled(item.key, e.target.checked)} className="h-4 w-4 rounded accent-blue-500" />
+                    <span>{item.label}</span>
+                  </label>
+                  {item.enabled && (
+                    <div className="mt-2">
+                      <FieldLabel label="Cost ($)" help={`Enter the cost for ${item.label} on this project.`} />
+                      <input type="number" min="0" step="0.01" value={item.cost} onChange={(e) => updateHardwareCost(item.key, e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm" placeholder="0.00" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {hardwareTotal > 0 && (
+              <div className="mt-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                <span className="text-sm text-white/70">Hardware subtotal</span>
+                <span className="text-sm font-semibold text-emerald-400">${hardwareTotal.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Cost Breakdown ── */}
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Cost Breakdown</div>
+
+          {Number(form.deck_sqft) > 0 && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/60">
+              <span>Waste factor:</span>
+              <span className="font-medium text-white/80">{((settings.waste_factor ?? 1.10) * 100 - 100).toFixed(0)}% applied to materials</span>
+              <span className="text-white/40">Set in Settings &rarr; Pricing</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+            <div>
+              <FieldLabel
+                label="Material Cost"
+                help="Auto-calculated: deck SF × material rate × waste factor × regional multiplier, plus stair assembly material (treads, PT stringers, hardware, concrete)."
+              />
+              <input value={form.material_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" />
+            </div>
+
+            <div>
+              <FieldLabel
+                label="Labor Cost"
+                help="Deck labor: SF × labor rate × region × height multiplier. Stair labor: assembly crew-hours × your per-person rate × crew size. See breakdown below."
+              />
+              <input value={form.labor_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" />
+
+              {/* P0: Labor formula breakdown — shows exactly how cost was computed */}
+              {costBreakdown && (Number(form.deck_sqft) > 0 || hasStairData) && (
+                <div className="mt-2 rounded-lg border border-white/10 bg-[#0b1220] p-3 text-xs">
+                  <div className="mb-2 font-medium text-white/50">Labor calculation</div>
+                  <div className="space-y-1.5">
+                    {costBreakdown.deckLabor > 0 && (
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-white/40 leading-snug">
+                          Deck: {form.deck_sqft} SF × ${settings.labor_rate_per_sqft}/SF
+                          {costBreakdown.regionMult.labor !== 1 && ` × ${costBreakdown.regionMult.labor.toFixed(2)} (region)`}
+                          {laborMultiplier(form.height_tier) !== 1 && ` × ${laborMultiplier(form.height_tier).toFixed(2)} (height)`}
+                        </span>
+                        <span className="shrink-0 font-medium text-white/70">${costBreakdown.deckLabor.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {costBreakdown.stairAssembly.laborCost > 0 && (
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-white/40 leading-snug">
+                          Stairs: {form.staircase_count} flight{Number(form.staircase_count) !== 1 ? "s" : ""}, {form.riser_count} risers, {form.stair_width_ft}′ wide
+                          {" "}→ {costBreakdown.stairAssembly.laborCrewHours.toFixed(1)} crew-hrs × ${settings.crew_hourly_rate}/hr × {settings.crew_size} crew
+                        </span>
+                        <span className="shrink-0 font-medium text-white/70">${costBreakdown.stairAssembly.laborCost.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-white/10 pt-1.5 font-medium text-white/70">
+                      <span>Total labor</span>
+                      <span>${(costBreakdown.deckLabor + costBreakdown.stairAssembly.laborCost).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* P0: Phase hours — clearly labeled informational */}
+              {allPhases.length > 0 && (
+                <div className="mt-2 rounded-lg border border-white/10 bg-[#0b1220] p-3">
+                  <div className="mb-2 flex items-center gap-2">
+                    <div className="text-xs text-white/35">Estimated crew-hours by phase</div>
+                    <FieldHelp text="These are productivity estimates only. They show how on-site hours might be distributed across phases. They do NOT determine the quoted labor cost. Labor cost is calculated separately above." />
+                    <span className="ml-auto rounded-full border border-amber-500/30 bg-amber-500/5 px-2 py-0.5 text-[10px] text-amber-400">
+                      Informational
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                    {allPhases.map((p) => (
+                      <div key={p.phase} className="flex items-center justify-between text-xs">
+                        <span className="text-white/35">{p.phase}</span>
+                        <span className="text-white/55">{p.hours}h</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 space-y-0.5 border-t border-white/10 pt-2 text-xs text-white/40">
+                    <div className="flex justify-between">
+                      <span>Estimated crew-hours</span>
+                      <span className="text-white/55 font-medium">{totalCrewHrs.toFixed(1)}h</span>
+                    </div>
+                    {settings.crew_size > 1 && (
+                      <div className="flex justify-between">
+                        <span>On-site duration with {settings.crew_size}-person crew</span>
+                        <span className="text-white/55">~{(totalCrewHrs / settings.crew_size).toFixed(1)}h elapsed</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <FieldLabel label="Sales Tax" help="Calculated from your tax rate and applies-to setting." />
+              <input
+                value={`$${Number(form.tax_amount || 0).toFixed(2)} (${form.tax_rate}% on ${form.tax_applies_to.replace(/_/g, " ")})`}
+                readOnly
+                className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80 text-sm"
+              />
+            </div>
+            <div>
+              <FieldLabel label="Permits Total" help="Sum of all toggled permit costs." />
+              <input value={permitTotal.toFixed(2)} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" />
+            </div>
+            <div>
+              <FieldLabel label="Equipment Cost" help="Rentals, specialty tools, delivery equipment." />
+              <input value={form.equipment_cost} onChange={(e) => updateField("equipment_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+            </div>
+            <div>
+              <FieldLabel label="Overhead Cost" help="Admin time, travel, insurance, project management." />
+              <input value={form.overhead_cost} onChange={(e) => updateField("overhead_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+            </div>
+            <div>
+              <FieldLabel label="Total Job Cost" help="Full internal cost including all line items, tax, permits, and add-ons." />
+              <input value={form.total_job_cost} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" />
+            </div>
+          </div>
+
+          {/* ── Pricing ── */}
+          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Pricing</div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+              <FieldLabel label="Final Price" help="Client-facing total based on your costs and target margin." />
+              <input value={form.final_price} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" />
+            </div>
+            <div>
+              <FieldLabel label="Expected Profit" help="Projected profit after subtracting total job cost from final price." />
+              <input value={form.expected_profit} readOnly className="w-full rounded-lg border border-white/15 bg-[#0f172a] px-3 py-2 text-white/80" />
+            </div>
+            <div>
+              <FieldLabel label="Target Margin" help="Enter your desired margin as 0.30 or 30." />
+              <input value={form.target_margin} onChange={(e) => updateField("target_margin", e.target.value)} placeholder="0.30 or 30" className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <FieldLabel label="Notes" help="Internal reminders, scope clarifications, or special conditions." />
+            <textarea value={form.notes} onChange={(e) => updateField("notes", e.target.value)} rows={5} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" />
+          </div>
+
+        </div>
+      </div>
+    </main>
+  );
+}

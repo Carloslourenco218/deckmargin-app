@@ -1,5 +1,5 @@
 /**
- * app/page.tsx: DeckMargin landing page
+ * app/page.tsx — DeckMargin landing page
  *
  * SERVER COMPONENT (no "use client").
  * All HTML is SSR'd → Googlebot can crawl and index it.
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://deckmargin.com"),
   title: "DeckMargin: Know Your Price Before You Send It",
   description:
-    "Deck estimating software built for contractors. Price any deck job in about 10 minutes, see your exact margin, and send a professional proposal, before the bid goes out. 14-day free trial, no card needed.",
+    "Deck estimating software built for contractors. Price any deck job in about 10 minutes, see your exact margin, and send a professional proposal , before the bid goes out. 14-day free trial, no card needed.",
   keywords: [
     "deck estimating software",
     "deck contractor pricing",
@@ -320,7 +320,7 @@ export default function Home() {
           <div className="lp-nav-right">
             <a href="/login" className="lp-login">Log in</a>
             {/*
-              data-cta="nav" (LandingInteractive finds this and:
+              data-cta="nav" — LandingInteractive finds this and:
               1. Sets href to /signup?utm_... based on URL params
               2. Fires GA4 event on click
             */}
@@ -357,7 +357,7 @@ export default function Home() {
                 Start your 14-day free trial
               </a>
               {/*
-                Fix #4: secondary CTA: lower commitment option for cold traffic.
+                Fix #4: secondary CTA — lower commitment option for cold traffic.
                 Update href to your actual demo video URL once it exists.
               */}
               <a
@@ -449,7 +449,7 @@ export default function Home() {
           <span className="lp-example-label">Illustrative example</span>
           <p>
             A contractor prices a <span className="green">$42,000</span> deck.
-            After materials, labor, and overhead, he made <span className="green">$6,000</span>.
+            After materials, labor, and overhead , he made <span className="green">$6,000</span>.
           </p>
           <p>He felt something was off while pricing it. He just didn&apos;t catch it in time.</p>
           <div className="lp-quote-card">
@@ -558,4 +558,11 @@ export default function Home() {
       {/*
         LandingInteractive: client-side only. Handles UTM param injection into
         CTA links, scroll events (sticky bar, nav border), fade-up animations,
-        and GA4 click events. Renders null, no
+        and GA4 click events. Renders null — no visible HTML.
+      */}
+      <Suspense fallback={null}>
+        <LandingInteractive />
+      </Suspense>
+    </>
+  );
+}

@@ -34,4 +34,21 @@ export default function RootLayout({
         <Script id="gtag-init" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
-            function
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}', { send_page_view: false });
+            gtag('config', '${AW_ID}');
+          `}
+        </Script>
+      </head>
+      <body>
+        {/* Tracks page views on every client-side route change */}
+        <Suspense fallback={null}>
+        <AnalyticsPageView gaId={GA_ID} />
+        </Suspense>
+        {children}
+      </body>
+    </html>
+  );
+}

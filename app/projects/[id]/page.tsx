@@ -54,22 +54,22 @@ function computeQcFlags(p: ProjectRow): QcFlag[] {
     ? p.final_price / p.deck_sqft : null;
 
   // ── Blocking — must fix before sending ──
-  if (!p.final_price) flags.push({ severity: "blocking", message: "No final price set. Quote is incomplete" });
-  if (margin < 0.20 && p.final_price) flags.push({ severity: "blocking", message: `Margin ${pct(margin)} is critically low, below 20%` });
-  if (pricePerSqft !== null && pricePerSqft < 20) flags.push({ severity: "blocking", message: `Price/sq ft $${pricePerSqft.toFixed(0)} is unusually low. Verify costs` });
+  if (!p.final_price) flags.push({ severity: "blocking", message: "No final price set, quote is incomplete" });
+  if (margin < 0.20 && p.final_price) flags.push({ severity: "blocking", message: `Margin ${pct(margin)} is critically low (below 20%)` });
+  if (pricePerSqft !== null && pricePerSqft < 20) flags.push({ severity: "blocking", message: `Price/sq ft $${pricePerSqft.toFixed(0)} is unusually low, verify costs` });
 
   // ── Review — should resolve before sending ──
-  if (!p.client_name) flags.push({ severity: "review", message: "No client name. Required before sending" });
-  if (!p.client_email && !p.client_phone) flags.push({ severity: "review", message: "No client contact info. Add email or phone" });
-  if (!p.deck_sqft || p.deck_sqft === 0) flags.push({ severity: "review", message: "Deck sq ft is 0. Check dimensions" });
+  if (!p.client_name) flags.push({ severity: "review", message: "No client name, required before sending" });
+  if (!p.client_email && !p.client_phone) flags.push({ severity: "review", message: "No client contact info, add email or phone" });
+  if (!p.deck_sqft || p.deck_sqft === 0) flags.push({ severity: "review", message: "Deck sq ft is 0, check dimensions" });
   if (!p.material_type) flags.push({ severity: "review", message: "Material type not set" });
   if (margin >= 0.01 && margin < 0.28 && margin >= 0.20) flags.push({ severity: "review", message: `Margin ${pct(margin)} is below the recommended 28%` });
-  if (pricePerSqft !== null && pricePerSqft > 200) flags.push({ severity: "review", message: `Price/sq ft $${pricePerSqft.toFixed(0)} is unusually high. Double-check pricing` });
+  if (pricePerSqft !== null && pricePerSqft > 200) flags.push({ severity: "review", message: `Price/sq ft $${pricePerSqft.toFixed(0)} is unusually high, double-check pricing` });
 
   // ── Notes — advisory ──
   if (!p.site_address) flags.push({ severity: "note", message: "No site address on record" });
   if (!p.height_tier) flags.push({ severity: "note", message: "Height tier not set" });
-  if (!p.permit_cost || p.permit_cost === 0) flags.push({ severity: "note", message: "No permit costs. Confirm permits are not required" });
+  if (!p.permit_cost || p.permit_cost === 0) flags.push({ severity: "note", message: "No permit costs, confirm permits are not required" });
 
   return flags;
 }
@@ -350,4 +350,53 @@ export default async function ProjectPage({
             {/* Material Takeoff */}
             <MaterialTakeoff
               deckLength={project.deck_length}
-   
+              deckWidth={project.deck_width}
+              deckSqft={project.deck_sqft}
+              heightTier={project.height_tier}
+              materialType={project.material_type}
+              railingType={project.railing_type}
+              stairCount={project.stair_count}
+              jobType={project.job_type}
+            />
+
+            {/* Notes */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+              <h2 className="mb-2 text-base font-semibold">Internal Notes</h2>
+              <div className="text-sm text-white/80">{project.notes?.trim() || "-"}</div>
+            </div>
+          </div>
+
+          {/* Right sidebar: actions */}
+          <div className="space-y-4">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="mb-3 text-sm font-semibold">Quick Links</div>
+              <div className="space-y-2">
+                <Link href={`/projects/${project.id}/edit`} className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
+                  ✏ Edit Quote
+                </Link>
+                <Link href={`/projects/${project.id}/design`} className="block w-full rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-center text-sm text-emerald-300 hover:bg-emerald-500/20">
+                  🎨 Design Canvas
+                </Link>
+                <a href={`/api/proposal/${project.id}`} target="_blank" rel="noreferrer" className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
+                  ↓ Download PDF
+                </a>
+                <a href={`/projects/${project.id}/materials`} target="_blank" rel="noreferrer" className="block w-full rounded-lg border border-white/15 px-4 py-2.5 text-center text-sm text-white/80 hover:bg-white/10">
+                  🖨 Material List
+                </a>
+              </div>
+            </div>
+
+            {/* Client actions: Share / Email / Duplicate */}
+            <QuoteActions
+              projectId={project.id}
+              clientEmail={project.client_email}
+              proposalTokenActive={project.proposal_token_active}
+              initialStatus={project.status}
+            />
+          </div>
+
+        </div>
+      </div>
+    </main>
+  );
+}
