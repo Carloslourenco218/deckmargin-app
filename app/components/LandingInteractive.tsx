@@ -12,12 +12,6 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}
-
 function fireCtaEvent(location: string) {
   if (typeof window !== "undefined" && window.gtag) {
     window.gtag("event", "start_free_trial_click", {
