@@ -69,7 +69,7 @@ function buildAssumptions(project: Project): string[] {
     "Price is valid as quoted. Any scope changes will require a revised proposal.",
     "Homeowner responsible for marking any underground utilities prior to footing work.",
   ];
-  if (project.height_tier === "standard") items.push("Deck height is at or near grade, no specialized lift equipment required.";
+  if (project.height_tier === "standard") items.push("Deck height is at or near grade, no specialized lift equipment required.");
   if (project.height_tier === "raised" || project.height_tier === "high") items.push("Existing ground conditions suitable for standard footing installation.");
   if (project.material_type === "pressure-treated") items.push("All lumber is kiln-dried after treatment (KDAT) unless site conditions require otherwise.");
   if (project.deck_sqft && project.deck_sqft > 200) items.push("Continuous work schedule assumed. Delays due to homeowner access may affect timeline.");
