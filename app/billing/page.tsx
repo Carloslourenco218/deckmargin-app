@@ -16,7 +16,7 @@ type Profile = {
 };
 
 function prettyDate(value: string | null | undefined) {
-  if (!value) return "—";
+  if (!value) return "-";
   return new Date(value).toLocaleDateString("en-US");
 }
 

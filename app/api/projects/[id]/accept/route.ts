@@ -90,7 +90,7 @@ export async function POST(
         body: JSON.stringify({
           from: `DeckMargin <proposals@deckmargin.com>`,
           to: [contractorEmail],
-          subject: `✅ Proposal Accepted — ${project.name ?? "Deck Project"}`,
+          subject: `✅ Proposal Accepted: ${project.name ?? "Deck Project"}`,
           html,
         }),
       }).catch(() => {/* ignore email errors — don't block the response */});

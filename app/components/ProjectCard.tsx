@@ -39,7 +39,7 @@ export default function ProjectCard({ project, onDelete }: Props) {
             {project.name ?? "Untitled"}
           </div>
           <div style={{ color: "#666", marginTop: 4 }}>
-            {project.client ?? "—"} •{" "}
+            {project.client ?? "-"} •{" "}
             <span style={{ textTransform: "capitalize" }}>
               {project.status ?? "Open"}
             </span>

@@ -12,7 +12,7 @@ const whoItems = [
   },
   {
     title: "You've finished a job and the margin wasn't there",
-    body: "You worked hard, the customer was happy, but when you looked at the numbers — something was off. You're not sure what.",
+    body: "You worked hard, the customer was happy, but when you looked at the numbers - something was off. You're not sure what.",
   },
   {
     title: "You quote on the spot and you're not fully confident",
@@ -51,7 +51,7 @@ const painCards = [
   {
     icon: "💸",
     title: "One missed cost wipes out profit on the entire project",
-    body: "Forget demolition. Forget permit allowance. Forget that the site is elevated. There goes your margin — and sometimes more.",
+    body: "Forget demolition. Forget permit allowance. Forget that the site is elevated. There goes your margin, and sometimes more.",
   },
 ];
 
@@ -80,12 +80,12 @@ const features = [
   {
     icon: "📐",
     title: "Price the Job on the Spot",
-    body: "Sq ft, linear ft of rail, height tier, stairs, material type — put it all in and get a number you can stand behind while you're still in the backyard. No more going home to figure it up and losing the job to someone who quoted on the spot.",
+    body: "Sq ft, linear ft of rail, height tier, stairs, material type: put it all in and get a number you can stand behind while you're still in the backyard. No more going home to figure it up and losing the job to someone who quoted on the spot.",
   },
   {
     icon: "🎯",
     title: "Know Your Margin Before the Homeowner Sees a Price",
-    body: "View total cost, expected profit, target margin, and final price before you send anything. You'll never wonder if you left money on the table again — because you'll see the number in black and white first.",
+    body: "View total cost, expected profit, target margin, and final price before you send anything. You'll never wonder if you left money on the table again, because you'll see the number in black and white first.",
   },
   {
     icon: "📄",
@@ -95,17 +95,17 @@ const features = [
   {
     icon: "⚙️",
     title: "Set Your Rates Once, Use Them Forever",
-    body: "Your labor rate, your overhead, your markup — saved. Every estimate you build uses your numbers automatically. Standardized pricing across every job, every time, without starting from scratch.",
+    body: "Your labor rate, your overhead, your markup, saved. Every estimate you build uses your numbers automatically. Standardized pricing across every job, every time, without starting from scratch.",
   },
   {
     icon: "🏗️",
-    title: "Built for Real Deck Jobs — Not Generic Construction",
-    body: "Framing, decking, railing, stairs, footings, fascia, demolition, permit allowance, height tiers, composite vs pressure treated — it's all in there because we built this specifically for deck contractors, not roofers or siders.",
+    title: "Built for Real Deck Jobs, Not Generic Construction",
+    body: "Framing, decking, railing, stairs, footings, fascia, demolition, permit allowance, height tiers, composite vs pressure treated. It is all in there because we built this specifically for deck contractors, not roofers or siders.",
   },
   {
     icon: "➕",
     title: "Custom Line Items for Jobs That Need Them",
-    body: "Every job has something unique. Add custom line items to any estimate so nothing gets missed. That's the missed line item that wipes out your margin — accounted for before the quote goes out.",
+    body: "Every job has something unique. Add custom line items to any estimate so nothing gets missed. That is the missed line item that wipes out your margin, accounted for before the quote goes out.",
   },
 ];
 
@@ -177,7 +177,7 @@ const testimonials = [
 const pricingFeatures = [
   {
     title: "Full Estimating Workflow",
-    body: "Deck size, materials, stairs, railing, height tiers, custom line items — all of it.",
+    body: "Deck size, materials, stairs, railing, height tiers, custom line items. All of it.",
   },
   {
     title: "Margin & Profit Visibility",
@@ -277,7 +277,7 @@ function VideoModal({ onClose }: { onClose: () => void }) {
           <iframe
             className="absolute inset-0 w-full h-full"
             src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0`}
-            title="DeckMargin — How It Works"
+            title="DeckMargin: How It Works"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
@@ -362,7 +362,7 @@ export default function HomePage() {
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-gray-300">
               The average deck builder underprices jobs by{" "}
-              <strong className="text-white">20–30%</strong> — not because
+              <strong className="text-white">20-30%</strong> - not because
               they're bad at their craft, but because pricing a deck accurately
               is genuinely hard without the right tool.{" "}
               <strong className="text-white">DeckMargin is that tool.</strong>
@@ -398,7 +398,7 @@ export default function HomePage() {
 
                 <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-semibold text-white">DeckMargin — Live Estimate</div>
+                    <div className="text-sm font-semibold text-white">DeckMargin Live Estimate</div>
                     <div className="mt-1 text-xs text-gray-400">Smith Residence · 320 sq ft · Trex Composite</div>
                   </div>
                   <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
@@ -492,7 +492,7 @@ export default function HomePage() {
               </h2>
               <p className="mt-6 text-base leading-8 text-gray-400">
                 It&apos;s not a skills problem. Most deck builders are excellent at their craft.
-                It&apos;s a pricing problem — and it shows up at the end of a job when the
+                It&apos;s a pricing problem, and it shows up at the end of a job when the
                 margin isn&apos;t where you thought it would be.
               </p>
               <p className="mt-4 text-base leading-8 text-gray-400">
@@ -504,11 +504,11 @@ export default function HomePage() {
               <div className="mt-8 rounded-2xl border border-white/10 bg-[#11141b] p-6 border-l-4 border-l-blue-500">
                 <p className="text-base italic leading-8 text-gray-300">
                   &ldquo;My accountant taught me this as I was about to call it quits because
-                  I lost so much money on so many jobs. Changed my business — and still
+                  I lost so much money on so many jobs. Changed my business and still
                   can&apos;t keep up with all the work.&rdquo;
                 </p>
                 <div className="mt-4 text-xs font-semibold uppercase tracking-wider text-blue-400">
-                  — Jay A., Deck Contractor
+                  Jay A., Deck Contractor
                 </div>
               </div>
             </div>
@@ -543,7 +543,7 @@ export default function HomePage() {
             <span className="text-blue-400">Done Guessing.</span>
           </h2>
           <p className="mb-12 max-w-2xl text-base leading-8 text-gray-400">
-            DeckMargin is for you if any of these sound familiar — because they&apos;re
+            DeckMargin is for you if any of these sound familiar, because they&apos;re
             the exact things real deck contractors told us before we built this.
           </p>
 
@@ -576,7 +576,7 @@ export default function HomePage() {
             </div>
             <p className="text-base leading-8 text-gray-400 lg:pt-4">
               Set your pricing rules once. Build estimates in minutes. Send proposals
-              that make you look like a $5M company — even if it&apos;s just you and a
+              that make you look like a $5M company, even if it&apos;s just you and a
               crew. No training required. Most contractors are up and running in under
               20 minutes.
             </p>
@@ -655,7 +655,7 @@ export default function HomePage() {
           </h2>
           <p className="mb-12 max-w-2xl text-base leading-8 text-gray-400">
             We&apos;re not trying to replace your CRM, your scheduling software, or your
-            QuickBooks. We do three things — estimate, protect margin, send proposal —
+            QuickBooks. We do three things: estimate, protect margin, send proposal
             and we do them better than any all-in-one tool built for every trade under
             the sun.
           </p>
@@ -784,7 +784,7 @@ export default function HomePage() {
               <p className="mt-3 text-sm leading-7 text-gray-400">
                 vs.{" "}
                 <strong className="text-blue-300">$199–$400/month</strong>{" "}
-                for all-in-one tools built for every trade — including features you&apos;ll never use.
+                for all-in-one tools built for every trade, including features you&apos;ll never use.
               </p>
               <div className="mt-8">
                 <PrimaryButton href="/signup">Start Free 14-Day Trial →</PrimaryButton>
@@ -830,9 +830,9 @@ export default function HomePage() {
             <strong className="text-white">losing money on jobs they worked hard to complete.</strong>
           </p>
           <p className="mt-5 text-lg leading-9 text-gray-300">
-            Not because they weren&apos;t skilled. Because pricing a deck job accurately —
+            Not because they weren&apos;t skilled. Because pricing a deck job accurately
             accounting for real labor costs, real material costs, overhead, and a margin
-            that actually protects the business — is{" "}
+            that actually protects the business, is{" "}
             <strong className="text-white">
               genuinely hard without the right tool.
             </strong>

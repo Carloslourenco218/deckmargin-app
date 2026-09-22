@@ -130,7 +130,7 @@ export default function TeamPage() {
                   <span style={{ fontSize: 12, color: '#9B9890' }}>
                     {m.activated_at
                       ? new Date(m.activated_at).toLocaleDateString()
-                      : m.status === 'pending' ? 'Invite pending' : '—'}
+                      : m.status === 'pending' ? 'Invite pending' : '-'}
                   </span>
                 </td>
                 {isOwner && (
@@ -232,8 +232,8 @@ function InviteModal({
 
         <label style={{ ...labelStyle, marginTop: 12 }}>Role</label>
         <select value={role} onChange={(e) => setRole(e.target.value as OrgRole)} style={inputStyle}>
-          <option value="field_user">Field User — can create and price jobs</option>
-          <option value="owner">Owner — full access + guardrail control</option>
+          <option value="field_user">Field User: can create and price jobs</option>
+          <option value="owner">Owner: full access and guardrail control</option>
         </select>
 
         <div style={{ fontSize: 11, color: '#9B9890', marginTop: 8, lineHeight: 1.5 }}>

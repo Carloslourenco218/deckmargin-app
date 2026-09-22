@@ -45,7 +45,7 @@ type ProjectRow = {
 };
 
 function money(n: number | null) {
-  if (n == null || Number.isNaN(n)) return "—";
+  if (n == null || Number.isNaN(n)) return "-";
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
@@ -141,13 +141,13 @@ export default async function PreviewPage({
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-xl border border-gray-200 p-5">
             <div className="text-xs uppercase tracking-wide text-gray-500">Client</div>
-            <div className="mt-2 font-medium">{project.client_name || "—"}</div>
-            <div className="text-sm text-gray-500">{project.client_email || "—"}</div>
-            <div className="text-sm text-gray-500">{project.client_phone || "—"}</div>
+            <div className="mt-2 font-medium">{project.client_name || "-"}</div>
+            <div className="text-sm text-gray-500">{project.client_email || "-"}</div>
+            <div className="text-sm text-gray-500">{project.client_phone || "-"}</div>
           </div>
           <div className="rounded-xl border border-gray-200 p-5">
             <div className="text-xs uppercase tracking-wide text-gray-500">Job Site</div>
-            <div className="mt-2 font-medium">{project.site_address || "—"}</div>
+            <div className="mt-2 font-medium">{project.site_address || "-"}</div>
           </div>
           <div className="rounded-xl border border-gray-200 p-5">
             <div className="text-xs uppercase tracking-wide text-gray-500">Quoted Price</div>
@@ -160,13 +160,13 @@ export default async function PreviewPage({
           <h2 className="mb-3 text-lg font-semibold">Deck Details</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {[
-              ["Length", `${project.deck_length ?? "—"} ft`],
-              ["Width",  `${project.deck_width  ?? "—"} ft`],
-              ["Sq Ft",  project.deck_sqft ?? "—"],
-              ["Height Tier", project.height_tier || "—"],
-              ["Material",    project.material_type || "—"],
-              ["Railing",     project.railing_type  || "—"],
-              ["Stairs",      project.stair_count   ?? "—"],
+              ["Length", `${project.deck_length ?? "-"} ft`],
+              ["Width",  `${project.deck_width  ?? "-"} ft`],
+              ["Sq Ft",  project.deck_sqft ?? "-"],
+              ["Height Tier", project.height_tier || "-"],
+              ["Material",    project.material_type || "-"],
+              ["Railing",     project.railing_type  || "-"],
+              ["Stairs",      project.stair_count   ?? "-"],
               ["Status",      project.status        || "open"],
             ].map(([label, val]) => (
               <div key={String(label)} className="rounded-xl border border-gray-200 p-4">
@@ -252,7 +252,7 @@ export default async function PreviewPage({
                 {hasTax && (
                   <tr className="bg-gray-50">
                     <td className="px-4 py-3 text-gray-600">
-                      Sales Tax ({project.tax_rate}% — {taxLabel(project.tax_applies_to)})
+                      Sales Tax ({project.tax_rate}%, {taxLabel(project.tax_applies_to)})
                     </td>
                     <td className="px-4 py-3 text-right font-medium">{money(project.tax_amount)}</td>
                   </tr>

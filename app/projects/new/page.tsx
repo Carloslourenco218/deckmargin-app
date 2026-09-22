@@ -186,10 +186,10 @@ function StepCustomer({ form, set }: { form: WizardForm; set: (k: keyof WizardFo
 }
 
 const JOB_TYPES = [
-  { value: "new_build",    label: "New Deck",     desc: "Full construction — framing, footings, decking, railing" },
+  { value: "new_build",    label: "New Deck",     desc: "Full construction: framing, footings, decking, railing" },
   { value: "resurface",    label: "Resurface",     desc: "New surface boards on existing frame" },
   { value: "rebuild",      label: "Rebuild",       desc: "Remove existing deck and replace entirely" },
-  { value: "repair",       label: "Repair",        desc: "Partial repairs — manual line items only" },
+  { value: "repair",       label: "Repair",        desc: "Partial repairs, manual line items only" },
   { value: "addition",     label: "Addition",      desc: "Extending an existing deck structure" },
   { value: "railing_only", label: "Railing Only",  desc: "Railing installation on existing structure" },
 ];
@@ -263,7 +263,7 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
             </FieldRow>
             <FieldRow label="Calculated Area">
               <div className="rounded-lg border border-white/10 bg-[#0f172a] px-3 py-2.5 text-sm text-white/70">
-                {calcSqft != null ? `${calcSqft} sq ft` : "—"}
+                {calcSqft != null ? `${calcSqft} sq ft` : "-"}
               </div>
             </FieldRow>
           </div>
@@ -273,7 +273,7 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
       {/* Area override */}
       <div>
         <div className="mb-2 text-xs font-medium text-white/55">
-          {form.deckShape !== "rectangle" ? "Approximate Area (sq ft)" : "Override Area (optional — for irregular shapes)"}
+          {form.deckShape !== "rectangle" ? "Approximate Area (sq ft)" : "Override Area (optional, for irregular shapes)"}
         </div>
         <div className="flex items-center gap-3">
           <Input value={form.deckSqftOverride} onChange={(v) => set("deckSqftOverride", v)}
@@ -320,15 +320,15 @@ function StepDeck({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
             {[
               { value: "new", label: "New Ledger" },
-              { value: "sound", label: "Existing — Appears Sound" },
-              { value: "unknown", label: "Existing — Unknown" },
+              { value: "sound", label: "Existing: Appears Sound" },
+              { value: "unknown", label: "Existing: Unknown Condition" },
               { value: "needs-repair", label: "Needs Repair / Replacement" },
             ].map((l) => (
               <Chip key={l.value} label={l.label} active={form.ledgerCondition === l.value} onClick={() => set("ledgerCondition", l.value)} />
             ))}
           </div>
           {form.ledgerCondition === "unknown" && (
-            <p className="mt-2 text-xs text-amber-400">⚠ Unknown ledger condition — an allowance or site visit note will be added.</p>
+            <p className="mt-2 text-xs text-amber-400">⚠ Unknown ledger condition, an allowance or site visit note will be added.</p>
           )}
           {form.ledgerCondition === "needs-repair" && (
             <p className="mt-2 text-xs text-amber-400">⚠ Ledger repair/replacement will be flagged for review and pricing.</p>
@@ -346,7 +346,7 @@ function StepMaterials({ form, set }: { form: WizardForm; set: (k: keyof WizardF
       <div>
         <h2 className="text-2xl font-semibold">Materials</h2>
         <p className="mt-1 text-sm text-white/50">
-          {isResurface ? "Surface decking only — framing is existing." : "What are we building the deck surface with?"}
+          {isResurface ? "Surface decking only, framing is existing." : "What are we building the deck surface with?"}
         </p>
       </div>
 
@@ -355,7 +355,7 @@ function StepMaterials({ form, set }: { form: WizardForm; set: (k: keyof WizardF
         <div className="mb-2 text-xs font-medium text-white/55">Decking Material</div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
-            { value: "pressure-treated", label: "Pressure Treated", sub: "PT lumber — economical, paintable" },
+            { value: "pressure-treated", label: "Pressure Treated", sub: "PT lumber, economical and paintable" },
             { value: "trex",             label: "Trex",             sub: "Composite, Trex brand pricing" },
             { value: "timbertech",       label: "TimberTech",       sub: "Premium composite" },
             { value: "pvc",              label: "PVC",              sub: "Cellular PVC, no splinters" },
@@ -414,7 +414,7 @@ function StepRailing({ form, set }: { form: WizardForm; set: (k: keyof WizardFor
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
             { value: "none",            label: "None",             sub: "No railing on this project" },
-            { value: "full-perimeter",  label: "Full Perimeter",   sub: "All open sides — calculated from deck size" },
+            { value: "full-perimeter",  label: "Full Perimeter",   sub: "All open sides, calculated from deck size" },
             { value: "partial",         label: "Partial",          sub: "Some sides only" },
             { value: "custom",          label: "Custom LF",        sub: "Enter exact linear footage" },
           ].map((c) => (
@@ -491,7 +491,7 @@ function StepStairs({ form, set }: { form: WizardForm; set: (k: keyof WizardForm
         <button type="button"
           onClick={() => set("hasStairs", true)}
           className={`rounded-xl border p-4 text-left transition-all ${form.hasStairs ? "border-blue-500 bg-blue-500/10" : "border-white/10 bg-[#111827] hover:border-white/20"}`}>
-          <div className={`font-medium ${form.hasStairs ? "text-blue-400" : "text-white"}`}>Yes — Include Stairs</div>
+          <div className={`font-medium ${form.hasStairs ? "text-blue-400" : "text-white"}`}>Yes, Include Stairs</div>
           <div className="mt-1 text-xs text-white/40">Configure stair details below</div>
         </button>
       </div>
@@ -586,7 +586,7 @@ function StepSite({ form, set }: { form: WizardForm; set: (k: keyof WizardForm, 
         <div className="grid grid-cols-3 gap-3">
           {[
             { value: "easy",     label: "Easy",     sub: "Normal access, flat grade, no obstacles" },
-            { value: "moderate", label: "Moderate", sub: "Some complexity — slopes, limited access" },
+            { value: "moderate", label: "Moderate", sub: "Some complexity: slopes, limited access" },
             { value: "difficult",label: "Difficult",sub: "Significant access challenges or obstacles" },
           ].map((d) => (
             <button key={d.value} type="button"
@@ -814,8 +814,8 @@ function ScopeSummary({ form }: { form: WizardForm }) {
     ? Math.round(Number(form.deckLength) * Number(form.deckWidth))
     : null;
 
-  const height = HEIGHT_OPTIONS.find((h) => h.value === form.heightCategory)?.label ?? "—";
-  const jobLabel = JOB_TYPES.find((j) => j.value === form.jobType)?.label ?? "—";
+  const height = HEIGHT_OPTIONS.find((h) => h.value === form.heightCategory)?.label ?? "-";
+  const jobLabel = JOB_TYPES.find((j) => j.value === form.jobType)?.label ?? "-";
   const matLabel = { "pressure-treated": "Pressure Treated", trex: "Trex", timbertech: "TimberTech", pvc: "PVC" }[form.materialType] ?? form.materialType;
 
   const items = [
@@ -838,7 +838,7 @@ function ScopeSummary({ form }: { form: WizardForm }) {
   return (
     <div className="rounded-xl border border-white/10 bg-[#0b1220] p-5">
       <div className="mb-3 text-xs font-medium text-white/55">Scope Summary</div>
-      <div className="mb-2 font-semibold text-white">{jobLabel} — {form.clientName || "Client TBD"}</div>
+      <div className="mb-2 font-semibold text-white">{jobLabel} for {form.clientName || "Client TBD"}</div>
       <ul className="space-y-1">
         {items.map((item) => (
           <li key={item} className="flex items-center gap-2 text-sm text-white/70">
@@ -957,119 +957,4 @@ export default function NewQuoteWizard() {
           payload.site_obstacles  = form.siteObstacles;
 
         } else if (step === 8) {
-          payload.lighting_enabled  = form.lightingEnabled;
-          payload.lighting_cost     = form.lightingEnabled ? Number(form.lightingCost || 0)  : 0;
-          payload.staining_enabled  = form.stainingEnabled;
-          payload.staining_cost     = form.stainingEnabled ? Number(form.stainingCost || 0) : 0;
-          payload.built_ins_enabled     = form.builtInsEnabled;
-          payload.built_ins_cost        = form.builtInsEnabled ? Number(form.builtInsCost || 0) : 0;
-          payload.built_ins_description = form.builtInsEnabled ? form.builtInsDescription || null : null;
-          payload.dumpster_enabled  = form.dumpsterEnabled;
-          payload.dumpster_cost     = form.dumpsterEnabled ? Number(form.dumpsterCost || 0) : 0;
-          payload.demolition_enabled = form.demolitionEnabled;
-          payload.demolition_cost    = form.demolitionEnabled ? Number(form.demolitionCost || 0) : 0;
-
-        } else if (step === 9) {
-          payload.notes = form.notes || null;
-        }
-
-        const { error } = await supabase.from("projects").update(payload).eq("id", projectId);
-        if (error) { setErr(error.message); return; }
-
-        // If this is the last step, redirect to edit page for full cost review
-        if (isLast) {
-          router.push(`/projects/${projectId}/edit`);
-          return;
-        }
-      }
-
-      // Advance to next visible step
-      if (!isLast) {
-        setStep(visibleStepIds[currentIdx + 1]);
-      }
-
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function handleBack() {
-    if (!isFirst) {
-      setStep(visibleStepIds[currentIdx - 1]);
-    }
-  }
-
-  function renderStep() {
-    switch (step) {
-      case 1: return <StepCustomer  form={form} set={set} />;
-      case 2: return <StepProject   form={form} set={set} />;
-      case 3: return <StepDeck      form={form} set={set} />;
-      case 4: return <StepMaterials form={form} set={set} />;
-      case 5: return <StepRailing   form={form} set={set} />;
-      case 6: return <StepStairs    form={form} set={set} />;
-      case 7: return <StepSite      form={form} set={set} />;
-      case 8: return <StepExtras    form={form} set={set} />;
-      case 9: return (
-        <div className="space-y-6">
-          <ScopeSummary form={form} />
-          <StepNotes form={form} set={set} projectId={projectId} />
-        </div>
-      );
-      default: return null;
-    }
-  }
-
-  return (
-    <main className="min-h-screen bg-[#0b0f19] px-4 py-8 text-white">
-      <div className="mx-auto max-w-3xl">
-
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">New Quote</h1>
-            <p className="text-sm text-white/40">Fill in what you know — DeckMargin does the rest.</p>
-          </div>
-          <button type="button" onClick={() => router.push("/dashboard")}
-            className="rounded-lg border border-white/15 px-4 py-2 text-sm text-white/60 hover:bg-white/5">
-            Cancel
-          </button>
-        </div>
-
-        {/* Progress */}
-        <ProgressBar steps={visibleSteps} currentId={step} />
-
-        {/* Error */}
-        {err && (
-          <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{err}</div>
-        )}
-
-        {/* Step content */}
-        <div className="rounded-2xl border border-white/10 bg-white/3 p-6 backdrop-blur-sm">
-          {renderStep()}
-        </div>
-
-        {/* Navigation */}
-        <div className="mt-6 flex items-center justify-between">
-          <button type="button" onClick={handleBack} disabled={isFirst}
-            className="rounded-lg border border-white/15 px-5 py-2.5 text-sm text-white/60 hover:bg-white/5 disabled:opacity-30">
-            ← Back
-          </button>
-
-          <div className="flex items-center gap-3">
-            {saving && <span className="text-xs text-white/40">Saving…</span>}
-            <button type="button" onClick={handleContinue} disabled={saving}
-              className="rounded-lg bg-blue-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-600 disabled:opacity-60">
-              {isLast ? "Save & Review Estimate →" : "Continue →"}
-            </button>
-          </div>
-        </div>
-
-        {/* Step hint */}
-        <p className="mt-4 text-center text-xs text-white/25">
-          Step {currentIdx + 1} of {visibleSteps.length} — you can edit anything later
-        </p>
-
-      </div>
-    </main>
-  );
-}
+          payload.lighting_en

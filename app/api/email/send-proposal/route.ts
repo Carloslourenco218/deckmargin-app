@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabaseServer";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 function money(n: number | null | undefined) {
-  if (n == null) return "—";
+  if (n == null) return "-";
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 

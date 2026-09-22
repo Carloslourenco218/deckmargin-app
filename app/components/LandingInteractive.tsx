@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * LandingInteractive — thin client component that handles everything needing
+ * LandingInteractive: thin client component that handles everything needing
  * the browser: UTM param injection into CTA links, scroll effects (sticky bar,
  * nav border), fade-up animations, and GA4 CTA click events.
  *
  * The parent page (app/page.tsx) is a Server Component so all static HTML is
- * SSR'd and crawlable. This component renders null — it only manipulates DOM.
+ * SSR'd and crawlable. This component renders null; it only manipulates DOM.
  */
 
 import { useEffect } from "react";

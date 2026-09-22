@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 function money(n: number | null | undefined) {
-  if (n == null || Number.isNaN(n)) return "—";
+  if (n == null || Number.isNaN(n)) return "-";
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
@@ -66,13 +66,13 @@ function buildAssumptions(project: Project): string[] {
   const items: string[] = [
     "Normal site access assumed (vehicle and equipment access to work area).",
     "All work performed per applicable local building codes and regulations.",
-    "Price is valid as quoted — any scope changes will require a revised proposal.",
+    "Price is valid as quoted. Any scope changes will require a revised proposal.",
     "Homeowner responsible for marking any underground utilities prior to footing work.",
   ];
-  if (project.height_tier === "standard") items.push("Deck height is at or near grade — no specialized lift equipment required.");
+  if (project.height_tier === "standard") items.push("Deck height is at or near grade, no specialized lift equipment required.");
   if (project.height_tier === "raised" || project.height_tier === "high") items.push("Existing ground conditions suitable for standard footing installation.");
   if (project.material_type === "pressure-treated") items.push("All lumber is kiln-dried after treatment (KDAT) unless site conditions require otherwise.");
-  if (project.deck_sqft && project.deck_sqft > 200) items.push("Continuous work schedule assumed — delays due to homeowner access may affect timeline.");
+  if (project.deck_sqft && project.deck_sqft > 200) items.push("Continuous work schedule assumed. Delays due to homeowner access may affect timeline.");
   return items;
 }
 
@@ -88,7 +88,7 @@ function buildExclusions(project: Project): string[] {
     items.push("Removal or disposal of existing deck structure (not included in this scope).");
   }
   if (!project.lighting_enabled) items.push("Electrical wiring, conduit, or deck lighting.");
-  if (project.railing_type === "none") items.push("Railing or guardrail installation (not in scope — to be quoted separately if required).");
+  if (project.railing_type === "none") items.push("Railing or guardrail installation (not in scope, to be quoted separately if required).");
   items.push("Any work not explicitly described in this proposal.");
   return items;
 }
@@ -193,7 +193,7 @@ export default function PublicProposalClient({
           <div className="text-right">
             <div className="text-xs text-gray-400 uppercase tracking-wide">Proposal Date</div>
             <div className="text-sm font-medium">
-              {project.created_at ? new Date(project.created_at).toLocaleDateString("en-US", { dateStyle: "long" }) : "—"}
+              {project.created_at ? new Date(project.created_at).toLocaleDateString("en-US", { dateStyle: "long" }) : "-"}
             </div>
             {expiresAt && (
               <div className={`mt-1 text-xs font-medium ${daysUntilExpiry !== null && daysUntilExpiry <= 7 ? "text-red-500" : "text-gray-400"}`}>
@@ -208,7 +208,7 @@ export default function PublicProposalClient({
         {/* ── Expiry warning banner ── */}
         {expiresAt && daysUntilExpiry !== null && daysUntilExpiry <= 7 && !accepted && (
           <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            ⚠️ <strong>This proposal expires in {daysUntilExpiry} day{daysUntilExpiry === 1 ? "" : "s"}</strong> — accept before {expiresAt.toLocaleDateString("en-US", { dateStyle: "long" })} to lock in this price.
+            ⚠️ <strong>This proposal expires in {daysUntilExpiry} day{daysUntilExpiry === 1 ? "" : "s"}</strong>. Accept before {expiresAt.toLocaleDateString("en-US", { dateStyle: "long" })} to lock in this price.
           </div>
         )}
 
@@ -255,13 +255,13 @@ export default function PublicProposalClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-xl border border-gray-200 p-4">
                 <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">Client</div>
-                <div className="font-medium">{project.client_name || "—"}</div>
+                <div className="font-medium">{project.client_name || "-"}</div>
                 {project.client_email && <div className="text-sm text-gray-500 mt-1">{project.client_email}</div>}
                 {project.client_phone && <div className="text-sm text-gray-500">{project.client_phone}</div>}
               </div>
               <div className="rounded-xl border border-gray-200 p-4">
                 <div className="text-xs uppercase tracking-wide text-gray-400 mb-2">Job Site</div>
-                <div className="font-medium">{project.site_address || "—"}</div>
+                <div className="font-medium">{project.site_address || "-"}</div>
               </div>
             </div>
 
@@ -270,9 +270,9 @@ export default function PublicProposalClient({
               <h2 className="text-base font-semibold mb-3">Deck Specifications</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {[
-                  ["Size", project.deck_sqft ? `${project.deck_sqft} sq ft` : `${project.deck_length ?? "—"} × ${project.deck_width ?? "—"} ft`],
-                  ["Height", HEIGHT_LABELS[project.height_tier ?? ""] ?? project.height_tier ?? "—"],
-                  ["Material", MATERIAL_LABELS[project.material_type ?? ""] ?? project.material_type ?? "—"],
+                  ["Size", project.deck_sqft ? `${project.deck_sqft} sq ft` : `${project.deck_length ?? "-"} × ${project.deck_width ?? "-"} ft`],
+                  ["Height", HEIGHT_LABELS[project.height_tier ?? ""] ?? project.height_tier ?? "-"],
+                  ["Material", MATERIAL_LABELS[project.material_type ?? ""] ?? project.material_type ?? "-"],
                   project.railing_type && project.railing_type !== "none" ? ["Railing", `${project.railing_type.charAt(0).toUpperCase() + project.railing_type.slice(1)}`] : null,
                   project.stair_count ? ["Stairs", `${project.stair_count} steps`] : null,
                 ].filter((item): item is [string, string] => item !== null).map(([label, val]) => (
@@ -321,118 +321,4 @@ export default function PublicProposalClient({
                 {(project.tax_amount ?? 0) > 0 && (
                   <div className="flex items-center justify-between px-4 py-3 text-sm border-b border-gray-100 bg-gray-50">
                     <span className="text-gray-600">
-                      Sales Tax ({project.tax_rate}% on {taxLabel(project.tax_applies_to)})
-                    </span>
-                    <span className="font-medium">{money(project.tax_amount)}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between px-4 py-4 font-bold text-base bg-white">
-                  <span>Total Quoted Price</span>
-                  <span className="text-emerald-700">{money(project.final_price)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            {project.notes && (
-              <div>
-                <h2 className="text-base font-semibold mb-2">Notes</h2>
-                <div className="rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 leading-relaxed">
-                  {project.notes}
-                </div>
-              </div>
-            )}
-
-            {/* Assumptions */}
-            <div>
-              <h2 className="text-base font-semibold mb-3">Assumptions</h2>
-              <p className="text-xs text-gray-500 mb-3">This proposal is based on the following conditions. Deviations may require a scope adjustment.</p>
-              <ul className="space-y-2">
-                {assumptions.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
-                    <span className="mt-0.5 flex-shrink-0 text-emerald-500">✓</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Exclusions */}
-            <div>
-              <h2 className="text-base font-semibold mb-3">Exclusions</h2>
-              <p className="text-xs text-gray-500 mb-3">The following items are NOT included in this proposal unless specifically listed in the scope above.</p>
-              <ul className="space-y-2">
-                {exclusions.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
-                    <span className="mt-0.5 flex-shrink-0 text-gray-400">—</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Accept section */}
-            {!accepted && (
-              <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-6">
-                {!showAcceptForm ? (
-                  <div className="text-center">
-                    <div className="font-semibold text-gray-800 mb-2">Ready to move forward?</div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Click below to accept this proposal. Your acceptance is recorded digitally with your name and timestamp.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setShowAcceptForm(true)}
-                      className="rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-                    >
-                      Accept Proposal
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="font-semibold text-gray-800 mb-1">Accept this Proposal</div>
-                    <p className="text-xs text-gray-500 mb-4">
-                      By typing your full name and clicking "I Accept", you agree to the quoted scope and price above.
-                    </p>
-                    <label className="block text-xs text-gray-600 mb-1">Your full name *</label>
-                    <input
-                      value={acceptName}
-                      onChange={(e) => setAcceptName(e.target.value)}
-                      placeholder="Jane Smith"
-                      className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-blue-500 mb-3"
-                    />
-                    {acceptErr && <p className="text-xs text-red-500 mb-3">{acceptErr}</p>}
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setShowAcceptForm(false)}
-                        className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-100"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleAccept}
-                        disabled={accepting}
-                        className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-                      >
-                        {accepting ? "Saving…" : "I Accept This Proposal"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-6 text-center text-xs text-gray-400">
-          Proposal generated by {companyName} via DeckMargin · {company?.company_email ?? ""}
-        </div>
-
-      </div>
-    </main>
-  );
-}
+                      Sales

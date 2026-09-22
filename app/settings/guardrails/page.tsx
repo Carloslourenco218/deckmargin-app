@@ -96,7 +96,7 @@ export default function GuardrailsPage() {
             <p style={hint}>
               {minMargin
                 ? `Field users must price at ≥ ${minMargin}% margin or the quote is flagged for your review.`
-                : 'No minimum margin set — field users can price at any margin.'}
+                : 'No minimum margin set. Field users can price at any margin.'}
             </p>
           </div>
         </div>

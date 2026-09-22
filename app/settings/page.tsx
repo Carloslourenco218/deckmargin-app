@@ -45,13 +45,13 @@ type SettingsRow = {
 };
 
 const REGIONS = [
-  { value: "national",   label: "National Average",  materialMult: 1.00, laborMult: 1.00, note: "Baseline — used when region is unknown" },
-  { value: "pnw",        label: "Pacific Northwest",  materialMult: 1.32, laborMult: 1.35, note: "Seattle/Portland — moisture-rated lumber required, highest labor market" },
-  { value: "northeast",  label: "Northeast",          materialMult: 1.28, laborMult: 1.30, note: "NY/MA/CT — strict codes, shorter build season, high labor" },
-  { value: "california", label: "California",         materialMult: 1.35, laborMult: 1.38, note: "Highest in nation — seismic codes, CEQA, $75/hr skilled trades" },
-  { value: "southeast",  label: "Southeast",          materialMult: 0.88, laborMult: 0.85, note: "FL/GA/SC — lower labor costs, longer build season" },
-  { value: "midwest",    label: "Midwest",            materialMult: 0.90, laborMult: 0.88, note: "OH/IL/MI — near national average, lower regulatory burden" },
-  { value: "southwest",  label: "Southwest",          materialMult: 0.95, laborMult: 0.93, note: "TX/AZ/NV — growing markets, moderate costs" },
+  { value: "national",   label: "National Average",  materialMult: 1.00, laborMult: 1.00, note: "Baseline, used when region is unknown" },
+  { value: "pnw",        label: "Pacific Northwest",  materialMult: 1.32, laborMult: 1.35, note: "Seattle/Portland: moisture-rated lumber required, highest labor market" },
+  { value: "northeast",  label: "Northeast",          materialMult: 1.28, laborMult: 1.30, note: "NY/MA/CT: strict codes, shorter build season, high labor" },
+  { value: "california", label: "California",         materialMult: 1.35, laborMult: 1.38, note: "Highest in nation: seismic codes, CEQA, $75/hr skilled trades" },
+  { value: "southeast",  label: "Southeast",          materialMult: 0.88, laborMult: 0.85, note: "FL/GA/SC: lower labor costs, longer build season" },
+  { value: "midwest",    label: "Midwest",            materialMult: 0.90, laborMult: 0.88, note: "OH/IL/MI: near national average, lower regulatory burden" },
+  { value: "southwest",  label: "Southwest",          materialMult: 0.95, laborMult: 0.93, note: "TX/AZ/NV: growing markets, moderate costs" },
 ];
 
 export default function SettingsPage() {
@@ -325,7 +325,7 @@ export default function SettingsPage() {
                   <img src={logoUrl} alt="Company logo" className="max-h-full max-w-full object-contain" />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="text-xs text-emerald-400">✓ Logo uploaded — appears on all proposals</p>
+                  <p className="text-xs text-emerald-400">✓ Logo uploaded, appears on all proposals</p>
                   <button type="button" onClick={() => fileInputRef.current?.click()} disabled={logoUploading} className="rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white hover:bg-white/10 disabled:opacity-50">
                     {logoUploading ? "Uploading…" : "Replace Logo"}
                   </button>
@@ -466,234 +466,4 @@ export default function SettingsPage() {
                 min="0"
                 step="0.01"
                 value={form.dumpster_default}
-                onChange={(e) => setNum("dumpster_default", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-                placeholder="0.00"
-              />
-              <p className="mt-1 text-xs text-white/40">Pre-fills the dumpster cost field when toggled on in a quote</p>
-            </div>
-          </div>
-
-          {/* ── Permit Defaults ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Permit Default Costs</div>
-          <p className="mb-4 text-xs text-white/40">These pre-fill each permit cost field when toggled on in a quote. Set to 0 if you prefer to enter costs manually per job.</p>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Building Permit</label>
-              <input type="number" min="0" step="0.01" value={form.permit_building_default} onChange={(e) => setNum("permit_building_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Septic Permit</label>
-              <input type="number" min="0" step="0.01" value={form.permit_septic_default} onChange={(e) => setNum("permit_septic_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Electrical Permit</label>
-              <input type="number" min="0" step="0.01" value={form.permit_electrical_default} onChange={(e) => setNum("permit_electrical_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Engineering / Structural Drawings</label>
-              <input type="number" min="0" step="0.01" value={form.permit_engineering_default} onChange={(e) => setNum("permit_engineering_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">HOA Approval Fee</label>
-              <input type="number" min="0" step="0.01" value={form.permit_hoa_default} onChange={(e) => setNum("permit_hoa_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
-            </div>
-          </div>
-
-          {/* ── Crew & Labor ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">
-            Crew &amp; Labor
-            <span className="ml-2 text-xs font-normal text-white/40">Used for labor phase breakdown and crew-based pricing</span>
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Crew Size (people)</label>
-              <input
-                type="number" min="1" max="20" step="1"
-                value={form.crew_size}
-                onChange={(e) => setNum("crew_size", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-              <p className="mt-1 text-xs text-white/40">Number of crew members on a typical job</p>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Crew Hourly Rate ($/hr)</label>
-              <input
-                type="number" min="0" step="0.01"
-                value={form.crew_hourly_rate}
-                onChange={(e) => setNum("crew_hourly_rate", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-              <p className="mt-1 text-xs text-white/40">All-in hourly rate per crew member</p>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Labor Pricing Method</label>
-              <select
-                value={form.labor_method}
-                onChange={(e) => setTxt("labor_method", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              >
-                <option value="per_sqft">Per Sq Ft ($ × sqft)</option>
-                <option value="hourly">Hourly (crew rate × hours)</option>
-              </select>
-              <p className="mt-1 text-xs text-white/40">How labor cost is calculated on each quote</p>
-            </div>
-          </div>
-
-          {/* ── Waste Factor ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">
-            Material Waste Factor
-            <span className="ml-2 text-xs font-normal text-white/40">Covers cuts, mistakes, and on-site waste</span>
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Waste Factor Multiplier</label>
-              <input
-                type="number" min="1.00" max="1.50" step="0.01"
-                value={form.waste_factor}
-                onChange={(e) => setNum("waste_factor", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-              <p className="mt-1 text-xs text-white/40">
-                e.g. 1.10 = 10% added to all material costs. Typical: 1.08–1.15.
-              </p>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-[#111827] p-4 self-start">
-              <div className="text-xs font-medium text-white/60 mb-2">Preview</div>
-              <div className="text-sm text-white">
-                $1,000 material → ${(1000 * form.waste_factor).toLocaleString("en-US", { style: "currency", currency: "USD" })} with waste
-              </div>
-              <div className="mt-1 text-xs text-white/40">
-                {Math.round((form.waste_factor - 1) * 100)}% added to cover waste
-              </div>
-            </div>
-          </div>
-
-          {/* ── Auto-Hardware Unit Prices ── */}
-          <div className="mt-8 mb-2 text-sm font-medium text-white/80">Auto-Hardware Unit Prices</div>
-          <p className="mb-5 text-xs text-white/40">
-            Used when auto-hardware calculation is enabled on a quote. Hardware quantities are computed from deck geometry; these are the unit costs applied.
-          </p>
-
-          {/* Auto-hardware toggle */}
-          <div className="mb-5 flex items-center justify-between rounded-xl border border-white/10 bg-[#111827] px-5 py-4">
-            <div>
-              <div className="text-sm font-medium text-white">Auto-Hardware Calculation</div>
-              <div className="mt-0.5 text-xs text-white/40">Automatically compute joist hangers, post bases, concrete bags, and fasteners from deck dimensions</div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setBool("auto_hardware", !form.auto_hardware)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                form.auto_hardware ? "bg-blue-500" : "bg-gray-600"
-              }`}
-            >
-              <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
-                  form.auto_hardware ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
-            </button>
-          </div>
-
-          <div className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${!form.auto_hardware ? "opacity-50 pointer-events-none" : ""}`}>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Concrete Bag ($/bag)</label>
-              <input
-                type="number" min="0" step="0.01"
-                value={form.concrete_bag_price}
-                onChange={(e) => setNum("concrete_bag_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Joist Hanger ($/ea)</label>
-              <input
-                type="number" min="0" step="0.01"
-                value={form.joist_hanger_price}
-                onChange={(e) => setNum("joist_hanger_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Post Base ($/ea)</label>
-              <input
-                type="number" min="0" step="0.01"
-                value={form.post_base_price}
-                onChange={(e) => setNum("post_base_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Hurricane Tie ($/ea)</label>
-              <input
-                type="number" min="0" step="0.01"
-                value={form.hurricane_tie_price}
-                onChange={(e) => setNum("hurricane_tie_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Lag Bolt ($/ea)</label>
-              <input
-                type="number" min="0" step="0.01"
-                value={form.lag_bolt_price}
-                onChange={(e) => setNum("lag_bolt_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-            </div>
-          </div>
-
-          {/* ── Proposal Defaults ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Proposal Defaults</div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs text-white/60">Default Proposal Expiry (days)</label>
-              <input
-                type="number" min="1" max="365" step="1"
-                value={form.proposal_expiry_days}
-                onChange={(e) => setNum("proposal_expiry_days", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
-              />
-              <p className="mt-1 text-xs text-white/40">
-                Proposals expire this many days after the share link is generated. Default: 30 days.
-              </p>
-            </div>
-          </div>
-
-          {/* ── Standard Assumptions & Exclusions ── */}
-          <div className="mt-6 mb-3 text-sm font-medium text-white/80">Standard Assumptions</div>
-          <p className="mb-3 text-xs text-white/40">
-            One assumption per line. These appear on every client proposal when no project-specific assumptions are set.
-          </p>
-          <textarea
-            rows={6}
-            value={form.standard_assumptions}
-            onChange={(e) => setTxt("standard_assumptions", e.target.value)}
-            placeholder={`All work performed to local building code standards\nProject assumes normal site conditions\nOwner responsible for HOA approvals prior to start\nPrice valid for 30 days from proposal date`}
-            className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm text-white placeholder:text-white/20 font-mono"
-          />
-
-          <div className="mt-6 mb-3 text-sm font-medium text-white/80">Standard Exclusions</div>
-          <p className="mb-3 text-xs text-white/40">
-            One exclusion per line. These appear on every client proposal when no project-specific exclusions are set.
-          </p>
-          <textarea
-            rows={6}
-            value={form.standard_exclusions}
-            onChange={(e) => setTxt("standard_exclusions", e.target.value)}
-            placeholder={`Landscaping, grading, or ground preparation\nElectrical work beyond deck lighting\nRetaining walls or drainage work\nHOA or permit fees (unless itemized above)`}
-            className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm text-white placeholder:text-white/20 font-mono"
-          />
-
-          <div className="mt-8 flex justify-end">
-            <button type="button" onClick={save} disabled={saving} className="rounded bg-white px-4 py-2 text-black hover:bg-white/90 disabled:opacity-60">
-              {saving ? "Saving…" : "Save Settings"}
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </main>
-  );
-}
+                onChange={(e) => setNum("dum

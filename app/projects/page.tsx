@@ -58,7 +58,7 @@ function statusBadge(status: string | null) {
 }
 
 function money(value: number | null) {
-  if (value === null || value === undefined || Number.isNaN(value)) return "—";
+  if (value === null || value === undefined || Number.isNaN(value)) return "-";
   return value.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
@@ -66,7 +66,7 @@ function money(value: number | null) {
 }
 
 function percent(value: number | null) {
-  if (value === null || value === undefined || Number.isNaN(value)) return "—";
+  if (value === null || value === undefined || Number.isNaN(value)) return "-";
   if (value <= 1) return `${Math.round(value * 100)}%`;
   return `${Math.round(value)}%`;
 }
@@ -158,69 +158,4 @@ export default function ProjectsPage() {
                     <th className="py-3 pr-4 font-medium">Price</th>
                     <th className="py-3 pr-4 font-medium">Profit</th>
                     <th className="py-3 pr-4 font-medium">Margin</th>
-                    <th className="py-3 text-right font-medium">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody className="text-white/90">
-                  {projects.map((project) => (
-                    <tr key={project.id} className="border-b border-white/5">
-                      <td className="py-4 pr-4">
-                        {project.name ?? "Untitled Quote"}
-                      </td>
-
-                      <td className="py-4 pr-4">
-                        {statusBadge(project.status)}
-                      </td>
-
-                      <td className="py-4 pr-4">{money(project.final_price)}</td>
-                      <td className="py-4 pr-4">{money(project.expected_profit)}</td>
-                      <td className="py-4 pr-4">{percent(project.target_margin)}</td>
-
-                      <td className="py-4">
-                        <div className="flex justify-end gap-2">
-                          <Link
-                            href={`/projects/${project.id}`}
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
-                          >
-                            Open
-                          </Link>
-
-                          <Link
-                            href={`/projects/${project.id}/edit`}
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
-                          >
-                            Edit
-                          </Link>
-
-                          <a
-                            href={`/api/proposal/${project.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
-                          >
-                            PDF
-                          </a>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDuplicate(project.id)}
-                            disabled={duplicating === project.id}
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10 disabled:opacity-50"
-                          >
-                            {duplicating === project.id ? "…" : "Duplicate"}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
-  );
-}
-
+                    <th className="py
