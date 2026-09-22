@@ -113,8 +113,8 @@ const css = `
     max-width: 1120px; margin: 0 auto; padding: 0 24px;
     display: flex; align-items: center; justify-content: space-between; height: 64px;
   }
-  .lp-logo { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
-  .lp-logo span { color: var(--blue); }
+  .lp-logo { display: flex; align-items: center; }
+  .lp-logo img { height: 32px; width: auto; display: block; }
   .lp-nav-right { display: flex; align-items: center; gap: 16px; }
   .lp-login { font-size: 14px; color: var(--text-2); font-weight: 700; transition: color 0.2s; }
   .lp-login:hover { color: var(--text-1); }
@@ -287,8 +287,8 @@ const css = `
   /* Footer */
   .lp-footer { background: var(--bg-2); border-top: 1px solid var(--border); padding: 40px 0 28px; }
   .lp-footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-  .lp-footer-logo { font-size: 16px; font-weight: 700; }
-  .lp-footer-logo span { color: var(--blue); }
+  .lp-footer-logo { display: flex; align-items: center; }
+  .lp-footer-logo img { height: 26px; width: auto; display: block; opacity: 0.9; }
   .lp-footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
   .lp-footer-links a { font-size: 13px; color: var(--text-2); transition: color 0.2s; }
   .lp-footer-links a:hover { color: var(--text-1); }
@@ -316,7 +316,10 @@ export default function Home() {
       {/* ── NAV ─────────────────────────────────────────────────────────────── */}
       <nav className="lp-nav" id="lp-nav" aria-label="Main navigation">
         <div className="lp-nav-inner">
-          <a href="/" className="lp-logo">Deck<span>Margin</span></a>
+          <a href="/" className="lp-logo" aria-label="DeckMargin home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="DeckMargin" height={32} width={210} />
+          </a>
           <div className="lp-nav-right">
             <a href="/login" className="lp-login">Log in</a>
             {/*
@@ -542,7 +545,10 @@ export default function Home() {
       <footer className="lp-footer">
         <div className="lp-container">
           <div className="lp-footer-inner">
-            <a href="/" className="lp-footer-logo">Deck<span>Margin</span></a>
+            <a href="/" className="lp-footer-logo" aria-label="DeckMargin home">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.svg" alt="DeckMargin" height={26} width={175} />
+            </a>
             <div className="lp-footer-links">
               <a href="/login">Log in</a>
               <a href="/signup" data-cta="footer">Start your 14-day free trial</a>

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 46" role="img" aria-label="DeckMargin">
+  <title>DeckMargin</title>
+
+  <!-- ── Deck icon ── -->
+
+  <!-- Top board — white top face -->
+  <polygon points="4,22 30,13 44,20 18,29" fill="#FFFFFF"/>
+  <!-- Top board — left face (shadow) -->
+  <polygon points="4,22 4,28 18,35 18,29" fill="#C0CCDC"/>
+  <!-- Top board — right/front face (amber) -->
+  <polygon points="18,29 44,20 44,26 18,35" fill="#F5A623"/>
+
+  <!-- Middle board — slightly below -->
+  <polygon points="4,30 30,21 44,28 18,37" fill="#E0E8F4"/>
+  <!-- Middle board — right face (darker amber) -->
+  <polygon points="18,37 44,28 44,34 18,43" fill="#C8841A"/>
+
+  <!-- Green trend line -->
+  <polyline
+    points="6,30 14,21 23,26 37,8"
+    fill="none"
+    stroke="#5CB85C"
+    stroke-width="2.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- Arrow head -->
+  <polygon points="37,8 31,15 42,16" fill="#5CB85C"/>
+
+  <!-- ── Wordmark ── -->
+  <text
+    x="54" y="31"
+    font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif"
+    font-weight="700"
+    font-size="22"
+    fill="#FFFFFF"
+    letter-spacing="-0.3"
+  >Deck</text>
+  <text
+    x="106" y="31"
+    font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif"
+    font-weight="700"
+    font-size="22"
+    fill="#F5A623"
+    letter-spacing="-0.3"
+  >Margin</text>
+</svg>
