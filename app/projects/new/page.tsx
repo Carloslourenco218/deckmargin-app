@@ -864,6 +864,19 @@ export default function NewQuoteWizard() {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
   const [form, setForm] = useState<WizardForm>(INITIAL);
+  const [showSettingsNudge, setShowSettingsNudge] = useState(false);
+
+  // Show settings nudge once per browser — disappears after dismiss
+  useEffect(() => {
+    if (typeof window !== "undefined" && !localStorage.getItem("dm_settings_nudge_seen")) {
+      setShowSettingsNudge(true);
+    }
+  }, []);
+
+  function dismissSettingsNudge() {
+    localStorage.setItem("dm_settings_nudge_seen", "1");
+    setShowSettingsNudge(false);
+  }
 
   function set<K extends keyof WizardForm>(key: K, value: WizardForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -1034,6 +1047,28 @@ export default function NewQuoteWizard() {
             Cancel
           </button>
         </div>
+
+        {/* Settings nudge — shown once to new users */}
+        {showSettingsNudge && (
+          <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <span className="mt-0.5 text-amber-400">⚙</span>
+            <div className="flex-1 text-sm">
+              <span className="font-medium text-amber-300">Before you build your first quote</span>
+              <span className="text-amber-200/80"> — your labor rates, material pricing, and overhead aren&apos;t set yet. Default numbers won&apos;t reflect your real costs.</span>
+              <a href="/settings" className="ml-2 font-medium text-amber-300 underline underline-offset-2 hover:text-amber-200">
+                Go to Settings
+              </a>
+            </div>
+            <button
+              type="button"
+              onClick={dismissSettingsNudge}
+              className="mt-0.5 text-amber-400/60 hover:text-amber-400"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Progress */}
         <ProgressBar steps={visibleSteps} currentId={step} />
