@@ -364,12 +364,12 @@ export default function Home() {
                 Update href to your actual demo video URL once it exists.
               */}
               <a
-                href="https://www.loom.com/share/placeholder"
+                href="https://www.loom.com/share/c88482e71aca42cbafb935d511ed7aea"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="lp-btn-ghost"
               >
-                ▶ Watch the 2-min demo
+                ▶ Watch the 4-min demo
               </a>
             </div>
             <p className="lp-microcopy">No card needed. Cancel any time.</p>
