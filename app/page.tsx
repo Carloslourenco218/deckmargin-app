@@ -307,7 +307,7 @@ const css = `
   }
 
   /* Footer */
-  .lp-footer { background: var(--bg-2); border-top: 1px solid var(--border); padding: 40px 0 28px; }
+  .lp-footer { background: var(--bg-2); border-top: 1px solid var(--border); padding: 40px 0 88px; }
   .lp-footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
   .lp-footer-logo { display: flex; align-items: center; }
   .lp-footer-logo img { height: 26px; width: auto; display: block; opacity: 0.9; }
