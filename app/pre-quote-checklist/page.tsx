@@ -113,10 +113,9 @@ const css = `
     margin-bottom: 40px;
   }
 
-  /* Form card */
+  /* Form card — white background so HubSpot's light-theme iframe is readable */
   .pq-form-card {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
+    background: #FFFFFF;
     border-radius: 16px;
     padding: 32px 28px;
     text-align: left;
