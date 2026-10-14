@@ -341,9 +341,62 @@ const css = `
   .lp-social-icons a { color: rgba(255,255,255,0.35); transition: color 0.2s; display: flex; align-items: center; }
   .lp-social-icons a:hover { color: rgba(255,255,255,0.9); }
 
+  /* Hamburger */
+  .lp-hamburger {
+    display: none;
+    flex-direction: column; justify-content: center; align-items: center;
+    gap: 5px; width: 40px; height: 40px;
+    background: none; border: none; cursor: pointer; padding: 4px;
+    border-radius: 8px; transition: background 0.2s;
+  }
+  .lp-hamburger:hover { background: rgba(29,44,75,0.06); }
+  .lp-hamburger span {
+    display: block; width: 22px; height: 2px;
+    background: var(--navy); border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    transform-origin: center;
+  }
+  .lp-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .lp-hamburger.open span:nth-child(2) { opacity: 0; }
+  .lp-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Mobile nav drawer */
+  .lp-mobile-menu {
+    display: none;
+    position: fixed; top: 64px; left: 0; right: 0; bottom: 0;
+    background: rgba(250,250,248,0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 99;
+    flex-direction: column;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    gap: 4px;
+    overflow-y: auto;
+  }
+  .lp-mobile-menu.open { display: flex; }
+  .lp-mobile-menu a {
+    display: block; padding: 14px 8px;
+    font-size: 18px; font-weight: 700; color: var(--navy);
+    border-bottom: 1px solid var(--border);
+    transition: color 0.2s;
+  }
+  .lp-mobile-menu a:last-child { border-bottom: none; }
+  .lp-mobile-menu a:hover { color: var(--orange); }
+  .lp-mobile-menu .lp-mobile-cta {
+    margin-top: 20px;
+    display: block; text-align: center;
+    background: var(--orange); color: var(--navy) !important;
+    padding: 16px 24px; border-radius: 999px;
+    font-size: 17px; font-weight: 700;
+    border: none;
+  }
+
   /* Responsive */
   @media (max-width: 768px) {
-    .lp-nav-right .lp-login:not(:last-of-type) { display: none; }
+    .lp-nav-right .lp-login { display: none; }
+    .lp-nav-right .lp-btn { display: none; }
+    .lp-hamburger { display: flex; }
   }
   @media (max-width: 640px) {
     .lp-hero { padding: 100px 0 72px; }
@@ -377,9 +430,30 @@ export default function Home() {
             <a href="/signup" data-cta="nav" className="lp-btn lp-btn-sm">
               Start your 14-day free trial
             </a>
+            <button
+              className="lp-hamburger"
+              id="lp-hamburger"
+              aria-label="Open navigation menu"
+              aria-expanded="false"
+            >
+              <span />
+              <span />
+              <span />
+            </button>
           </div>
         </div>
       </nav>
+
+      {/* ── MOBILE MENU ─────────────────────────────────────────────────────── */}
+      <div className="lp-mobile-menu" id="lp-mobile-menu" aria-hidden="true">
+        <a href="#how-it-works" id="mm-how">How it works</a>
+        <a href="#pricing" id="mm-pricing">Pricing</a>
+        <a href="/resources">Resources</a>
+        <a href="/login">Log in</a>
+        <a href="/signup" data-cta="mobile-menu" className="lp-mobile-cta">
+          Start your 14-day free trial
+        </a>
+      </div>
 
       {/* ── STICKY BAR ──────────────────────────────────────────────────────── */}
       <div className="lp-sticky" id="lp-sticky" aria-hidden="true">

@@ -59,6 +59,28 @@ export default function LandingInteractive() {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
+    // ── Mobile hamburger menu ─────────────────────────────────────────────
+    const hamburger  = document.getElementById("lp-hamburger");
+    const mobileMenu = document.getElementById("lp-mobile-menu");
+
+    const toggleMenu = (open: boolean) => {
+      hamburger?.classList.toggle("open", open);
+      mobileMenu?.classList.toggle("open", open);
+      hamburger?.setAttribute("aria-expanded", String(open));
+      mobileMenu?.setAttribute("aria-hidden", String(!open));
+      document.body.style.overflow = open ? "hidden" : "";
+    };
+
+    hamburger?.addEventListener("click", () => {
+      const isOpen = mobileMenu?.classList.contains("open") ?? false;
+      toggleMenu(!isOpen);
+    });
+
+    // Close menu when any link inside it is clicked
+    mobileMenu?.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => toggleMenu(false));
+    });
+
     // ── Fade-up IntersectionObserver ──────────────────────────────────────
     const observer = new IntersectionObserver(
       (entries) => {
@@ -76,6 +98,7 @@ export default function LandingInteractive() {
     return () => {
       window.removeEventListener("scroll", onScroll);
       observer.disconnect();
+      document.body.style.overflow = "";
     };
   }, [searchParams]);
 
