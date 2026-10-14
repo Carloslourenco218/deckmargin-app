@@ -3,7 +3,7 @@
  *
  * SERVER COMPONENT (no "use client").
  * All HTML is SSR'd → Googlebot can crawl and index it.
- * Interactive behaviour (scroll, UTM params, GA4 events) lives in
+ * Interactive behaviour (scroll, UTM params, GA4 events, cursor) lives in
  * <LandingInteractive />, a thin client component rendered inside Suspense.
  */
 
@@ -12,7 +12,6 @@ import { Suspense } from "react";
 import LandingInteractive from "@/app/components/LandingInteractive";
 
 // ── SEO metadata ───────────────────────────────────────────────────────────────
-// Fix #1: proper title, description, and OG tags so Googlebot gets real content.
 export const metadata: Metadata = {
   metadataBase: new URL("https://deckmargin.com"),
   title: "DeckMargin: Know Your Price Before You Send It",
@@ -34,7 +33,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.png",   // add a 1200×630 image to /public/og-image.png
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "DeckMargin deck estimating software",
@@ -58,16 +57,14 @@ export const metadata: Metadata = {
 // Force SSR on every request — prevents Vercel CDN from caching a stale shell
 export const dynamic = "force-dynamic";
 
-// ── CSS (static — extracted to a const so the component reads cleanly) ─────────
+// ── CSS ────────────────────────────────────────────────────────────────────────
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0D0D0D;
-    color: #FFFFFF;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #FAFAF8;
+    color: #2A2E36;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
@@ -76,20 +73,50 @@ const css = `
   button { cursor: pointer; font-family: inherit; border: none; background: none; color: inherit; }
 
   :root {
-    --bg: #0D0D0D;
-    --bg-2: #111827;
-    --blue: #3B82F6;
-    --green: #10B981;
-    --text-1: #FFFFFF;
-    --text-2: #9CA3AF;
-    --border: #1F2937;
-    --radius: 12px;
+    --bg:        #FAFAF8;
+    --bg-2:      #FFFFFF;
+    --bg-dark:   #141F38;
+    --navy:      #1D2C4B;
+    --orange:    #FBB944;
+    --orange-h:  #E8A730;
+    --charcoal:  #2A2E36;
+    --mute:      #6B7280;
+    --border:    #E7E5E0;
+    --radius:    12px;
+  }
+
+  /* Custom cursor — desktop fine pointer only */
+  @media (pointer: fine) {
+    body { cursor: none; }
+    a, button, [role="button"] { cursor: none; }
+  }
+  #dm-cursor-dot {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--navy);
+    transform: translate(-50%, -50%);
+    transition: transform 0.08s ease, opacity 0.2s;
+    opacity: 0;
+    will-change: transform;
+  }
+  #dm-cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9998;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid rgba(29,44,75,0.35);
+    transform: translate(-50%, -50%);
+    transition: width 0.2s ease, height 0.2s ease, border-color 0.2s, opacity 0.2s;
+    opacity: 0;
+    will-change: transform;
+  }
+  #dm-cursor-ring.hovering {
+    width: 48px; height: 48px;
+    border-color: var(--orange);
   }
 
   /* Layout */
   .lp-container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
 
-  /* Fade-up animation */
+  /* Fade-up */
   @media (prefers-reduced-motion: no-preference) {
     .fade-up {
       opacity: 0;
@@ -103,106 +130,119 @@ const css = `
   .lp-nav {
     position: fixed; top: 0; left: 0; right: 0;
     z-index: 100;
-    background: rgba(13,13,13,0.9);
-    backdrop-filter: blur(12px);
+    background: transparent;
     border-bottom: 1px solid transparent;
-    transition: border-color 0.3s;
+    transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
   }
-  .lp-nav.scrolled { border-color: var(--border); }
+  .lp-nav.scrolled {
+    background: rgba(250,250,248,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: var(--border);
+  }
   .lp-nav-inner {
     max-width: 1120px; margin: 0 auto; padding: 0 24px;
     display: flex; align-items: center; justify-content: space-between; height: 64px;
   }
   .lp-logo { display: flex; align-items: center; }
-  .lp-logo img { height: 32px; width: auto; display: block; }
+  .lp-logo img { height: 32px; width: auto; display: block; filter: brightness(0); }
   .lp-nav-right { display: flex; align-items: center; gap: 16px; }
-  .lp-login { font-size: 14px; color: var(--text-2); font-weight: 700; transition: color 0.2s; }
-  .lp-login:hover { color: var(--text-1); }
+  .lp-login { font-size: 14px; color: var(--charcoal); font-weight: 700; transition: color 0.2s; }
+  .lp-login:hover { color: var(--navy); }
 
   /* Sticky bar */
   .lp-sticky {
     position: fixed; bottom: 0; left: 0; right: 0;
     z-index: 90;
-    background: var(--bg-2);
-    border-top: 1px solid var(--border);
+    background: var(--navy);
+    border-top: 1px solid rgba(255,255,255,0.08);
     padding: 12px 24px;
     display: flex; align-items: center; justify-content: center; gap: 16px;
     transform: translateY(100%);
     transition: transform 0.35s ease;
   }
   .lp-sticky.visible { transform: translateY(0); }
-  .lp-sticky-text { font-size: 14px; color: var(--text-2); }
+  .lp-sticky-text { font-size: 14px; color: rgba(255,255,255,0.75); }
 
-  /* CTA Buttons */
+  /* CTA Buttons — orange pills */
   .lp-btn {
     display: inline-flex; align-items: center;
-    font-weight: 700; border-radius: 10px;
-    background: var(--blue); color: #fff;
-    transition: background 0.2s, transform 0.15s;
+    font-weight: 700; border-radius: 999px;
+    background: var(--orange); color: var(--navy);
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
     text-decoration: none; white-space: nowrap;
   }
-  .lp-btn:hover { background: #2563EB; transform: translateY(-1px); }
-  .lp-btn-lg { font-size: 17px; padding: 15px 32px; border-radius: 12px; }
+  .lp-btn:hover {
+    background: var(--orange-h);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(251,185,68,0.35);
+  }
+  .lp-btn-lg { font-size: 17px; padding: 15px 32px; }
   .lp-btn-sm { font-size: 14px; padding: 10px 22px; }
 
-  /* Secondary (ghost) CTA */
+  /* Ghost CTA */
   .lp-btn-ghost {
     display: inline-flex; align-items: center; gap: 6px;
-    font-size: 15px; font-weight: 700; color: var(--text-2);
-    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 15px; font-weight: 700;
+    color: var(--navy);
+    border: 2px solid var(--navy); border-radius: 999px;
     padding: 13px 24px;
-    transition: color 0.2s, border-color 0.2s;
+    transition: background 0.2s, color 0.2s;
     text-decoration: none;
   }
-  .lp-btn-ghost:hover { color: var(--text-1); border-color: #4b5563; }
+  .lp-btn-ghost:hover {
+    background: var(--navy);
+    color: #fff;
+  }
   .lp-cta-group { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
   /* Sections */
-  .lp-section { padding: 96px 0; }
+  .lp-section { padding: 96px 0; background: var(--bg); }
   .lp-section-alt { background: var(--bg-2); }
 
   /* Hero */
-  .lp-hero { padding: 140px 0 96px; }
+  .lp-hero { padding: 140px 0 96px; background: var(--bg); }
   .lp-hero h1 {
     font-size: clamp(36px, 6vw, 56px);
     font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 20px;
+    color: var(--navy);
   }
-  .lp-hero-sub { font-size: 18px; color: var(--text-2); margin-bottom: 32px; line-height: 1.65; }
-  .lp-microcopy { font-size: 13px; color: var(--text-2); margin-top: 12px; }
+  .lp-hero-sub { font-size: 18px; color: var(--mute); margin-bottom: 32px; line-height: 1.65; }
+  .lp-microcopy { font-size: 13px; color: var(--mute); margin-top: 12px; }
 
-  /* Hero UI mock */
+  /* Hero UI mock — dark app style for contrast on light bg */
   .lp-hero-ui {
     margin-top: 56px;
-    background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
-    overflow: hidden; box-shadow: 0 8px 48px rgba(0,0,0,0.5), 0 0 60px rgba(59,130,246,0.05);
+    background: #111827; border: 1px solid #1F2937; border-radius: var(--radius);
+    overflow: hidden; box-shadow: 0 12px 48px rgba(20,31,56,0.15), 0 2px 8px rgba(0,0,0,0.06);
   }
   .ui-hdr {
-    background: #1E2A3A; border-bottom: 1px solid var(--border);
+    background: #1E2A3A; border-bottom: 1px solid #1F2937;
     padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
   }
   .ui-hdr-left { display: flex; align-items: center; gap: 10px; }
   .ui-dots { display: flex; gap: 6px; }
   .ui-dot { width: 9px; height: 9px; border-radius: 50%; }
   .ui-dot.r { background: #ff5f57; } .ui-dot.y { background: #febc2e; } .ui-dot.g { background: #28c840; }
-  .ui-title { font-size: 12px; font-weight: 700; color: var(--text-2); }
+  .ui-title { font-size: 12px; font-weight: 700; color: #9CA3AF; }
   .ui-badge {
-    font-size: 11px; font-weight: 700; color: var(--green);
+    font-size: 11px; font-weight: 700; color: #10B981;
     background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25);
     border-radius: 100px; padding: 3px 10px;
   }
   .ui-body { padding: 18px; }
-  .ui-project { font-size: 12px; color: var(--text-2); margin-bottom: 14px; }
+  .ui-project { font-size: 12px; color: #9CA3AF; margin-bottom: 14px; }
   .ui-project strong { color: #fff; }
   .ui-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
   .ui-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 9px 11px; background: var(--bg); border-radius: 7px;
+    padding: 9px 11px; background: #0D1117; border-radius: 7px;
   }
-  .ui-row-label { font-size: 11px; color: var(--text-2); }
+  .ui-row-label { font-size: 11px; color: #9CA3AF; }
   .ui-row-val { font-size: 12px; font-weight: 700; color: #fff; }
-  .ui-divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .ui-divider { border: none; border-top: 1px solid #1F2937; margin: 12px 0; }
   .ui-cost-row { display: flex; justify-content: space-between; padding: 5px 0; }
-  .ui-cost-label { font-size: 12px; color: var(--text-2); }
+  .ui-cost-label { font-size: 12px; color: #9CA3AF; }
   .ui-cost-val { font-size: 12px; font-weight: 700; color: #fff; }
   .ui-margin-box {
     background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);
@@ -210,115 +250,124 @@ const css = `
   }
   .ui-margin-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .ui-margin-row:last-child { margin-bottom: 0; }
-  .ui-margin-label { font-size: 11px; color: var(--text-2); }
-  .ui-margin-val { font-size: 12px; font-weight: 700; color: var(--green); }
+  .ui-margin-label { font-size: 11px; color: #9CA3AF; }
+  .ui-margin-val { font-size: 12px; font-weight: 700; color: #10B981; }
   .ui-send {
     display: flex; justify-content: space-between; align-items: center;
-    background: var(--blue); border-radius: 7px; padding: 11px 14px; margin-top: 12px;
+    background: var(--orange); border-radius: 7px; padding: 11px 14px; margin-top: 12px;
   }
-  .ui-send-label { font-size: 12px; font-weight: 700; color: #fff; }
-  .ui-send-val { font-size: 17px; font-weight: 700; color: #fff; }
+  .ui-send-label { font-size: 12px; font-weight: 700; color: var(--navy); }
+  .ui-send-val { font-size: 17px; font-weight: 700; color: var(--navy); }
 
-  /* Problem */
-  .lp-problem p { font-size: 20px; line-height: 1.7; color: var(--text-1); }
+  /* Problem — navy-deep dark section */
+  .lp-problem { background: var(--bg-dark) !important; }
+  .lp-problem p { font-size: 20px; line-height: 1.7; color: rgba(255,255,255,0.88); }
   .lp-problem p + p { margin-top: 20px; }
 
   /* Solution */
-  .lp-solution .sol-main { font-size: 22px; font-weight: 700; color: var(--text-1); line-height: 1.5; }
-  .lp-solution .sol-sub { font-size: 17px; color: var(--text-2); margin-top: 10px; line-height: 1.65; }
+  .lp-solution .sol-main { font-size: 22px; font-weight: 700; color: var(--navy); line-height: 1.5; }
+  .lp-solution .sol-sub { font-size: 17px; color: var(--mute); margin-top: 10px; line-height: 1.65; }
 
   /* Proof */
-  .lp-proof p { font-size: 18px; line-height: 1.75; color: var(--text-1); }
+  .lp-proof p { font-size: 18px; line-height: 1.75; color: var(--charcoal); }
   .lp-proof p + p { margin-top: 16px; }
-  .green { color: var(--green); }
+  .green { color: #1E6B3C; }
   .lp-example-label {
     font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--text-2); margin-bottom: 16px;
+    color: var(--mute); margin-bottom: 16px;
     padding: 4px 10px; border: 1px solid var(--border); border-radius: 100px;
     display: inline-block;
   }
   .lp-quote-card {
-    margin-top: 32px; background: var(--bg-2);
+    margin-top: 32px; background: #fff;
     border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
   }
-  .lp-quote-card p { font-size: 17px; font-style: italic; color: var(--text-1); line-height: 1.7; }
-  .lp-quote-attr { margin-top: 10px; font-size: 13px; color: var(--text-2); font-style: normal; }
+  .lp-quote-card p { font-size: 17px; font-style: italic; color: var(--navy); line-height: 1.7; }
+  .lp-quote-attr { margin-top: 10px; font-size: 13px; color: var(--mute); font-style: normal; }
 
-  /* Clean price callout */
-  .lp-callout p { font-size: clamp(20px, 3vw, 26px); font-weight: 700; color: var(--text-1); line-height: 1.35; }
+  /* Callout — orange accent section */
+  .lp-callout { background: var(--orange) !important; }
+  .lp-callout p { font-size: clamp(20px, 3vw, 26px); font-weight: 700; color: var(--navy); line-height: 1.35; }
 
   /* How It Works */
   .lp-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
   .lp-step { text-align: center; }
   .lp-step-num {
     width: 52px; height: 52px; border-radius: 50%;
-    border: 2px solid var(--blue); color: var(--blue);
+    background: var(--orange); color: var(--navy);
     font-size: 20px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 20px;
   }
-  .lp-step h3 { font-size: 16px; font-weight: 700; color: var(--text-1); margin-bottom: 8px; }
-  .lp-step p { font-size: 14px; color: var(--text-2); line-height: 1.65; }
+  .lp-step h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .lp-step p { font-size: 14px; color: var(--mute); line-height: 1.65; }
 
   /* Chips */
   .lp-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
   .lp-chip {
     font-size: 14px; font-weight: 700; border: 1px solid var(--border);
-    border-radius: 100px; padding: 7px 18px; color: var(--text-1); background: var(--bg-2);
+    border-radius: 100px; padding: 7px 18px; color: var(--navy); background: #fff;
   }
-  .lp-catches-sub { font-size: 16px; color: var(--text-2); line-height: 1.65; }
+  .lp-catches-sub { font-size: 16px; color: var(--mute); line-height: 1.65; }
 
   /* Comparison */
-  .lp-comparison p { font-size: 18px; line-height: 1.75; color: var(--text-1); }
+  .lp-comparison p { font-size: 18px; line-height: 1.75; color: var(--charcoal); }
   .lp-comparison p + p { margin-top: 16px; }
-  .lp-comparison .comp-close { color: var(--text-2); font-size: 16px; }
+  .lp-comparison .comp-close { color: var(--navy); font-size: 16px; font-weight: 700; }
 
-  /* Pricing */
-  .lp-price-display { font-size: clamp(40px, 6vw, 60px); font-weight: 700; letter-spacing: -0.03em; margin-bottom: 14px; }
-  .lp-pricing p { font-size: 18px; color: var(--text-1); line-height: 1.7; }
-  .lp-pricing p + p { margin-top: 12px; color: var(--text-2); font-size: 15px; }
+  /* Pricing — navy-deep dark section */
+  .lp-pricing { background: var(--bg-dark) !important; }
+  .lp-price-display { font-size: clamp(40px, 6vw, 60px); font-weight: 700; letter-spacing: -0.03em; margin-bottom: 14px; color: #fff; }
+  .lp-pricing p { font-size: 18px; color: rgba(255,255,255,0.85); line-height: 1.7; }
+  .lp-pricing p + p { margin-top: 12px; color: rgba(255,255,255,0.55); font-size: 15px; }
 
   /* Testimonials */
-  .lp-testimonials { padding: 72px 0; }
-  .lp-testimonials h2 { font-size: clamp(22px, 3.5vw, 30px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 40px; text-align: center; }
+  .lp-testimonials { padding: 72px 0; background: var(--bg); }
+  .lp-testimonials h2 {
+    font-size: clamp(22px, 3.5vw, 30px); font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 40px; text-align: center; color: var(--navy);
+  }
   .lp-testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
   @media (max-width: 700px) { .lp-testimonial-grid { grid-template-columns: 1fr; } }
   .lp-testimonial-card {
-    background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
     padding: 24px; display: flex; flex-direction: column; gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
-  .lp-testimonial-stars { color: #FBBF24; font-size: 15px; letter-spacing: 1px; }
-  .lp-testimonial-quote { font-size: 15px; line-height: 1.65; color: #D1D5DB; flex: 1; }
+  .lp-testimonial-stars { color: #F59E0B; font-size: 15px; letter-spacing: 1px; }
+  .lp-testimonial-quote { font-size: 15px; line-height: 1.65; color: var(--charcoal); flex: 1; }
   .lp-testimonial-author { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
   .lp-testimonial-avatar {
     width: 36px; height: 36px; border-radius: 50%;
-    background: linear-gradient(135deg, #3B82F6, #10B981);
+    background: var(--navy);
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0;
   }
-  .lp-testimonial-name { font-size: 13px; font-weight: 600; color: #F9FAFB; }
-  .lp-testimonial-source { font-size: 12px; color: #6B7280; text-decoration: none; transition: color 0.2s; }
-  .lp-testimonial-source:hover { color: #9CA3AF; }
+  .lp-testimonial-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .lp-testimonial-source { font-size: 12px; color: var(--mute); text-decoration: none; transition: color 0.2s; }
+  .lp-testimonial-source:hover { color: var(--charcoal); }
 
   /* Final CTA */
   .lp-final h2 {
     font-size: clamp(28px, 5vw, 44px); font-weight: 700;
     letter-spacing: -0.025em; margin-bottom: 28px; line-height: 1.15;
+    color: var(--navy);
   }
 
   /* Footer */
-  .lp-footer { background: var(--bg-2); border-top: 1px solid var(--border); padding: 40px 0 88px; }
+  .lp-footer { background: var(--bg-dark); border-top: none; padding: 40px 0 88px; }
   .lp-footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
   .lp-footer-logo { display: flex; align-items: center; }
-  .lp-footer-logo img { height: 26px; width: auto; display: block; opacity: 0.9; }
+  .lp-footer-logo img { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); opacity: 0.9; }
   .lp-footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
-  .lp-footer-links a { font-size: 13px; color: var(--text-2); transition: color 0.2s; }
-  .lp-footer-links a:hover { color: var(--text-1); }
-  .lp-footer-bottom { margin-top: 28px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-  .lp-footer-bottom p { font-size: 13px; color: var(--text-2); }
+  .lp-footer-links a { font-size: 13px; color: rgba(255,255,255,0.5); transition: color 0.2s; }
+  .lp-footer-links a:hover { color: rgba(255,255,255,0.9); }
+  .lp-footer-bottom { margin-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .lp-footer-bottom p { font-size: 13px; color: rgba(255,255,255,0.35); }
   .lp-social-icons { display: flex; gap: 16px; align-items: center; }
-  .lp-social-icons a { color: var(--text-2); transition: color 0.2s; display: flex; align-items: center; }
-  .lp-social-icons a:hover { color: var(--text-1); }
+  .lp-social-icons a { color: rgba(255,255,255,0.35); transition: color 0.2s; display: flex; align-items: center; }
+  .lp-social-icons a:hover { color: rgba(255,255,255,0.9); }
 
   /* Responsive */
   @media (max-width: 640px) {
@@ -334,9 +383,13 @@ const css = `
 export default function Home() {
   return (
     <>
-      {/* Inline CSS — safe in server components */}
+      {/* Inline CSS */}
       {/* eslint-disable-next-line react/no-danger */}
       <style dangerouslySetInnerHTML={{ __html: css }} />
+
+      {/* Custom cursor — LandingInteractive drives these via JS */}
+      <div id="dm-cursor-dot" aria-hidden="true" />
+      <div id="dm-cursor-ring" aria-hidden="true" />
 
       {/* ── NAV ─────────────────────────────────────────────────────────────── */}
       <nav className="lp-nav" id="lp-nav" aria-label="Main navigation">
@@ -348,11 +401,6 @@ export default function Home() {
           <div className="lp-nav-right">
             <a href="/resources" className="lp-login">Resources</a>
             <a href="/login" className="lp-login">Log in</a>
-            {/*
-              data-cta="nav" — LandingInteractive finds this and:
-              1. Sets href to /signup?utm_... based on URL params
-              2. Fires GA4 event on click
-            */}
             <a href="/signup" data-cta="nav" className="lp-btn lp-btn-sm">
               Start your 14-day free trial
             </a>
@@ -369,11 +417,6 @@ export default function Home() {
       </div>
 
       {/* ── HERO ────────────────────────────────────────────────────────────── */}
-      {/*
-        Fix #1: This section is now SSR'd. Googlebot sees real h1 text.
-        Fix #2: CTA copy updated to include trial length.
-        Fix #4: Secondary CTA added for traffic not ready to start.
-      */}
       <section className="lp-hero" id="lp-hero">
         <div className="lp-container">
           <div className="fade-up">
@@ -385,10 +428,6 @@ export default function Home() {
               <a href="/signup" data-cta="hero" className="lp-btn lp-btn-lg">
                 Start your 14-day free trial
               </a>
-              {/*
-                Fix #4: secondary CTA — lower commitment option for cold traffic.
-                Update href to your actual demo video URL once it exists.
-              */}
               <a
                 href="https://www.loom.com/share/c88482e71aca42cbafb935d511ed7aea"
                 target="_blank"
@@ -401,7 +440,7 @@ export default function Home() {
             <p className="lp-microcopy">No card needed. Cancel any time.</p>
           </div>
 
-          {/* Product UI mockup — estimate + margin screen */}
+          {/* Product UI mockup */}
           <div className="lp-hero-ui fade-up" style={{ transitionDelay: "0.1s" }}>
             <div className="ui-hdr">
               <div className="ui-hdr-left">
@@ -463,16 +502,6 @@ export default function Home() {
       </section>
 
       {/* ── PROOF ───────────────────────────────────────────────────────────── */}
-      {/*
-        Fix #6: The $42K/$6K/$1,400 figures are labeled as an illustrative
-        example, not an attributed customer quote. The quote card now explicitly
-        says "Beta tester" so it reads as a real (but anonymous) user, not a
-        fabricated testimonial.
-
-        ACTION REQUIRED: If you have a named, attributable customer story,
-        replace this with their real numbers and a name/company credit.
-        If not, this "illustrative" framing is accurate and credible.
-      */}
       <section className="lp-section lp-proof fade-up">
         <div className="lp-container">
           <span className="lp-example-label">Illustrative example</span>
@@ -490,7 +519,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CLEAN PRICE CALLOUT ──────────────────────────────────────────────── */}
+      {/* ── CLEAN PRICE CALLOUT ─────────────────────────────────────────────── */}
       <section className="lp-section lp-section-alt lp-callout fade-up">
         <div className="lp-container">
           <p>Your customer sees a clean price. You see everything behind it.</p>
@@ -683,9 +712,8 @@ export default function Home() {
       </footer>
 
       {/*
-        LandingInteractive: client-side only. Handles UTM param injection into
-        CTA links, scroll events (sticky bar, nav border), fade-up animations,
-        and GA4 click events. Renders null — no visible HTML.
+        LandingInteractive: handles UTM params, scroll events, fade-up,
+        GA4 events, and custom cursor. Renders null.
       */}
       <Suspense fallback={null}>
         <LandingInteractive />
