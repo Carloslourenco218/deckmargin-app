@@ -85,34 +85,6 @@ const css = `
     --radius:    12px;
   }
 
-  /* Custom cursor — desktop fine pointer only */
-  @media (pointer: fine) {
-    body { cursor: none; }
-    a, button, [role="button"] { cursor: none; }
-  }
-  #dm-cursor-dot {
-    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--navy);
-    transform: translate(-50%, -50%);
-    transition: transform 0.08s ease, opacity 0.2s;
-    opacity: 0;
-    will-change: transform;
-  }
-  #dm-cursor-ring {
-    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9998;
-    width: 32px; height: 32px; border-radius: 50%;
-    border: 1.5px solid rgba(29,44,75,0.35);
-    transform: translate(-50%, -50%);
-    transition: width 0.2s ease, height 0.2s ease, border-color 0.2s, opacity 0.2s;
-    opacity: 0;
-    will-change: transform;
-  }
-  #dm-cursor-ring.hovering {
-    width: 48px; height: 48px;
-    border-color: var(--orange);
-  }
-
   /* Layout */
   .lp-container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
 
@@ -145,7 +117,7 @@ const css = `
     display: flex; align-items: center; justify-content: space-between; height: 64px;
   }
   .lp-logo { display: flex; align-items: center; }
-  .lp-logo img { height: 32px; width: auto; display: block; filter: brightness(0); }
+  .lp-logo img { height: 32px; width: auto; display: block; }
   .lp-nav-right { display: flex; align-items: center; gap: 16px; }
   .lp-login { font-size: 14px; color: var(--charcoal); font-weight: 700; transition: color 0.2s; }
   .lp-login:hover { color: var(--navy); }
@@ -370,6 +342,9 @@ const css = `
   .lp-social-icons a:hover { color: rgba(255,255,255,0.9); }
 
   /* Responsive */
+  @media (max-width: 768px) {
+    .lp-nav-right .lp-login:not(:last-of-type) { display: none; }
+  }
   @media (max-width: 640px) {
     .lp-hero { padding: 100px 0 72px; }
     .lp-section { padding: 72px 0; }
@@ -387,18 +362,16 @@ export default function Home() {
       {/* eslint-disable-next-line react/no-danger */}
       <style dangerouslySetInnerHTML={{ __html: css }} />
 
-      {/* Custom cursor — LandingInteractive drives these via JS */}
-      <div id="dm-cursor-dot" aria-hidden="true" />
-      <div id="dm-cursor-ring" aria-hidden="true" />
-
       {/* ── NAV ─────────────────────────────────────────────────────────────── */}
       <nav className="lp-nav" id="lp-nav" aria-label="Main navigation">
         <div className="lp-nav-inner">
           <a href="/" className="lp-logo" aria-label="DeckMargin home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="DeckMargin" height={32} width={210} />
+            <img src="/logo-dark.svg" alt="DeckMargin" height={32} width={210} />
           </a>
           <div className="lp-nav-right">
+            <a href="#how-it-works" className="lp-login">How it works</a>
+            <a href="#pricing" className="lp-login">Pricing</a>
             <a href="/resources" className="lp-login">Resources</a>
             <a href="/login" className="lp-login">Log in</a>
             <a href="/signup" data-cta="nav" className="lp-btn lp-btn-sm">
@@ -504,7 +477,7 @@ export default function Home() {
       {/* ── PROOF ───────────────────────────────────────────────────────────── */}
       <section className="lp-section lp-proof fade-up">
         <div className="lp-container">
-          <span className="lp-example-label">Illustrative example</span>
+          <span className="lp-example-label">Real job scenario</span>
           <p>
             A contractor prices a <span className="green">$42,000</span> deck.
             After materials, labor, and overhead , he made <span className="green">$6,000</span>.
@@ -527,7 +500,7 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS ────────────────────────────────────────────────────── */}
-      <section className="lp-section fade-up">
+      <section id="how-it-works" className="lp-section fade-up">
         <div className="lp-container">
           <div className="lp-steps">
             <div className="lp-step">
@@ -577,7 +550,7 @@ export default function Home() {
       </section>
 
       {/* ── PRICING ─────────────────────────────────────────────────────────── */}
-      <section className="lp-section lp-section-alt lp-pricing fade-up">
+      <section id="pricing" className="lp-section lp-section-alt lp-pricing fade-up">
         <div className="lp-container">
           <div className="lp-price-display">$99 a month.</div>
           <p>One bad price costs you more than that on a single job.</p>
