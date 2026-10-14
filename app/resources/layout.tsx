@@ -21,7 +21,6 @@ function loadScript(src: string): Promise<void> {
 export default function ResourcesLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const isFinePrimary = window.matchMedia("(pointer: fine)").matches;
 
     // ── Nav scroll ──────────────────────────────────────────────────────────
     const nav = document.getElementById("rs-nav");
@@ -30,52 +29,6 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-
-    // ── Custom cursor ────────────────────────────────────────────────────────
-    let cursorRaf = 0;
-    if (isFinePrimary) {
-      const dot = document.getElementById("rs-cursor-dot");
-      const ring = document.getElementById("rs-cursor-ring");
-      if (dot && ring) {
-        dot.style.opacity = "1";
-        ring.style.opacity = "1";
-        document.body.style.cursor = "none";
-
-        let mx = window.innerWidth / 2;
-        let my = window.innerHeight / 2;
-        let rx = mx;
-        let ry = my;
-        let isHover = false;
-
-        const onMove = (e: MouseEvent) => {
-          mx = e.clientX;
-          my = e.clientY;
-          dot.style.transform = `translate(${mx - 5}px,${my - 5}px)`;
-        };
-        window.addEventListener("mousemove", onMove);
-
-        const animate = () => {
-          rx += (mx - rx) * 0.12;
-          ry += (my - ry) * 0.12;
-          const size = isHover ? 48 : 32;
-          const half = size / 2;
-          ring.style.transform = `translate(${rx - half}px,${ry - half}px)`;
-          ring.style.width = `${size}px`;
-          ring.style.height = `${size}px`;
-          ring.style.borderColor = isHover ? "rgba(251,185,68,0.55)" : "rgba(29,44,75,0.35)";
-          cursorRaf = requestAnimationFrame(animate);
-        };
-        cursorRaf = requestAnimationFrame(animate);
-
-        const addHover = () => { isHover = true; };
-        const removeHover = () => { isHover = false; };
-        const hoverEls = document.querySelectorAll("a, button, [data-hover]");
-        hoverEls.forEach(el => {
-          el.addEventListener("mouseenter", addHover);
-          el.addEventListener("mouseleave", removeHover);
-        });
-      }
-    }
 
     // ── Fade-up scroll reveal ─────────────────────────────────────────────
     if (!prefersReducedMotion) {
@@ -111,8 +64,6 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
 
     return () => {
       window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(cursorRaf);
-      document.body.style.cursor = "";
     };
   }, []);
 
@@ -143,23 +94,6 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
           --text-3: #6B7280;
           --border: #E7E5E0;
           --radius: 12px;
-        }
-
-        /* Custom cursor */
-        #rs-cursor-dot {
-          position: fixed; top: 0; left: 0; z-index: 9999;
-          width: 10px; height: 10px;
-          background: #1D2C4B; border-radius: 50%;
-          pointer-events: none; opacity: 0;
-          will-change: transform;
-        }
-        #rs-cursor-ring {
-          position: fixed; top: 0; left: 0; z-index: 9998;
-          width: 32px; height: 32px;
-          border: 1.5px solid rgba(29,44,75,0.35); border-radius: 50%;
-          pointer-events: none; opacity: 0;
-          transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease;
-          will-change: transform;
         }
 
         /* Nav */
@@ -375,7 +309,6 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
           .rs-fade-up { opacity: 1; transform: none; transition: none; }
           .rs-article-card { transition: border-color 0.2s; }
           .rs-article-card:hover { transform: none; box-shadow: none; }
-          #rs-cursor-dot, #rs-cursor-ring { display: none; }
         }
 
         @media (max-width: 640px) {
@@ -386,10 +319,6 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
           .rs-article-card { padding: 18px 16px; }
         }
       `}</style>
-
-      {/* ── CUSTOM CURSOR ── */}
-      <div id="rs-cursor-dot" />
-      <div id="rs-cursor-ring" />
 
       <div className="rs-page">
 
