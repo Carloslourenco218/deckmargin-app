@@ -19,7 +19,6 @@ export const metadata: Metadata = {
  */
 const published = [
   "deck-cost-estimator",
-  "how-to-price-a-deck-job",
 ];
 
 const allArticles = [

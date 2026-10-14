@@ -175,12 +175,13 @@ const css = `
   .rs-cta p { font-size: 15px; color: var(--text-2); margin-bottom: 24px; }
   .rs-cta-btn {
     display: inline-block;
-    background: var(--blue); color: #fff;
+    background: var(--blue); color: #fff !important;
     font-size: 15px; font-weight: 700;
     padding: 14px 28px; border-radius: 10px;
     transition: background 0.2s;
+    text-decoration: none !important;
   }
-  .rs-cta-btn:hover { background: #2563EB; color: #fff; text-decoration: none; }
+  .rs-cta-btn:hover { background: #2563EB; color: #fff !important; text-decoration: none !important; }
   .rs-cta-micro { font-size: 12px; color: var(--text-3); margin-top: 10px; margin-bottom: 0; }
 
   /* Related reading */
