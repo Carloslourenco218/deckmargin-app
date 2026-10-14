@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Deck Cost Estimator for Contractors — What Actually Goes Into the Price",
+  title: "Deck Cost Estimator for Contractors, What Actually Goes Into the Price",
   description:
-    "A deck cost estimator built for the person bidding the job, not the person getting a ballpark. See every real cost — materials, labor, permits, overhead, margin — in a worked 24×16 example.",
+    "A deck cost estimator built for the person bidding the job, not the person getting a ballpark. See every real cost, materials, labor, permits, overhead, margin, in a worked 24×16 example.",
 };
 
 export default function DeckCostEstimator() {
@@ -27,7 +27,7 @@ export default function DeckCostEstimator() {
       <div className="rs-body">
         <p>
           If you landed here looking for a quick number to hand a homeowner, this isn&apos;t that
-          page — Trex&apos;s cost calculator and sites like HomeAdvisor already do that well. This
+          page, Trex&apos;s cost calculator and sites like HomeAdvisor already do that well. This
           page is for the person who has to turn a rough number into a real bid: a deck contractor
           pricing an actual job, with actual costs, that still has to make a profit.
         </p>
@@ -46,13 +46,13 @@ export default function DeckCostEstimator() {
         <h2>What actually goes into pricing a deck job</h2>
         <p>A real bid adds up more than lumber:</p>
         <ul>
-          <li><strong>Materials</strong> — decking, framing, structural hardware, fasteners, concrete, and waste. Material choice (pressure-treated vs. Trex vs. TimberTech vs. PVC) moves this on its own.</li>
-          <li><strong>Labor</strong> — crew size, hours, and productivity, adjusted for the actual site: setup, footings, framing, decking, railing, stairs, and cleanup each take their own time.</li>
-          <li><strong>Site conditions</strong> — pools, trees, slopes, limited access, and existing structures add labor hours a flat rate never accounts for.</li>
-          <li><strong>Permits and engineering</strong> — required on plenty of jobs, and easy to forget until it&apos;s too late to add back in.</li>
-          <li><strong>Equipment and disposal</strong> — equipment rental and a dumpster, when the job needs them.</li>
-          <li><strong>Overhead</strong> — your business&apos;s indirect costs, separate from the direct cost of this specific job.</li>
-          <li><strong>Margin</strong> — profit as a percentage of the selling price, not the same thing as markup, and not something to guess at after the fact.</li>
+          <li><strong>Materials</strong>, decking, framing, structural hardware, fasteners, concrete, and waste. Material choice (pressure-treated vs. Trex vs. TimberTech vs. PVC) moves this on its own.</li>
+          <li><strong>Labor</strong>, crew size, hours, and productivity, adjusted for the actual site: setup, footings, framing, decking, railing, stairs, and cleanup each take their own time.</li>
+          <li><strong>Site conditions</strong>, pools, trees, slopes, limited access, and existing structures add labor hours a flat rate never accounts for.</li>
+          <li><strong>Permits and engineering</strong>, required on plenty of jobs, and easy to forget until it&apos;s too late to add back in.</li>
+          <li><strong>Equipment and disposal</strong>, equipment rental and a dumpster, when the job needs them.</li>
+          <li><strong>Overhead</strong>, your business&apos;s indirect costs, separate from the direct cost of this specific job.</li>
+          <li><strong>Margin</strong>, profit as a percentage of the selling price, not the same thing as markup, and not something to guess at after the fact.</li>
         </ul>
 
         <h2>Worked example: pricing a 24×16 deck</h2>
@@ -80,7 +80,7 @@ export default function DeckCostEstimator() {
         </div>
 
         <div className="rs-placeholder">
-          ⚠ Draft — real numbers pending from the recorded demo. Do not publish this page until the cost table below is filled in.
+          ⚠ Draft, real numbers pending from the recorded demo. Do not publish this page until the cost table below is filled in.
         </div>
 
         <div className="rs-table-wrap">
@@ -104,7 +104,7 @@ export default function DeckCostEstimator() {
         <h2>Why two identical-looking decks can price completely differently</h2>
         <p>
           Swap the site from moderate to difficult, add a second set of stairs, or upgrade the
-          railing from aluminum to glass, and the number above changes — not because the square
+          railing from aluminum to glass, and the number above changes, not because the square
           footage changed, but because the job did. That&apos;s the part a per-square-foot estimate
           can&apos;t capture, and it&apos;s the part that actually determines whether a job is profitable.
         </p>

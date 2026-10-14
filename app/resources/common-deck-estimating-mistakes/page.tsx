@@ -32,7 +32,7 @@ export default function CommonEstimatingMistakes() {
 
         <h2>1. Skipping Site Conditions</h2>
         <p>
-          A pool, a slope, a fence that limits access — each adds real labor hours a flat estimate
+          A pool, a slope, a fence that limits access, each adds real labor hours a flat estimate
           never sees. Treating site difficulty as a vague &ldquo;add a little for the tough
           ones&rdquo; habit, instead of pricing each obstacle on its own, is one of the most common
           ways a job quietly loses money.
@@ -55,7 +55,7 @@ export default function CommonEstimatingMistakes() {
         <h2>4. Confusing Margin with Markup</h2>
         <p>
           Margin is profit divided by selling price. Markup is profit divided by cost. They are not
-          the same number — and using markup math while thinking it&apos;s margin routinely leaves a
+          the same number, and using markup math while thinking it&apos;s margin routinely leaves a
           contractor with a lower actual margin than intended. Full breakdown:{" "}
           <a href="/resources/profit-vs-margin-for-deck-contractors">
             Profit vs. Margin for Deck Contractors
@@ -64,8 +64,7 @@ export default function CommonEstimatingMistakes() {
 
         <h2>5. Not Accounting for Waste</h2>
         <p>
-          Estimating the theoretical material quantity instead of what actually gets bought —
-          offcuts, mistakes, pattern loss — creates a gap between the estimate and the real purchase
+          Estimating the theoretical material quantity instead of what actually gets bought,           offcuts, mistakes, pattern loss, creates a gap between the estimate and the real purchase
           order. That gap comes straight out of profit.
         </p>
 
@@ -95,7 +94,7 @@ export default function CommonEstimatingMistakes() {
 
       <div className="rs-cta">
         <h3>Stop absorbing costs that should be in the bid.</h3>
-        <p>DeckMargin catches the line items contractors most often miss — automatically, on every job.</p>
+        <p>DeckMargin catches the line items contractors most often miss, automatically, on every job.</p>
         <a href="/signup" className="rs-cta-btn">Start your 14-day free trial</a>
         <p className="rs-cta-micro">No card required. Cancel any time.</p>
       </div>

@@ -27,7 +27,7 @@ export default function StairsAndRailing() {
       <div className="rs-body">
         <h2>Stairs Are Their Own Line Item</h2>
         <p>
-          A flight of stairs isn&apos;t a rounding error on a deck quote — it&apos;s a second small
+          A flight of stairs isn&apos;t a rounding error on a deck quote, it&apos;s a second small
           project stacked on top of the first. Flights, width, risers, landing, and stair railing
           all add their own materials and their own labor. None of that is covered by the framing
           and decking numbers you already calculated for the deck itself, so stairs need to be
@@ -38,7 +38,7 @@ export default function StairsAndRailing() {
         <h2>Railing Is Priced by Type and Length</h2>
         <p>
           Railing works the same way. What it costs depends on type (wood, composite, aluminum,
-          cable, or glass), total linear footage, and the material itself — and those three things
+          cable, or glass), total linear footage, and the material itself, and those three things
           interact: glass and cable panels price and install very differently than wood balusters,
           even at the same linear footage. Treating railing as a flat add-on percentage of the
           deck&apos;s price hides those differences and tends to under-price the jobs that actually
@@ -50,7 +50,7 @@ export default function StairsAndRailing() {
           Compare a flat deck with no stairs and no railing to the same footprint with both added,
           and the difference isn&apos;t small. Stairs add their own footings, stringers, treads,
           risers, hardware, and labor hours. Railing adds posts, sections, hardware, and its own
-          labor — plus stair railing on top of that if the stairs need it. A quote that treats
+          labor, plus stair railing on top of that if the stairs need it. A quote that treats
           &ldquo;deck with stairs and railing&rdquo; as a markup on &ldquo;deck&rdquo; is quietly
           absorbing real cost it never actually accounted for.
         </p>
@@ -63,8 +63,8 @@ export default function StairsAndRailing() {
           <a href="/resources/deck-cost-estimator">Deck Cost Estimator</a>.
         </p>
         <p>
-          DeckMargin prices stairs and railing as their own assemblies — materials and labor
-          included — so they show up as real line items in the estimate instead of a
+          DeckMargin prices stairs and railing as their own assemblies, materials and labor
+          included, so they show up as real line items in the estimate instead of a
           guessed-at percentage.
         </p>
 
@@ -78,7 +78,7 @@ export default function StairsAndRailing() {
       </div>
 
       <div className="rs-cta">
-        <h3>Stairs and railing as real line items — every time.</h3>
+        <h3>Stairs and railing as real line items, every time.</h3>
         <p>DeckMargin prices stairs and railing as their own assemblies so nothing gets absorbed into a percentage guess.</p>
         <a href="/signup" className="rs-cta-btn">Start your 14-day free trial</a>
         <p className="rs-cta-micro">No card required. Cancel any time.</p>

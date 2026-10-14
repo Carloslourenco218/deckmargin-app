@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "How to Account for Site Conditions When Pricing a Deck | DeckMargin",
   description:
-    "A pool, a fence, a slope, rock in the ground — each adds real labor hours a flat estimate misses. Here's how to price site conditions instead of guessing.",
+    "A pool, a fence, a slope, rock in the ground, each adds real labor hours a flat estimate misses. Here's how to price site conditions instead of guessing.",
 };
 
 export default function SiteConditions() {
@@ -29,7 +29,7 @@ export default function SiteConditions() {
         <p>
           &ldquo;Add 10% for a tough site&rdquo; is the kind of rule of thumb that feels careful
           and isn&apos;t. A pool in the way, a fence that limits access, a slope under the
-          footprint, rock where a footing needs to go — these each add real labor hours, and they
+          footprint, rock where a footing needs to go, these each add real labor hours, and they
           add different amounts of labor depending on what the actual obstacle is. A flat percentage
           bundles all of that into one guess, which means it&apos;s wrong for almost every job
           it&apos;s applied to.
@@ -47,7 +47,7 @@ export default function SiteConditions() {
         <h2>Suggested Adjustment, Not a Silent One</h2>
         <p>
           The right way to handle this isn&apos;t to silently insert a number and move on. A
-          suggested adjustment should be visible — something the contractor can apply, edit, or
+          suggested adjustment should be visible, something the contractor can apply, edit, or
           ignore based on what they actually know about the site. The goal is surfacing the
           adjustment so it gets a decision, not hiding it inside a bigger total where it&apos;s
           never questioned.
@@ -62,7 +62,7 @@ export default function SiteConditions() {
         </p>
         <p>
           DeckMargin surfaces site-condition adjustments as a suggested line you can apply, edit,
-          or ignore — never a silent number baked into the total.
+          or ignore, never a silent number baked into the total.
         </p>
 
         <div className="rs-related">
@@ -75,7 +75,7 @@ export default function SiteConditions() {
       </div>
 
       <div className="rs-cta">
-        <h3>Site conditions as a visible line — not a silent guess.</h3>
+        <h3>Site conditions as a visible line, not a silent guess.</h3>
         <p>DeckMargin surfaces site difficulty as an adjustment you control, so it&apos;s never quietly missing from the number you send.</p>
         <a href="/signup" className="rs-cta-btn">Start your 14-day free trial</a>
         <p className="rs-cta-micro">No card required. Cancel any time.</p>

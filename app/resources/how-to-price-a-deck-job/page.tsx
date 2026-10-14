@@ -34,7 +34,7 @@ export default function HowToPriceADeckJob() {
         <h2>1. Start with scope and measurements</h2>
         <p>
           Before anything else: what&apos;s the job, actually? New build, resurface, railing-only,
-          repair, or addition — and the real dimensions. Everything downstream is built on this, so
+          repair, or addition, and the real dimensions. Everything downstream is built on this, so
           get it right here rather than correcting it three steps later.
         </p>
 
@@ -48,7 +48,7 @@ export default function HowToPriceADeckJob() {
 
         <h2>3. Estimate the labor</h2>
         <p>
-          Labor isn&apos;t a flat rate — it&apos;s your crew, your productivity, and the hours this
+          Labor isn&apos;t a flat rate, it&apos;s your crew, your productivity, and the hours this
           specific job actually takes: setup, footings, framing, decking, railing, stairs, cleanup.
           A generic industry number isn&apos;t your number.
         </p>
@@ -56,7 +56,7 @@ export default function HowToPriceADeckJob() {
         <h2>4. Account for site conditions</h2>
         <p>
           This is the step that gets skipped most often, and it&apos;s expensive when it does. A
-          pool, mature trees, a retaining wall, limited access, a steep grade — any of these adds
+          pool, mature trees, a retaining wall, limited access, a steep grade, any of these adds
           real labor hours a flat estimate never sees. One missed line item here routinely costs
           $3,000 or more on a job. Price the site, not just the deck.
         </p>
@@ -64,14 +64,14 @@ export default function HowToPriceADeckJob() {
         <h2>5. Add permits, equipment, and other costs</h2>
         <p>
           The second most commonly skipped step. Building permits, engineering (when the job calls
-          for it), equipment rental, a dumpster — these are real costs that belong in the bid, not
+          for it), equipment rental, a dumpster, these are real costs that belong in the bid, not
           expenses you discover after you&apos;ve already quoted the price.
         </p>
 
         <h2>6. Add it up: total job cost</h2>
         <p>
           Materials plus labor plus site adjustments plus permits, equipment, and other costs, plus
-          your overhead — your business&apos;s indirect operating costs, separate from what this
+          your overhead, your business&apos;s indirect operating costs, separate from what this
           specific job costs to build. This total is your real number before any profit is added.
         </p>
 
@@ -89,13 +89,13 @@ export default function HowToPriceADeckJob() {
         <h2>8. Set the selling price</h2>
         <p>
           Selling price = total job cost ÷ (1 − target margin). That&apos;s the recommended number.
-          You can still override it — the goal is to know exactly what you&apos;re giving up or
+          You can still override it, the goal is to know exactly what you&apos;re giving up or
           gaining when you do, not to hand pricing over to a formula.
         </p>
 
         <h2>9. Turn it into a proposal</h2>
         <p>
-          The client doesn&apos;t need to see your costs, labor rates, overhead, or margin — they
+          The client doesn&apos;t need to see your costs, labor rates, overhead, or margin, they
           need the scope, what&apos;s included, what&apos;s excluded, any allowances, the price, and
           the terms, presented clearly. The estimate and the proposal should come from the same job
           information, not be rebuilt separately.
@@ -104,9 +104,9 @@ export default function HowToPriceADeckJob() {
         <hr />
 
         <p>
-          Run this same sequence on the 24×16 deck used throughout this site — raised, attached,
+          Run this same sequence on the 24×16 deck used throughout this site, raised, attached,
           Trex decking, 42 LF aluminum railing, 7-step stairs, moderate site, lighting, dumpster,
-          permit, and engineering — and see the full line-by-line cost breakdown worked out on the{" "}
+          permit, and engineering, and see the full line-by-line cost breakdown worked out on the{" "}
           <a href="/resources/deck-cost-estimator">Deck Cost Estimator</a> page.
         </p>
 

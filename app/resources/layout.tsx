@@ -1,7 +1,7 @@
 /**
  * app/resources/layout.tsx
  * Shared layout for all /resources/* pages.
- * Provides nav, footer, and article typography — wraps every page automatically.
+ * Provides nav, footer, and article typography, wraps every page automatically.
  */
 
 import type { Metadata } from "next";

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Deck Material Takeoff Checklist | DeckMargin",
   description:
-    "A quick checklist for pricing deck materials correctly — measurements through final price — plus the full downloadable version.",
+    "A quick checklist for pricing deck materials correctly, measurements through final price, plus the full downloadable version.",
 };
 
 export default function DeckMaterialTakeoffChecklist() {
@@ -38,13 +38,13 @@ export default function DeckMaterialTakeoffChecklist() {
 
         <h2>Check the Site</h2>
         <p>
-          Note any obstacles — a pool, a slope, a fence, limited access — that will add labor hours
+          Note any obstacles, a pool, a slope, a fence, limited access, that will add labor hours
           beyond the base framing and decking work.
         </p>
 
         <h2>Decide the Build</h2>
         <p>
-          Decking material, railing type and length, and stair configuration — each of these changes
+          Decking material, railing type and length, and stair configuration, each of these changes
           the material list and the labor underneath it.
         </p>
 
@@ -56,8 +56,8 @@ export default function DeckMaterialTakeoffChecklist() {
 
         <h2>Price It Right</h2>
         <p>
-          Material cost, labor at your crew&apos;s real rate, overhead, and target margin — in that
-          order — before a selling price goes out.
+          Material cost, labor at your crew&apos;s real rate, overhead, and target margin, in that
+          order, before a selling price goes out.
         </p>
 
         <hr />
@@ -78,7 +78,7 @@ export default function DeckMaterialTakeoffChecklist() {
 
       {/* This page's CTA points to the lead magnet, not the trial */}
       <div className="rs-cta">
-        <h3>Get the full checklist — free.</h3>
+        <h3>Get the full checklist, free.</h3>
         <p>The Deck Estimator&apos;s Pre-Quote Checklist walks through every step with room to work the numbers for your own job.</p>
         <a href="/pre-quote-checklist" className="rs-cta-btn">Download the Free Checklist</a>
         <p className="rs-cta-micro">Enter your email and get it instantly.</p>

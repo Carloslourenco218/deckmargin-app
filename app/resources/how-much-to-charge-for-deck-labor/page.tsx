@@ -27,7 +27,7 @@ export default function HowMuchToChargeForDeckLabor() {
       <div className="rs-body">
         <h2>Labor Isn&apos;t a Flat Industry Rate</h2>
         <p>
-          There&apos;s no single number that tells you what to charge for deck labor — because labor
+          There&apos;s no single number that tells you what to charge for deck labor, because labor
           cost isn&apos;t really about the deck. It&apos;s about your crew. Two contractors building
           the identical deck can land on completely different labor costs depending on crew size, how
           fast that crew actually works, and what it costs to keep them on the job. Site difficulty,
@@ -51,7 +51,7 @@ export default function HowMuchToChargeForDeckLabor() {
         <p>
           The fastest way to lose money on labor is pricing it off a number you didn&apos;t build
           yourself: an industry average, a figure from a forum post, a rate a supplier happened to
-          mention. Your crew&apos;s productivity is specific to your crew — how many decks
+          mention. Your crew&apos;s productivity is specific to your crew, how many decks
           they&apos;ve built, how well they work together, how your site conditions tend to run. A
           contractor using someone else&apos;s labor rate is pricing someone else&apos;s business.
         </p>
@@ -60,7 +60,7 @@ export default function HowMuchToChargeForDeckLabor() {
         <p>
           On the standing 24&apos; × 16&apos; job used throughout this site (raised, attached, Trex,
           7-step stairs, 42 LF aluminum railing), the labor line breaks into setup, footings,
-          framing, decking, railing, stairs, and cleanup hours — each priced at the crew&apos;s own
+          framing, decking, railing, stairs, and cleanup hours, each priced at the crew&apos;s own
           loaded rate, before overhead or margin are added on top.
         </p>
         <p>
@@ -80,7 +80,7 @@ export default function HowMuchToChargeForDeckLabor() {
       </div>
 
       <div className="rs-cta">
-        <h3>Price labor from your crew&apos;s real rate — not an industry guess.</h3>
+        <h3>Price labor from your crew&apos;s real rate, not an industry guess.</h3>
         <p>DeckMargin uses your own crew rates and productivity so your labor number is actually yours.</p>
         <a href="/signup" className="rs-cta-btn">Start your 14-day free trial</a>
         <p className="rs-cta-micro">No card required. Cancel any time.</p>

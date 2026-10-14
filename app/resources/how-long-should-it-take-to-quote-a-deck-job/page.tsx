@@ -27,8 +27,8 @@ export default function HowLongToQuote() {
       <div className="rs-body">
         <h2>The Honest Answer: Longer Than Most Contractors Think</h2>
         <p>
-          Doing it by hand — a spreadsheet for materials, a separate calculator for labor, notes for
-          site conditions, a document rebuilt from scratch for the proposal — takes real time. It
+          Doing it by hand, a spreadsheet for materials, a separate calculator for labor, notes for
+          site conditions, a document rebuilt from scratch for the proposal, takes real time. It
           takes longer once stairs, railing, or anything beyond a flat rectangular deck enters the
           picture, because each of those gets its own calculation, usually in its own place.
         </p>
@@ -44,7 +44,7 @@ export default function HowLongToQuote() {
         <h2>What Changes When It&apos;s Connected</h2>
         <p>
           When the job&apos;s information lives in one place and the downstream steps pull from it
-          instead of being rebuilt, the time spent isn&apos;t on re-entry — it&apos;s on the
+          instead of being rebuilt, the time spent isn&apos;t on re-entry, it&apos;s on the
           decisions that actually need a person: what material, what margin, what to tell the
           client.
         </p>

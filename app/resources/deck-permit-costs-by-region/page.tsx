@@ -27,7 +27,7 @@ export default function DeckPermitCosts() {
       <div className="rs-body">
         <h2>Why &ldquo;By Region&rdquo; Is the Wrong Question</h2>
         <p>
-          There&apos;s no verified, nationwide table of deck permit costs by region — and any
+          There&apos;s no verified, nationwide table of deck permit costs by region, and any
           article claiming to have one is making numbers up. Permit fees are set by individual
           jurisdictions, sometimes down to the city or county level, and they change. The honest
           answer to &ldquo;what does a deck permit cost in my area&rdquo; is to check your local
@@ -36,7 +36,7 @@ export default function DeckPermitCosts() {
 
         <h2>What Actually Determines the Permit Cost</h2>
         <p>
-          What drives the fee isn&apos;t geography on its own — it&apos;s a handful of specific
+          What drives the fee isn&apos;t geography on its own, it&apos;s a handful of specific
           factors: the jurisdiction&apos;s own fee schedule, the size and height of the deck,
           whether the height or span triggers a requirement for engineering review, and whether the
           deck is attached to the house or freestanding. Two contractors in neighboring towns can
@@ -46,8 +46,8 @@ export default function DeckPermitCosts() {
 
         <h2>Local Code and HOA Requirements Stack on Top</h2>
         <p>
-          The permit fee itself is often the smaller piece. Local code differences — like setback
-          rules, height limits, or guard rail requirements — can change what the deck needs to pass
+          The permit fee itself is often the smaller piece. Local code differences, like setback
+          rules, height limits, or guard rail requirements, can change what the deck needs to pass
           inspection in the first place. On top of that, an HOA can add its own approval process
           and requirements entirely separate from the municipal permit. Both of these add cost and
           time beyond the permit fee line, and both vary by where the job actually is.
@@ -75,7 +75,7 @@ export default function DeckPermitCosts() {
       </div>
 
       <div className="rs-cta">
-        <h3>Permits and engineering as their own line items — never estimated away.</h3>
+        <h3>Permits and engineering as their own line items, never estimated away.</h3>
         <p>DeckMargin keeps every cost visible so nothing gets absorbed into the total after the price is already sent.</p>
         <a href="/signup" className="rs-cta-btn">Start your 14-day free trial</a>
         <p className="rs-cta-micro">No card required. Cancel any time.</p>

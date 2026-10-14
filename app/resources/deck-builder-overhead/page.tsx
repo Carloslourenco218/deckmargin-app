@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Deck Builder Overhead: How to Find Your Real Number | DeckMargin",
   description:
-    "Overhead isn't a flat percentage — it's a number specific to your business. Here's how to work out your own overhead-per-job number before you price the next deck.",
+    "Overhead isn't a flat percentage, it's a number specific to your business. Here's how to work out your own overhead-per-job number before you price the next deck.",
 };
 
 export default function DeckBuilderOverhead() {
@@ -27,9 +27,9 @@ export default function DeckBuilderOverhead() {
       <div className="rs-body">
         <h2>Direct Job Costs vs. Overhead</h2>
         <p>
-          Materials, labor, equipment, permits, and engineering are direct job costs — they&apos;re
+          Materials, labor, equipment, permits, and engineering are direct job costs, they&apos;re
           tied to this specific deck. Overhead is different: it&apos;s the indirect cost of running
-          the business at all — the truck payment, insurance, the office, the software, whatever
+          the business at all, the truck payment, insurance, the office, the software, whatever
           keeps the lights on regardless of which job is on the schedule this week. A job cost that
           only counts the direct costs is missing a real piece of what that job actually costs you
           to run.
@@ -37,7 +37,7 @@ export default function DeckBuilderOverhead() {
 
         <h2>Why &ldquo;Overhead Is Typically X%&rdquo; Is a Myth</h2>
         <p>
-          There&apos;s no verified, universal overhead percentage for deck builders — and any number
+          There&apos;s no verified, universal overhead percentage for deck builders, and any number
           presented as one is a guess dressed up as a benchmark. Overhead depends on your specific
           business: how many jobs you run in a year, what your fixed costs actually are, how big
           your crew is. A one-person operation and a five-crew company do not carry the same
@@ -46,7 +46,7 @@ export default function DeckBuilderOverhead() {
 
         <h2>How to Work Out Your Own Overhead-Per-Job Number</h2>
         <p>
-          Start with your total fixed annual costs — the ones that exist whether or not a given job
+          Start with your total fixed annual costs, the ones that exist whether or not a given job
           happens: insurance, vehicles, office or shop costs, software, admin time. Divide that by
           how many jobs you realistically expect to run in a year. That gives you a rough
           overhead-per-job figure to add on top of direct costs before you get to target margin and
@@ -76,7 +76,7 @@ export default function DeckBuilderOverhead() {
       </div>
 
       <div className="rs-cta">
-        <h3>Overhead as its own line — never missing from your number.</h3>
+        <h3>Overhead as its own line, never missing from your number.</h3>
         <p>DeckMargin separates overhead from direct costs so you always know what the job actually costs before margin is added.</p>
         <a href="/signup" className="rs-cta-btn">Start your 14-day free trial</a>
         <p className="rs-cta-micro">No card required. Cancel any time.</p>
