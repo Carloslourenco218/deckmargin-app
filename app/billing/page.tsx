@@ -104,24 +104,24 @@ function BillingPageContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
-        <div className="mx-auto max-w-3xl">Loading billing…</div>
+      <main className="min-h-screen bg-[#FAFAF8] p-10 text-[#1D2C4B]">
+        <div className="mx-auto max-w-3xl">Loading billing...</div>
       </main>
     );
   }
 
   if (isAdmin) {
     return (
-      <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/5 p-8">
-          <h1 className="text-3xl font-semibold">Admin Access</h1>
-          <p className="mt-3 text-gray-400">
+      <main className="min-h-screen bg-[#FAFAF8] p-10 text-[#1D2C4B]">
+        <div className="mx-auto max-w-3xl rounded-2xl border border-[#E7E5E0] bg-white p-8">
+          <h1 className="text-3xl font-semibold text-[#1D2C4B]">Admin Access</h1>
+          <p className="mt-3 text-[#6B7280]">
             Your account is marked as admin, so billing is bypassed.
           </p>
 
-          <div className="mt-6 rounded-xl border border-white/10 bg-[#111827] p-5">
-            <div className="text-sm text-white/60">Role</div>
-            <div className="mt-2 text-2xl font-semibold">
+          <div className="mt-6 rounded-xl border border-[#E7E5E0] bg-[#F3F2EF] p-5">
+            <div className="text-sm text-[#6B7280]">Role</div>
+            <div className="mt-2 text-2xl font-semibold text-[#1D2C4B]">
               {profile?.role ?? "admin"}
             </div>
           </div>
@@ -130,7 +130,7 @@ function BillingPageContent() {
             <button
               type="button"
               onClick={() => router.push(next)}
-              className="rounded bg-white px-4 py-2 text-black hover:bg-white/90"
+              className="rounded-full bg-[#FBB944] px-4 py-2 text-[#1D2C4B] font-bold hover:bg-[#E8A730]"
             >
               Continue to App
             </button>
@@ -141,57 +141,57 @@ function BillingPageContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
-      <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/5 p-8">
-        <h1 className="text-3xl font-semibold">Billing</h1>
-        <p className="mt-2 text-gray-400">
+    <main className="min-h-screen bg-[#FAFAF8] p-10 text-[#1D2C4B]">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-[#E7E5E0] bg-white p-8">
+        <h1 className="text-3xl font-semibold text-[#1D2C4B]">Billing</h1>
+        <p className="mt-2 text-[#6B7280]">
           Start your 14-day free trial to unlock DeckMargin.
         </p>
 
         {checkoutState === "success" ? (
-          <div className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
             Subscription started successfully. Your access should unlock in a few
             seconds.
           </div>
         ) : null}
 
         {checkoutState === "cancelled" ? (
-          <div className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
-            Checkout was cancelled. You can start again whenever you’re ready.
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            Checkout was cancelled. You can start again whenever you&apos;re ready.
           </div>
         ) : null}
 
         {err ? (
-          <div className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {err}
           </div>
         ) : null}
 
-        <div className="mt-6 rounded-xl border border-white/10 bg-[#111827] p-5">
-          <div className="text-sm text-white/60">Subscription Status</div>
-          <div className="mt-2 text-2xl font-semibold">
+        <div className="mt-6 rounded-xl border border-[#E7E5E0] bg-[#F3F2EF] p-5">
+          <div className="text-sm text-[#6B7280]">Subscription Status</div>
+          <div className="mt-2 text-2xl font-semibold text-[#1D2C4B]">
             {billing?.subscription_status ?? "none"}
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
             <div>
-              <div className="text-white/50">Trial Ends</div>
-              <div>{prettyDate(billing?.trial_ends_at)}</div>
+              <div className="text-[#6B7280]">Trial Ends</div>
+              <div className="text-[#2A2E36]">{prettyDate(billing?.trial_ends_at)}</div>
             </div>
 
             <div>
-              <div className="text-white/50">Current Period End</div>
-              <div>{prettyDate(billing?.current_period_end)}</div>
+              <div className="text-[#6B7280]">Current Period End</div>
+              <div className="text-[#2A2E36]">{prettyDate(billing?.current_period_end)}</div>
             </div>
 
             <div>
-              <div className="text-white/50">Cancel At Period End</div>
-              <div>{billing?.cancel_at_period_end ? "Yes" : "No"}</div>
+              <div className="text-[#6B7280]">Cancel At Period End</div>
+              <div className="text-[#2A2E36]">{billing?.cancel_at_period_end ? "Yes" : "No"}</div>
             </div>
 
             <div>
-              <div className="text-white/50">Access</div>
-              <div>{accessAllowed ? "Allowed" : "Locked"}</div>
+              <div className="text-[#6B7280]">Access</div>
+              <div className="text-[#2A2E36]">{accessAllowed ? "Allowed" : "Locked"}</div>
             </div>
           </div>
         </div>
@@ -202,16 +202,16 @@ function BillingPageContent() {
               type="button"
               onClick={startCheckout}
               disabled={checkoutLoading}
-              className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-60"
+              className="rounded-full bg-[#FBB944] px-4 py-2 text-[#1D2C4B] font-bold hover:bg-[#E8A730] disabled:opacity-60"
             >
-              {checkoutLoading ? "Redirecting…" : "Start 14-Day Free Trial"}
+              {checkoutLoading ? "Redirecting..." : "Start 14-Day Free Trial"}
             </button>
           ) : (
             <>
               <button
                 type="button"
                 onClick={() => router.push(next)}
-                className="rounded bg-white px-4 py-2 text-black hover:bg-white/90"
+                className="rounded-full bg-[#FBB944] px-4 py-2 text-[#1D2C4B] font-bold hover:bg-[#E8A730]"
               >
                 Continue to App
               </button>
@@ -220,9 +220,9 @@ function BillingPageContent() {
                 type="button"
                 onClick={openPortal}
                 disabled={portalLoading}
-                className="rounded border border-white/20 px-4 py-2 text-white hover:bg-white/10 disabled:opacity-60"
+                className="rounded-lg border border-[#E7E5E0] px-4 py-2 text-[#2A2E36] hover:bg-[#F3F2EF] disabled:opacity-60"
               >
-                {portalLoading ? "Opening…" : "Manage Billing"}
+                {portalLoading ? "Opening..." : "Manage Billing"}
               </button>
             </>
           )}
@@ -236,8 +236,8 @@ export default function BillingPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
-          <div className="mx-auto max-w-3xl">Loading billing…</div>
+        <main className="min-h-screen bg-[#FAFAF8] p-10 text-[#1D2C4B]">
+          <div className="mx-auto max-w-3xl">Loading billing...</div>
         </main>
       }
     >
@@ -245,4 +245,3 @@ export default function BillingPage() {
     </Suspense>
   );
 }
-

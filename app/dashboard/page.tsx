@@ -42,21 +42,21 @@ const STATUS_LABELS: Record<string, string> = {
 function statusBadge(status: string | null) {
   const s = (status ?? "draft").toLowerCase();
   const map: Record<string, string> = {
-    draft:          "bg-gray-800 text-gray-400",
-    ready_to_send:  "bg-blue-500/20 text-blue-300",
-    open:           "bg-blue-500/20 text-blue-300",
-    sent:           "bg-violet-500/20 text-violet-300",
-    viewed:         "bg-cyan-500/20 text-cyan-300",
-    "follow-up":    "bg-amber-500/20 text-amber-300",
-    approved:       "bg-emerald-500/20 text-emerald-300",
-    accepted:       "bg-emerald-500/20 text-emerald-300",
-    won:            "bg-green-500/20 text-green-300",
-    declined:       "bg-red-500/20 text-red-300",
-    lost:           "bg-red-500/20 text-red-300",
-    "on-hold":      "bg-gray-700 text-gray-300",
-    expired:        "bg-gray-700 text-gray-300",
+    draft:          "bg-gray-100 text-gray-600",
+    ready_to_send:  "bg-blue-100 text-blue-700",
+    open:           "bg-blue-100 text-blue-700",
+    sent:           "bg-purple-100 text-purple-700",
+    viewed:         "bg-cyan-100 text-cyan-700",
+    "follow-up":    "bg-amber-100 text-amber-700",
+    approved:       "bg-green-100 text-green-700",
+    accepted:       "bg-green-100 text-green-700",
+    won:            "bg-green-100 text-green-700",
+    declined:       "bg-red-100 text-red-700",
+    lost:           "bg-red-100 text-red-700",
+    "on-hold":      "bg-gray-100 text-gray-600",
+    expired:        "bg-gray-100 text-gray-600",
   };
-  const cls = map[s] ?? "bg-gray-700 text-gray-200";
+  const cls = map[s] ?? "bg-gray-100 text-gray-600";
   const label = STATUS_LABELS[s] ?? s;
   return (
     <span className={`rounded-full px-3 py-1 text-xs ${cls}`}>{label}</span>
@@ -180,11 +180,11 @@ export default function DashboardPage() {
   const recentRows = rows.slice(0, 10);
 
   return (
-    <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
+    <main className="min-h-screen bg-[#FAFAF8] p-10 text-[#1D2C4B]">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">Dashboard</h1>
-          <p className="text-gray-400">
+          <h1 className="text-3xl font-semibold text-[#1D2C4B]">Dashboard</h1>
+          <p className="text-[#6B7280]">
             Quick view of your quotes, profit, and sales pipeline.
           </p>
         </div>
@@ -192,28 +192,28 @@ export default function DashboardPage() {
         <div className="flex gap-3">
           <Link
             href="/billing"
-            className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800"
+            className="rounded-lg border border-[#E7E5E0] px-4 py-2 text-[#2A2E36] hover:bg-[#F3F2EF]"
           >
             Billing
           </Link>
 
           <Link
             href="/settings"
-            className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800"
+            className="rounded-lg border border-[#E7E5E0] px-4 py-2 text-[#2A2E36] hover:bg-[#F3F2EF]"
           >
             Settings
           </Link>
 
           <Link
             href="/projects"
-            className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800"
+            className="rounded-lg border border-[#E7E5E0] px-4 py-2 text-[#2A2E36] hover:bg-[#F3F2EF]"
           >
             View All Quotes
           </Link>
 
           <Link
             href="/projects/new"
-            className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+            className="rounded-full bg-[#FBB944] px-4 py-2 text-[#1D2C4B] font-bold hover:bg-[#E8A730]"
           >
             + Create Quote
           </Link>
@@ -221,7 +221,7 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-lg border border-red-500/40 px-4 py-2 text-red-300 hover:bg-red-500/10"
+            className="rounded-lg border border-red-200 px-4 py-2 text-red-700 hover:bg-red-50"
           >
             Logout
           </button>
@@ -230,73 +230,73 @@ export default function DashboardPage() {
 
       {/* ── KPI cards (row 1) ── */}
       <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Won Revenue</div>
-          <div className="mt-2 text-2xl font-semibold">{money(totalRevenue)}</div>
-          <div className="mt-1 text-xs text-gray-500">{wonCount} job{wonCount !== 1 ? "s" : ""} won</div>
+        <div className="rounded-xl border border-[#E7E5E0] bg-white p-5">
+          <div className="text-xs uppercase tracking-wide text-[#6B7280]">Won Revenue</div>
+          <div className="mt-2 text-2xl font-semibold text-[#1D2C4B]">{money(totalRevenue)}</div>
+          <div className="mt-1 text-xs text-[#6B7280]">{wonCount} job{wonCount !== 1 ? "s" : ""} won</div>
         </div>
 
-        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Open Pipeline</div>
-          <div className="mt-2 text-2xl font-semibold">{money(openPipeline)}</div>
-          <div className="mt-1 text-xs text-gray-500">{activeRows.length} active quote{activeRows.length !== 1 ? "s" : ""}</div>
+        <div className="rounded-xl border border-[#E7E5E0] bg-white p-5">
+          <div className="text-xs uppercase tracking-wide text-[#6B7280]">Open Pipeline</div>
+          <div className="mt-2 text-2xl font-semibold text-[#1D2C4B]">{money(openPipeline)}</div>
+          <div className="mt-1 text-xs text-[#6B7280]">{activeRows.length} active quote{activeRows.length !== 1 ? "s" : ""}</div>
         </div>
 
-        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Conversion Rate</div>
-          <div className="mt-2 text-2xl font-semibold">
+        <div className="rounded-xl border border-[#E7E5E0] bg-white p-5">
+          <div className="text-xs uppercase tracking-wide text-[#6B7280]">Conversion Rate</div>
+          <div className="mt-2 text-2xl font-semibold text-[#1D2C4B]">
             {conversionRate !== null ? `${Math.round(conversionRate * 100)}%` : "-"}
           </div>
-          <div className="mt-1 text-xs text-gray-500">{wonCount}W / {lostCount}L from {closedCount} closed</div>
+          <div className="mt-1 text-xs text-[#6B7280]">{wonCount}W / {lostCount}L from {closedCount} closed</div>
         </div>
 
-        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Avg Sold Price</div>
-          <div className="mt-2 text-2xl font-semibold">{money(avgSoldPrice)}</div>
-          <div className="mt-1 text-xs text-gray-500">Avg margin {pct(avgMargin)}</div>
+        <div className="rounded-xl border border-[#E7E5E0] bg-white p-5">
+          <div className="text-xs uppercase tracking-wide text-[#6B7280]">Avg Sold Price</div>
+          <div className="mt-2 text-2xl font-semibold text-[#1D2C4B]">{money(avgSoldPrice)}</div>
+          <div className="mt-1 text-xs text-[#6B7280]">Avg margin {pct(avgMargin)}</div>
         </div>
       </div>
 
       {/* ── KPI cards (row 2) ── */}
       <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Profit (Won)</div>
-          <div className="mt-2 text-2xl font-semibold">{money(totalProfit)}</div>
+        <div className="rounded-xl border border-[#E7E5E0] bg-white p-5">
+          <div className="text-xs uppercase tracking-wide text-[#6B7280]">Profit (Won)</div>
+          <div className="mt-2 text-2xl font-semibold text-[#1D2C4B]">{money(totalProfit)}</div>
         </div>
 
-        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Quotes Sent</div>
-          <div className="mt-2 text-2xl font-semibold">{quotesSent}</div>
-          <div className="mt-1 text-xs text-gray-500">total across all time</div>
+        <div className="rounded-xl border border-[#E7E5E0] bg-white p-5">
+          <div className="text-xs uppercase tracking-wide text-[#6B7280]">Quotes Sent</div>
+          <div className="mt-2 text-2xl font-semibold text-[#1D2C4B]">{quotesSent}</div>
+          <div className="mt-1 text-xs text-[#6B7280]">total across all time</div>
         </div>
 
-        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Won</div>
-          <div className="mt-2 text-2xl font-semibold text-emerald-400">{wonCount}</div>
+        <div className="rounded-xl border border-[#E7E5E0] bg-white p-5">
+          <div className="text-xs uppercase tracking-wide text-[#6B7280]">Won</div>
+          <div className="mt-2 text-2xl font-semibold text-green-700">{wonCount}</div>
         </div>
 
-        <div className="rounded-xl border border-gray-700 bg-[#151518] p-5">
-          <div className="text-xs uppercase tracking-wide text-gray-400">Lost / Declined</div>
-          <div className="mt-2 text-2xl font-semibold text-red-400">{lostCount}</div>
+        <div className="rounded-xl border border-[#E7E5E0] bg-white p-5">
+          <div className="text-xs uppercase tracking-wide text-[#6B7280]">Lost / Declined</div>
+          <div className="mt-2 text-2xl font-semibold text-red-700">{lostCount}</div>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-700">
-        <div className="flex items-center justify-between border-b border-gray-700 px-6 py-4">
-          <div className="text-sm text-gray-300">Recent Quotes</div>
-          <div className="text-xs text-gray-500">
-            {loading ? "Loading…" : `Showing ${recentRows.length} of ${rows.length} quote${rows.length !== 1 ? "s" : ""}`}
+      <div className="overflow-hidden rounded-xl border border-[#E7E5E0]">
+        <div className="flex items-center justify-between border-b border-[#E7E5E0] px-6 py-4 bg-white">
+          <div className="text-sm text-[#2A2E36]">Recent Quotes</div>
+          <div className="text-xs text-[#6B7280]">
+            {loading ? "Loading..." : `Showing ${recentRows.length} of ${rows.length} quote${rows.length !== 1 ? "s" : ""}`}
           </div>
         </div>
 
         {err && (
-          <div className="border-b border-gray-700 bg-red-950/30 p-6 text-sm text-red-300">
+          <div className="border-b border-[#E7E5E0] bg-red-50 p-6 text-sm text-red-700">
             Error: {err}
           </div>
         )}
 
         <table className="w-full text-sm">
-          <thead className="bg-[#151518] text-gray-400">
+          <thead className="bg-[#F3F2EF] text-[#6B7280]">
             <tr>
               <th className="px-6 py-3 text-left">Project</th>
               <th className="px-6 py-3 text-left">Status</th>
@@ -310,13 +310,13 @@ export default function DashboardPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td className="px-6 py-6 text-gray-400" colSpan={6}>
-                  Loading recent quotes…
+                <td className="px-6 py-6 text-[#6B7280]" colSpan={6}>
+                  Loading recent quotes...
                 </td>
               </tr>
             ) : recentRows.length === 0 ? (
               <tr>
-                <td className="px-6 py-6 text-gray-400" colSpan={6}>
+                <td className="px-6 py-6 text-[#6B7280]" colSpan={6}>
                   No quotes yet. Create your first quote.
                 </td>
               </tr>
@@ -324,36 +324,36 @@ export default function DashboardPage() {
               recentRows.map((p) => (
                 <tr
                   key={p.id}
-                  className="border-t border-gray-800 hover:bg-[#151518]"
+                  className="border-t border-[#E7E5E0] bg-white hover:bg-[#F3F2EF]"
                 >
-                  <td className="px-6 py-4">{p.name ?? "Untitled Quote"}</td>
+                  <td className="px-6 py-4 text-[#2A2E36]">{p.name ?? "Untitled Quote"}</td>
 
                   <td className="px-6 py-4">
                     {statusBadge(p.status)}
                   </td>
 
-                  <td className="px-6 py-4">{money(p.final_price)}</td>
-                  <td className="px-6 py-4">{money(p.expected_profit)}</td>
-                  <td className="px-6 py-4">{pct(p.target_margin)}</td>
+                  <td className="px-6 py-4 text-[#2A2E36]">{money(p.final_price)}</td>
+                  <td className="px-6 py-4 text-[#2A2E36]">{money(p.expected_profit)}</td>
+                  <td className="px-6 py-4 text-[#2A2E36]">{pct(p.target_margin)}</td>
 
                   <td className="flex gap-2 px-6 py-4">
                     <Link
                       href={`/projects/${p.id}`}
-                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
                     >
                       Open
                     </Link>
 
                     <Link
                       href={`/projects/${p.id}/edit`}
-                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
                     >
                       Edit
                     </Link>
 
                     <Link
                       href={`/projects/${p.id}/preview`}
-                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
                     >
                       Preview
                     </Link>
@@ -362,7 +362,7 @@ export default function DashboardPage() {
                       href={`/api/proposal/${p.id}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-md border border-gray-600 px-3 py-1 text-xs hover:bg-gray-700"
+                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
                     >
                       PDF
                     </a>
@@ -371,15 +371,15 @@ export default function DashboardPage() {
                       type="button"
                       onClick={() => handleDuplicate(p.id)}
                       disabled={duplicating === p.id}
-                      className="rounded-md border border-white/20 px-3 py-1 text-xs hover:bg-gray-700 disabled:opacity-50"
+                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF] disabled:opacity-50"
                     >
-                      {duplicating === p.id ? "…" : "Duplicate"}
+                      {duplicating === p.id ? "..." : "Duplicate"}
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleDelete(p.id)}
-                      className="rounded-md border border-red-500/40 px-3 py-1 text-xs text-red-300 hover:bg-red-500/10"
+                      className="rounded-md border border-red-200 px-3 py-1 text-xs text-red-700 hover:bg-red-50"
                     >
                       Delete
                     </button>
@@ -393,4 +393,3 @@ export default function DashboardPage() {
     </main>
   );
 }
-

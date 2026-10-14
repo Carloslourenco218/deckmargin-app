@@ -34,21 +34,21 @@ const STATUS_DISPLAY: Record<string, string> = {
 function statusBadge(status: string | null) {
   const s = (status ?? "draft").toLowerCase();
   const map: Record<string, string> = {
-    draft:          "border-white/20 bg-white/5 text-white/50",
-    ready_to_send:  "border-blue-500/30 bg-blue-500/10 text-blue-300",
-    open:           "border-blue-500/30 bg-blue-500/10 text-blue-300",
-    sent:           "border-violet-500/30 bg-violet-500/10 text-violet-300",
-    viewed:         "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
-    "follow-up":    "border-amber-500/30 bg-amber-500/10 text-amber-300",
-    approved:       "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-    accepted:       "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-    won:            "border-green-500/30 bg-green-500/10 text-green-300",
-    declined:       "border-red-500/30 bg-red-500/10 text-red-300",
-    lost:           "border-red-500/30 bg-red-500/10 text-red-300",
-    "on-hold":      "border-gray-500/30 bg-gray-500/10 text-gray-300",
-    expired:        "border-gray-500/30 bg-gray-500/10 text-gray-300",
+    draft:          "border-gray-200 bg-gray-100 text-gray-600",
+    ready_to_send:  "border-blue-200 bg-blue-100 text-blue-700",
+    open:           "border-blue-200 bg-blue-100 text-blue-700",
+    sent:           "border-purple-200 bg-purple-100 text-purple-700",
+    viewed:         "border-cyan-200 bg-cyan-100 text-cyan-700",
+    "follow-up":    "border-amber-200 bg-amber-100 text-amber-700",
+    approved:       "border-green-200 bg-green-100 text-green-700",
+    accepted:       "border-green-200 bg-green-100 text-green-700",
+    won:            "border-green-200 bg-green-100 text-green-700",
+    declined:       "border-red-200 bg-red-100 text-red-700",
+    lost:           "border-red-200 bg-red-100 text-red-700",
+    "on-hold":      "border-gray-200 bg-gray-100 text-gray-600",
+    expired:        "border-gray-200 bg-gray-100 text-gray-600",
   };
-  const cls = map[s] ?? "border-white/20 bg-white/5 text-white/70";
+  const cls = map[s] ?? "border-gray-200 bg-gray-100 text-gray-600";
   const label = STATUS_DISPLAY[s] ?? s;
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${cls}`}>
@@ -117,42 +117,42 @@ export default function ProjectsPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#0b0f19] px-6 py-8 text-white">
+    <main className="min-h-screen bg-[#FAFAF8] px-6 py-8 text-[#1D2C4B]">
       <div className="mx-auto max-w-6xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold">Projects</h1>
-            <p className="mt-1 text-sm text-white/70">
+            <h1 className="text-3xl font-semibold text-[#1D2C4B]">Projects</h1>
+            <p className="mt-1 text-sm text-[#6B7280]">
               Manage and review your deck quotes
             </p>
           </div>
 
           <Link
             href="/dashboard"
-            className="rounded-lg border border-white/20 px-4 py-2 text-sm hover:bg-white/10"
+            className="rounded-lg border border-[#E7E5E0] px-4 py-2 text-sm text-[#2A2E36] hover:bg-[#F3F2EF]"
           >
             Back to Dashboard
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <div className="mb-4 text-sm font-medium text-white/80">
+        <div className="rounded-2xl border border-[#E7E5E0] bg-white p-4">
+          <div className="mb-4 text-sm font-medium text-[#1D2C4B]">
             Recent Quotes
           </div>
 
           {loading ? (
-            <div className="py-6 text-sm text-white/60">Loading…</div>
+            <div className="py-6 text-sm text-[#6B7280]">Loading...</div>
           ) : err ? (
-            <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {err}
             </div>
           ) : projects.length === 0 ? (
-            <div className="py-6 text-sm text-white/60">No quotes found.</div>
+            <div className="py-6 text-sm text-[#6B7280]">No quotes found.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="text-white/60">
-                  <tr className="border-b border-white/10">
+                <thead className="text-[#6B7280]">
+                  <tr className="border-b border-[#E7E5E0]">
                     <th className="py-3 pr-4 font-medium">Project</th>
                     <th className="py-3 pr-4 font-medium">Status</th>
                     <th className="py-3 pr-4 font-medium">Price</th>
@@ -162,9 +162,9 @@ export default function ProjectsPage() {
                   </tr>
                 </thead>
 
-                <tbody className="text-white/90">
+                <tbody className="text-[#2A2E36]">
                   {projects.map((project) => (
-                    <tr key={project.id} className="border-b border-white/5">
+                    <tr key={project.id} className="border-b border-[#E7E5E0] hover:bg-[#F3F2EF]">
                       <td className="py-4 pr-4">
                         {project.name ?? "Untitled Quote"}
                       </td>
@@ -181,14 +181,14 @@ export default function ProjectsPage() {
                         <div className="flex justify-end gap-2">
                           <Link
                             href={`/projects/${project.id}`}
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
+                            className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
                           >
                             Open
                           </Link>
 
                           <Link
                             href={`/projects/${project.id}/edit`}
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
+                            className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
                           >
                             Edit
                           </Link>
@@ -197,7 +197,7 @@ export default function ProjectsPage() {
                             href={`/api/proposal/${project.id}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10"
+                            className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
                           >
                             PDF
                           </a>
@@ -206,9 +206,9 @@ export default function ProjectsPage() {
                             type="button"
                             onClick={() => handleDuplicate(project.id)}
                             disabled={duplicating === project.id}
-                            className="rounded border border-white/20 px-3 py-1 text-xs hover:bg-white/10 disabled:opacity-50"
+                            className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF] disabled:opacity-50"
                           >
-                            {duplicating === project.id ? "…" : "Duplicate"}
+                            {duplicating === project.id ? "..." : "Duplicate"}
                           </button>
                         </div>
                       </td>
@@ -223,4 +223,3 @@ export default function ProjectsPage() {
     </main>
   );
 }
-

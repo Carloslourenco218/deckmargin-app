@@ -283,153 +283,153 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
-        <div className="mx-auto max-w-4xl">Loading settings…</div>
+      <main className="min-h-screen bg-[#FAFAF8] p-10 text-[#1D2C4B]">
+        <div className="mx-auto max-w-4xl">Loading settings...</div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#0e0e10] p-10 text-white">
+    <main className="min-h-screen bg-[#FAFAF8] p-10 text-[#1D2C4B]">
       <div className="mx-auto max-w-4xl">
 
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-semibold">Estimator Settings</h1>
-            <p className="text-gray-400">Set your pricing rules and business info once. DeckMargin will use them in every quote.</p>
+            <h1 className="text-3xl font-semibold text-[#1D2C4B]">Estimator Settings</h1>
+            <p className="text-[#6B7280]">Set your pricing rules and business info once. DeckMargin will use them in every quote.</p>
           </div>
-          <Link href="/dashboard" className="rounded-lg border border-gray-600 px-4 py-2 text-gray-200 hover:bg-gray-800">Back to Dashboard</Link>
+          <Link href="/dashboard" className="rounded-lg border border-[#E7E5E0] px-4 py-2 text-[#2A2E36] hover:bg-[#F3F2EF]">Back to Dashboard</Link>
         </div>
 
         {/* ── Settings navigation ── */}
         <div className="mb-6 flex gap-2">
-          <Link href="/settings" className="rounded-lg border border-white/30 bg-white/10 px-4 py-2 text-sm text-white">Estimator</Link>
-          <Link href="/settings/team" className="rounded-lg border border-white/15 px-4 py-2 text-sm text-gray-300 hover:bg-white/5">Team</Link>
-          <Link href="/settings/guardrails" className="rounded-lg border border-white/15 px-4 py-2 text-sm text-gray-300 hover:bg-white/5">Guardrails</Link>
+          <Link href="/settings" className="rounded-lg border border-[#1D2C4B] bg-[#1D2C4B] px-4 py-2 text-sm text-white">Estimator</Link>
+          <Link href="/settings/team" className="rounded-lg border border-[#E7E5E0] px-4 py-2 text-sm text-[#6B7280] hover:bg-[#F3F2EF]">Team</Link>
+          <Link href="/settings/guardrails" className="rounded-lg border border-[#E7E5E0] px-4 py-2 text-sm text-[#6B7280] hover:bg-[#F3F2EF]">Guardrails</Link>
         </div>
 
-        {err ? <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{err}</div> : null}
-        {msg ? <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{msg}</div> : null}
+        {err ? <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{err}</div> : null}
+        {msg ? <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{msg}</div> : null}
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <div className="rounded-2xl border border-[#E7E5E0] bg-white p-6">
 
           {/* ── Company Branding ── */}
-          <div className="mb-6 text-sm font-medium text-white/80">Company Branding</div>
-          <p className="mb-5 text-xs text-white/40">Your logo and contact info appear on every PDF proposal sent to clients.</p>
+          <div className="mb-6 text-sm font-medium text-[#1D2C4B]">Company Branding</div>
+          <p className="mb-5 text-xs text-[#6B7280]">Your logo and contact info appear on every PDF proposal sent to clients.</p>
 
-          <div className="mb-6 rounded-xl border border-white/10 bg-[#111827] p-5">
-            <label className="mb-3 block text-xs text-white/60">Company Logo</label>
+          <div className="mb-6 rounded-xl border border-[#E7E5E0] bg-[#F3F2EF] p-5">
+            <label className="mb-3 block text-xs text-[#6B7280]">Company Logo</label>
             {logoUrl ? (
               <div className="flex items-start gap-5">
-                <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-white/10 bg-white p-2">
+                <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-[#E7E5E0] bg-white p-2">
                   <img src={logoUrl} alt="Company logo" className="max-h-full max-w-full object-contain" />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="text-xs text-emerald-400">✓ Logo uploaded, appears on all proposals</p>
-                  <button type="button" onClick={() => fileInputRef.current?.click()} disabled={logoUploading} className="rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white hover:bg-white/10 disabled:opacity-50">
-                    {logoUploading ? "Uploading…" : "Replace Logo"}
+                  <p className="text-xs text-green-700">Logo uploaded, appears on all proposals</p>
+                  <button type="button" onClick={() => fileInputRef.current?.click()} disabled={logoUploading} className="rounded-lg border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white disabled:opacity-50">
+                    {logoUploading ? "Uploading..." : "Replace Logo"}
                   </button>
-                  <button type="button" onClick={handleLogoRemove} disabled={logoUploading} className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50">
+                  <button type="button" onClick={handleLogoRemove} disabled={logoUploading} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 disabled:opacity-50">
                     Remove Logo
                   </button>
                 </div>
               </div>
             ) : (
-              <div onClick={() => fileInputRef.current?.click()} className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/15 bg-white/5 px-6 py-8 transition hover:border-white/25">
+              <div onClick={() => fileInputRef.current?.click()} className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#E7E5E0] bg-[#FAFAF8] px-6 py-8 transition hover:border-[#1D2C4B]">
                 <div className="mb-2 text-3xl">🖼️</div>
-                <p className="text-sm font-medium text-white/80">{logoUploading ? "Uploading…" : "Click to upload your logo"}</p>
-                <p className="mt-1 text-xs text-white/40">PNG, JPG, or SVG · Max 5MB</p>
+                <p className="text-sm font-medium text-[#2A2E36]">{logoUploading ? "Uploading..." : "Click to upload your logo"}</p>
+                <p className="mt-1 text-xs text-[#6B7280]">PNG, JPG, or SVG · Max 5MB</p>
               </div>
             )}
             <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/svg+xml" className="hidden" onChange={handleLogoUpload} />
-            {logoErr ? <p className="mt-2 text-xs text-red-400">{logoErr}</p> : null}
+            {logoErr ? <p className="mt-2 text-xs text-red-700">{logoErr}</p> : null}
           </div>
 
           {/* ── Business Contact Info ── */}
-          <div className="mb-6 text-sm font-medium text-white/80">Business Contact Info</div>
+          <div className="mb-6 text-sm font-medium text-[#1D2C4B]">Business Contact Info</div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label className="mb-1 block text-xs text-white/60">Business Name</label>
-              <input value={form.company_name} onChange={(e) => setTxt("company_name", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="Smith Deck Builders" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Business Name</label>
+              <input value={form.company_name} onChange={(e) => setTxt("company_name", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="Smith Deck Builders" />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Business Phone</label>
-              <input value={form.company_phone} onChange={(e) => setTxt("company_phone", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="(555) 555-5555" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Business Phone</label>
+              <input value={form.company_phone} onChange={(e) => setTxt("company_phone", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="(555) 555-5555" />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Business Email</label>
-              <input value={form.company_email} onChange={(e) => setTxt("company_email", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="quotes@yourbusiness.com" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Business Email</label>
+              <input value={form.company_email} onChange={(e) => setTxt("company_email", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="quotes@yourbusiness.com" />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Website <span className="text-white/30">(optional)</span></label>
-              <input value={form.company_website} onChange={(e) => setTxt("company_website", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="www.smithdeckbuilders.com" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Website <span className="text-[#6B7280]/50">(optional)</span></label>
+              <input value={form.company_website} onChange={(e) => setTxt("company_website", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="www.smithdeckbuilders.com" />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Business Address <span className="text-white/30">(optional)</span></label>
-              <input value={form.company_address} onChange={(e) => setTxt("company_address", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="123 Main St, Portland, OR 97201" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Business Address <span className="text-[#6B7280]/50">(optional)</span></label>
+              <input value={form.company_address} onChange={(e) => setTxt("company_address", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="123 Main St, Portland, OR 97201" />
             </div>
           </div>
 
           {/* ── Regional Pricing ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Regional Pricing</div>
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">Regional Pricing</div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label className="mb-1 block text-xs text-white/60">My Region</label>
-              <select value={form.region} onChange={(e) => setTxt("region", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2">
+              <label className="mb-1 block text-xs text-[#6B7280]">My Region</label>
+              <select value={form.region} onChange={(e) => setTxt("region", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]">
                 {REGIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
               </select>
-              <p className="mt-2 text-xs text-white/40">{selectedRegion.note}</p>
+              <p className="mt-2 text-xs text-[#6B7280]">{selectedRegion.note}</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
-              <div className="mb-2 text-xs font-medium text-white/60">Material cost multiplier</div>
-              <div className="text-2xl font-semibold text-white">{selectedRegion.materialMult.toFixed(2)}x</div>
-              <div className="mt-1 text-xs text-white/40">Applied to all material rates automatically</div>
+            <div className="rounded-xl border border-[#E7E5E0] bg-[#F3F2EF] p-4">
+              <div className="mb-2 text-xs font-medium text-[#6B7280]">Material cost multiplier</div>
+              <div className="text-2xl font-semibold text-[#1D2C4B]">{selectedRegion.materialMult.toFixed(2)}x</div>
+              <div className="mt-1 text-xs text-[#6B7280]">Applied to all material rates automatically</div>
             </div>
-            <div className="rounded-xl border border-white/10 bg-[#111827] p-4">
-              <div className="mb-2 text-xs font-medium text-white/60">Labor cost multiplier</div>
-              <div className="text-2xl font-semibold text-white">{selectedRegion.laborMult.toFixed(2)}x</div>
-              <div className="mt-1 text-xs text-white/40">Applied to labor rate per sq ft automatically</div>
+            <div className="rounded-xl border border-[#E7E5E0] bg-[#F3F2EF] p-4">
+              <div className="mb-2 text-xs font-medium text-[#6B7280]">Labor cost multiplier</div>
+              <div className="text-2xl font-semibold text-[#1D2C4B]">{selectedRegion.laborMult.toFixed(2)}x</div>
+              <div className="mt-1 text-xs text-[#6B7280]">Applied to labor rate per sq ft automatically</div>
             </div>
-            <div className="md:col-span-2 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
-              <div className="mb-2 text-xs font-medium text-blue-300">Effective rates with {selectedRegion.label} multiplier</div>
+            <div className="md:col-span-2 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <div className="mb-2 text-xs font-medium text-blue-700">Effective rates with {selectedRegion.label} multiplier</div>
               <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                <div><div className="text-xs text-white/50">Pressure-treated</div><div className="text-sm font-medium text-white">${(form.pt_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft</div></div>
-                <div><div className="text-xs text-white/50">Trex</div><div className="text-sm font-medium text-white">${(form.trex_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft</div></div>
-                <div><div className="text-xs text-white/50">TimberTech</div><div className="text-sm font-medium text-white">${(form.timbertech_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft</div></div>
-                <div><div className="text-xs text-white/50">Labor</div><div className="text-sm font-medium text-white">${(form.labor_rate_per_sqft * selectedRegion.laborMult).toFixed(2)}/sqft</div></div>
+                <div><div className="text-xs text-[#6B7280]">Pressure-treated</div><div className="text-sm font-medium text-[#1D2C4B]">${(form.pt_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft</div></div>
+                <div><div className="text-xs text-[#6B7280]">Trex</div><div className="text-sm font-medium text-[#1D2C4B]">${(form.trex_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft</div></div>
+                <div><div className="text-xs text-[#6B7280]">TimberTech</div><div className="text-sm font-medium text-[#1D2C4B]">${(form.timbertech_material_rate * selectedRegion.materialMult).toFixed(2)}/sqft</div></div>
+                <div><div className="text-xs text-[#6B7280]">Labor</div><div className="text-sm font-medium text-[#1D2C4B]">${(form.labor_rate_per_sqft * selectedRegion.laborMult).toFixed(2)}/sqft</div></div>
               </div>
             </div>
           </div>
 
           {/* ── Material Rates ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">
             Base Material Rates ($ / sqft)
-            <span className="ml-2 text-xs font-normal text-white/40">Regional multiplier applied on top</span>
+            <span className="ml-2 text-xs font-normal text-[#6B7280]">Regional multiplier applied on top</span>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div><label className="mb-1 block text-xs text-white/60">Pressure Treated</label><input value={form.pt_material_rate} onChange={(e) => setNum("pt_material_rate", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-            <div><label className="mb-1 block text-xs text-white/60">Trex</label><input value={form.trex_material_rate} onChange={(e) => setNum("trex_material_rate", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-            <div><label className="mb-1 block text-xs text-white/60">TimberTech</label><input value={form.timbertech_material_rate} onChange={(e) => setNum("timbertech_material_rate", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-            <div><label className="mb-1 block text-xs text-white/60">PVC</label><input value={form.pvc_material_rate} onChange={(e) => setNum("pvc_material_rate", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><label className="mb-1 block text-xs text-[#6B7280]">Pressure Treated</label><input value={form.pt_material_rate} onChange={(e) => setNum("pt_material_rate", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" /></div>
+            <div><label className="mb-1 block text-xs text-[#6B7280]">Trex</label><input value={form.trex_material_rate} onChange={(e) => setNum("trex_material_rate", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" /></div>
+            <div><label className="mb-1 block text-xs text-[#6B7280]">TimberTech</label><input value={form.timbertech_material_rate} onChange={(e) => setNum("timbertech_material_rate", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" /></div>
+            <div><label className="mb-1 block text-xs text-[#6B7280]">PVC</label><input value={form.pvc_material_rate} onChange={(e) => setNum("pvc_material_rate", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" /></div>
           </div>
 
           {/* ── Labor & Defaults ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">
-            Labor & Defaults
-            <span className="ml-2 text-xs font-normal text-white/40">Regional multiplier applied to labor rate</span>
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">
+            Labor &amp; Defaults
+            <span className="ml-2 text-xs font-normal text-[#6B7280]">Regional multiplier applied to labor rate</span>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div><label className="mb-1 block text-xs text-white/60">Base Labor Rate Per Sq Ft</label><input value={form.labor_rate_per_sqft} onChange={(e) => setNum("labor_rate_per_sqft", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-            <div><label className="mb-1 block text-xs text-white/60">Stair Cost (per section)</label><input value={form.stair_cost} onChange={(e) => setNum("stair_cost", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-            <div><label className="mb-1 block text-xs text-white/60">Default Equipment Cost</label><input value={form.equipment_default} onChange={(e) => setNum("equipment_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
-            <div><label className="mb-1 block text-xs text-white/60">Default Overhead Cost</label><input value={form.overhead_default} onChange={(e) => setNum("overhead_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" /></div>
+            <div><label className="mb-1 block text-xs text-[#6B7280]">Base Labor Rate Per Sq Ft</label><input value={form.labor_rate_per_sqft} onChange={(e) => setNum("labor_rate_per_sqft", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" /></div>
+            <div><label className="mb-1 block text-xs text-[#6B7280]">Stair Cost (per section)</label><input value={form.stair_cost} onChange={(e) => setNum("stair_cost", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" /></div>
+            <div><label className="mb-1 block text-xs text-[#6B7280]">Default Equipment Cost</label><input value={form.equipment_default} onChange={(e) => setNum("equipment_default", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" /></div>
+            <div><label className="mb-1 block text-xs text-[#6B7280]">Default Overhead Cost</label><input value={form.overhead_default} onChange={(e) => setNum("overhead_default", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" /></div>
           </div>
 
           {/* ── Sales Tax ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Sales Tax</div>
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">Sales Tax</div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Tax Rate (%)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Tax Rate (%)</label>
               <input
                 type="number"
                 min="0"
@@ -437,17 +437,17 @@ export default function SettingsPage() {
                 step="0.01"
                 value={form.tax_rate}
                 onChange={(e) => setNum("tax_rate", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
                 placeholder="0"
               />
-              <p className="mt-1 text-xs text-white/40">Enter as a percentage, e.g. 8.5 for 8.5%</p>
+              <p className="mt-1 text-xs text-[#6B7280]">Enter as a percentage, e.g. 8.5 for 8.5%</p>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Apply Tax To</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Apply Tax To</label>
               <select
                 value={form.tax_applies_to}
                 onChange={(e) => setTxt("tax_applies_to", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               >
                 <option value="materials_only">Materials only</option>
                 <option value="labor_only">Labor only</option>
@@ -457,135 +457,135 @@ export default function SettingsPage() {
           </div>
 
           {/* ── Dumpster Default ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Dumpster</div>
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">Dumpster</div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Default Dumpster Cost ($)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Default Dumpster Cost ($)</label>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={form.dumpster_default}
                 onChange={(e) => setNum("dumpster_default", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
                 placeholder="0.00"
               />
-              <p className="mt-1 text-xs text-white/40">Pre-fills the dumpster cost field when toggled on in a quote</p>
+              <p className="mt-1 text-xs text-[#6B7280]">Pre-fills the dumpster cost field when toggled on in a quote</p>
             </div>
           </div>
 
           {/* ── Permit Defaults ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Permit Default Costs</div>
-          <p className="mb-4 text-xs text-white/40">These pre-fill each permit cost field when toggled on in a quote. Set to 0 if you prefer to enter costs manually per job.</p>
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">Permit Default Costs</div>
+          <p className="mb-4 text-xs text-[#6B7280]">These pre-fill each permit cost field when toggled on in a quote. Set to 0 if you prefer to enter costs manually per job.</p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Building Permit</label>
-              <input type="number" min="0" step="0.01" value={form.permit_building_default} onChange={(e) => setNum("permit_building_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Building Permit</label>
+              <input type="number" min="0" step="0.01" value={form.permit_building_default} onChange={(e) => setNum("permit_building_default", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="0.00" />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Septic Permit</label>
-              <input type="number" min="0" step="0.01" value={form.permit_septic_default} onChange={(e) => setNum("permit_septic_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Septic Permit</label>
+              <input type="number" min="0" step="0.01" value={form.permit_septic_default} onChange={(e) => setNum("permit_septic_default", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="0.00" />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Electrical Permit</label>
-              <input type="number" min="0" step="0.01" value={form.permit_electrical_default} onChange={(e) => setNum("permit_electrical_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Electrical Permit</label>
+              <input type="number" min="0" step="0.01" value={form.permit_electrical_default} onChange={(e) => setNum("permit_electrical_default", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="0.00" />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Engineering / Structural Drawings</label>
-              <input type="number" min="0" step="0.01" value={form.permit_engineering_default} onChange={(e) => setNum("permit_engineering_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
+              <label className="mb-1 block text-xs text-[#6B7280]">Engineering / Structural Drawings</label>
+              <input type="number" min="0" step="0.01" value={form.permit_engineering_default} onChange={(e) => setNum("permit_engineering_default", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="0.00" />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">HOA Approval Fee</label>
-              <input type="number" min="0" step="0.01" value={form.permit_hoa_default} onChange={(e) => setNum("permit_hoa_default", e.target.value)} className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2" placeholder="0.00" />
+              <label className="mb-1 block text-xs text-[#6B7280]">HOA Approval Fee</label>
+              <input type="number" min="0" step="0.01" value={form.permit_hoa_default} onChange={(e) => setNum("permit_hoa_default", e.target.value)} className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]" placeholder="0.00" />
             </div>
           </div>
 
           {/* ── Crew & Labor ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">
             Crew &amp; Labor
-            <span className="ml-2 text-xs font-normal text-white/40">Used for labor phase breakdown and crew-based pricing</span>
+            <span className="ml-2 text-xs font-normal text-[#6B7280]">Used for labor phase breakdown and crew-based pricing</span>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Crew Size (people)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Crew Size (people)</label>
               <input
                 type="number" min="1" max="20" step="1"
                 value={form.crew_size}
                 onChange={(e) => setNum("crew_size", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
-              <p className="mt-1 text-xs text-white/40">Number of crew members on a typical job</p>
+              <p className="mt-1 text-xs text-[#6B7280]">Number of crew members on a typical job</p>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Crew Hourly Rate ($/hr)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Crew Hourly Rate ($/hr)</label>
               <input
                 type="number" min="0" step="0.01"
                 value={form.crew_hourly_rate}
                 onChange={(e) => setNum("crew_hourly_rate", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
-              <p className="mt-1 text-xs text-white/40">All-in hourly rate per crew member</p>
+              <p className="mt-1 text-xs text-[#6B7280]">All-in hourly rate per crew member</p>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Labor Pricing Method</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Labor Pricing Method</label>
               <select
                 value={form.labor_method}
                 onChange={(e) => setTxt("labor_method", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               >
-                <option value="per_sqft">Per Sq Ft ($ × sqft)</option>
-                <option value="hourly">Hourly (crew rate × hours)</option>
+                <option value="per_sqft">Per Sq Ft ($ x sqft)</option>
+                <option value="hourly">Hourly (crew rate x hours)</option>
               </select>
-              <p className="mt-1 text-xs text-white/40">How labor cost is calculated on each quote</p>
+              <p className="mt-1 text-xs text-[#6B7280]">How labor cost is calculated on each quote</p>
             </div>
           </div>
 
           {/* ── Waste Factor ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">
             Material Waste Factor
-            <span className="ml-2 text-xs font-normal text-white/40">Covers cuts, mistakes, and on-site waste</span>
+            <span className="ml-2 text-xs font-normal text-[#6B7280]">Covers cuts, mistakes, and on-site waste</span>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Waste Factor Multiplier</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Waste Factor Multiplier</label>
               <input
                 type="number" min="1.00" max="1.50" step="0.01"
                 value={form.waste_factor}
                 onChange={(e) => setNum("waste_factor", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
-              <p className="mt-1 text-xs text-white/40">
-                e.g. 1.10 = 10% added to all material costs. Typical: 1.08–1.15.
+              <p className="mt-1 text-xs text-[#6B7280]">
+                e.g. 1.10 = 10% added to all material costs. Typical: 1.08-1.15.
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-[#111827] p-4 self-start">
-              <div className="text-xs font-medium text-white/60 mb-2">Preview</div>
-              <div className="text-sm text-white">
-                $1,000 material → ${(1000 * form.waste_factor).toLocaleString("en-US", { style: "currency", currency: "USD" })} with waste
+            <div className="rounded-xl border border-[#E7E5E0] bg-[#F3F2EF] p-4 self-start">
+              <div className="text-xs font-medium text-[#6B7280] mb-2">Preview</div>
+              <div className="text-sm text-[#2A2E36]">
+                $1,000 material -&gt; ${(1000 * form.waste_factor).toLocaleString("en-US", { style: "currency", currency: "USD" })} with waste
               </div>
-              <div className="mt-1 text-xs text-white/40">
+              <div className="mt-1 text-xs text-[#6B7280]">
                 {Math.round((form.waste_factor - 1) * 100)}% added to cover waste
               </div>
             </div>
           </div>
 
           {/* ── Auto-Hardware Unit Prices ── */}
-          <div className="mt-8 mb-2 text-sm font-medium text-white/80">Auto-Hardware Unit Prices</div>
-          <p className="mb-5 text-xs text-white/40">
+          <div className="mt-8 mb-2 text-sm font-medium text-[#1D2C4B]">Auto-Hardware Unit Prices</div>
+          <p className="mb-5 text-xs text-[#6B7280]">
             Used when auto-hardware calculation is enabled on a quote. Hardware quantities are computed from deck geometry; these are the unit costs applied.
           </p>
 
           {/* Auto-hardware toggle */}
-          <div className="mb-5 flex items-center justify-between rounded-xl border border-white/10 bg-[#111827] px-5 py-4">
+          <div className="mb-5 flex items-center justify-between rounded-xl border border-[#E7E5E0] bg-[#F3F2EF] px-5 py-4">
             <div>
-              <div className="text-sm font-medium text-white">Auto-Hardware Calculation</div>
-              <div className="mt-0.5 text-xs text-white/40">Automatically compute joist hangers, post bases, concrete bags, and fasteners from deck dimensions</div>
+              <div className="text-sm font-medium text-[#1D2C4B]">Auto-Hardware Calculation</div>
+              <div className="mt-0.5 text-xs text-[#6B7280]">Automatically compute joist hangers, post bases, concrete bags, and fasteners from deck dimensions</div>
             </div>
             <button
               type="button"
               onClick={() => setBool("auto_hardware", !form.auto_hardware)}
               className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                form.auto_hardware ? "bg-blue-500" : "bg-gray-600"
+                form.auto_hardware ? "bg-[#FBB944]" : "bg-gray-300"
               }`}
             >
               <span
@@ -598,72 +598,72 @@ export default function SettingsPage() {
 
           <div className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${!form.auto_hardware ? "opacity-50 pointer-events-none" : ""}`}>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Concrete Bag ($/bag)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Concrete Bag ($/bag)</label>
               <input
                 type="number" min="0" step="0.01"
                 value={form.concrete_bag_price}
                 onChange={(e) => setNum("concrete_bag_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Joist Hanger ($/ea)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Joist Hanger ($/ea)</label>
               <input
                 type="number" min="0" step="0.01"
                 value={form.joist_hanger_price}
                 onChange={(e) => setNum("joist_hanger_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Post Base ($/ea)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Post Base ($/ea)</label>
               <input
                 type="number" min="0" step="0.01"
                 value={form.post_base_price}
                 onChange={(e) => setNum("post_base_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Hurricane Tie ($/ea)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Hurricane Tie ($/ea)</label>
               <input
                 type="number" min="0" step="0.01"
                 value={form.hurricane_tie_price}
                 onChange={(e) => setNum("hurricane_tie_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">Lag Bolt ($/ea)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Lag Bolt ($/ea)</label>
               <input
                 type="number" min="0" step="0.01"
                 value={form.lag_bolt_price}
                 onChange={(e) => setNum("lag_bolt_price", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
             </div>
           </div>
 
           {/* ── Proposal Defaults ── */}
-          <div className="mt-8 mb-6 text-sm font-medium text-white/80">Proposal Defaults</div>
+          <div className="mt-8 mb-6 text-sm font-medium text-[#1D2C4B]">Proposal Defaults</div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs text-white/60">Default Proposal Expiry (days)</label>
+              <label className="mb-1 block text-xs text-[#6B7280]">Default Proposal Expiry (days)</label>
               <input
                 type="number" min="1" max="365" step="1"
                 value={form.proposal_expiry_days}
                 onChange={(e) => setNum("proposal_expiry_days", e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2"
+                className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-[#2A2E36] outline-none focus:border-[#1D2C4B]"
               />
-              <p className="mt-1 text-xs text-white/40">
+              <p className="mt-1 text-xs text-[#6B7280]">
                 Proposals expire this many days after the share link is generated. Default: 30 days.
               </p>
             </div>
           </div>
 
           {/* ── Standard Assumptions & Exclusions ── */}
-          <div className="mt-6 mb-3 text-sm font-medium text-white/80">Standard Assumptions</div>
-          <p className="mb-3 text-xs text-white/40">
+          <div className="mt-6 mb-3 text-sm font-medium text-[#1D2C4B]">Standard Assumptions</div>
+          <p className="mb-3 text-xs text-[#6B7280]">
             One assumption per line. These appear on every client proposal when no project-specific assumptions are set.
           </p>
           <textarea
@@ -671,11 +671,11 @@ export default function SettingsPage() {
             value={form.standard_assumptions}
             onChange={(e) => setTxt("standard_assumptions", e.target.value)}
             placeholder={`All work performed to local building code standards\nProject assumes normal site conditions\nOwner responsible for HOA approvals prior to start\nPrice valid for 30 days from proposal date`}
-            className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm text-white placeholder:text-white/20 font-mono"
+            className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-sm text-[#2A2E36] placeholder:text-[#6B7280]/40 font-mono outline-none focus:border-[#1D2C4B]"
           />
 
-          <div className="mt-6 mb-3 text-sm font-medium text-white/80">Standard Exclusions</div>
-          <p className="mb-3 text-xs text-white/40">
+          <div className="mt-6 mb-3 text-sm font-medium text-[#1D2C4B]">Standard Exclusions</div>
+          <p className="mb-3 text-xs text-[#6B7280]">
             One exclusion per line. These appear on every client proposal when no project-specific exclusions are set.
           </p>
           <textarea
@@ -683,12 +683,12 @@ export default function SettingsPage() {
             value={form.standard_exclusions}
             onChange={(e) => setTxt("standard_exclusions", e.target.value)}
             placeholder={`Landscaping, grading, or ground preparation\nElectrical work beyond deck lighting\nRetaining walls or drainage work\nHOA or permit fees (unless itemized above)`}
-            className="w-full rounded-lg border border-white/15 bg-[#111827] px-3 py-2 text-sm text-white placeholder:text-white/20 font-mono"
+            className="w-full rounded-lg border border-[#E7E5E0] bg-white px-3 py-2 text-sm text-[#2A2E36] placeholder:text-[#6B7280]/40 font-mono outline-none focus:border-[#1D2C4B]"
           />
 
           <div className="mt-8 flex justify-end">
-            <button type="button" onClick={save} disabled={saving} className="rounded bg-white px-4 py-2 text-black hover:bg-white/90 disabled:opacity-60">
-              {saving ? "Saving…" : "Save Settings"}
+            <button type="button" onClick={save} disabled={saving} className="rounded-full bg-[#FBB944] px-4 py-2 text-[#1D2C4B] font-bold hover:bg-[#E8A730] disabled:opacity-60">
+              {saving ? "Saving..." : "Save Settings"}
             </button>
           </div>
 
