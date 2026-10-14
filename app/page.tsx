@@ -346,6 +346,7 @@ export default function Home() {
             <img src="/logo.svg" alt="DeckMargin" height={32} width={210} />
           </a>
           <div className="lp-nav-right">
+            <a href="/resources" className="lp-login">Resources</a>
             <a href="/login" className="lp-login">Log in</a>
             {/*
               data-cta="nav" — LandingInteractive finds this and:
@@ -649,6 +650,7 @@ export default function Home() {
               <img src="/logo.svg" alt="DeckMargin" height={26} width={175} />
             </a>
             <div className="lp-footer-links">
+              <a href="/resources">Resources</a>
               <a href="/login">Log in</a>
               <a href="/signup" data-cta="footer">Start your 14-day free trial</a>
               <a href="mailto:carlos.lourenco@deckmargin.com">Contact</a>
