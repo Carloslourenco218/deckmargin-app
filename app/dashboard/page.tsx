@@ -295,100 +295,140 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <table className="w-full text-sm">
-          <thead className="bg-[#F3F2EF] text-[#6B7280]">
-            <tr>
-              <th className="px-6 py-3 text-left">Project</th>
-              <th className="px-6 py-3 text-left">Status</th>
-              <th className="px-6 py-3 text-left">Price</th>
-              <th className="px-6 py-3 text-left">Profit</th>
-              <th className="px-6 py-3 text-left">Margin</th>
-              <th className="px-6 py-3 text-left">Actions</th>
-            </tr>
-          </thead>
+        {/* Mobile card list */}
+        <div className="md:hidden px-4 py-4 space-y-3">
+          {loading ? (
+            <div className="py-4 text-sm text-[#6B7280]">Loading recent quotes...</div>
+          ) : recentRows.length === 0 ? (
+            <div className="py-4 text-sm text-[#6B7280]">No quotes yet. Create your first quote.</div>
+          ) : (
+            recentRows.map((p) => (
+              <div key={p.id} className="rounded-xl border border-[#E7E5E0] bg-[#F9F8F6] p-4">
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="min-w-0">
+                    <div className="font-medium text-[#1D2C4B] text-sm truncate">
+                      {p.name ?? "Untitled Quote"}
+                    </div>
+                    <div className="mt-1 text-xs text-[#6B7280]">
+                      {money(p.final_price)} &middot; {money(p.expected_profit)} profit &middot; {pct(p.target_margin)} margin
+                    </div>
+                  </div>
+                  <div className="shrink-0">{statusBadge(p.status)}</div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link href={`/projects/${p.id}`} className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white">Open</Link>
+                  <Link href={`/projects/${p.id}/edit`} className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white">Edit</Link>
+                  <Link href={`/projects/${p.id}/preview`} className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white">Preview</Link>
+                  <a href={`/api/proposal/${p.id}`} target="_blank" rel="noreferrer" className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white">PDF</a>
+                  <button type="button" onClick={() => handleDuplicate(p.id)} disabled={duplicating === p.id} className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white disabled:opacity-50">
+                    {duplicating === p.id ? "..." : "Duplicate"}
+                  </button>
+                  <button type="button" onClick={() => handleDelete(p.id)} className="rounded border border-red-200 px-3 py-1.5 text-xs text-red-700 hover:bg-red-50">Delete</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
-          <tbody>
-            {loading ? (
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-[#F3F2EF] text-[#6B7280]">
               <tr>
-                <td className="px-6 py-6 text-[#6B7280]" colSpan={6}>
-                  Loading recent quotes...
-                </td>
+                <th className="px-6 py-3 text-left">Project</th>
+                <th className="px-6 py-3 text-left">Status</th>
+                <th className="px-6 py-3 text-left">Price</th>
+                <th className="px-6 py-3 text-left">Profit</th>
+                <th className="px-6 py-3 text-left">Margin</th>
+                <th className="px-6 py-3 text-left">Actions</th>
               </tr>
-            ) : recentRows.length === 0 ? (
-              <tr>
-                <td className="px-6 py-6 text-[#6B7280]" colSpan={6}>
-                  No quotes yet. Create your first quote.
-                </td>
-              </tr>
-            ) : (
-              recentRows.map((p) => (
-                <tr
-                  key={p.id}
-                  className="border-t border-[#E7E5E0] bg-white hover:bg-[#F3F2EF]"
-                >
-                  <td className="px-6 py-4 text-[#2A2E36]">{p.name ?? "Untitled Quote"}</td>
+            </thead>
 
-                  <td className="px-6 py-4">
-                    {statusBadge(p.status)}
-                  </td>
-
-                  <td className="px-6 py-4 text-[#2A2E36]">{money(p.final_price)}</td>
-                  <td className="px-6 py-4 text-[#2A2E36]">{money(p.expected_profit)}</td>
-                  <td className="px-6 py-4 text-[#2A2E36]">{pct(p.target_margin)}</td>
-
-                  <td className="flex gap-2 px-6 py-4">
-                    <Link
-                      href={`/projects/${p.id}`}
-                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
-                    >
-                      Open
-                    </Link>
-
-                    <Link
-                      href={`/projects/${p.id}/edit`}
-                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
-                    >
-                      Edit
-                    </Link>
-
-                    <Link
-                      href={`/projects/${p.id}/preview`}
-                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
-                    >
-                      Preview
-                    </Link>
-
-                    <a
-                      href={`/api/proposal/${p.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
-                    >
-                      PDF
-                    </a>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDuplicate(p.id)}
-                      disabled={duplicating === p.id}
-                      className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF] disabled:opacity-50"
-                    >
-                      {duplicating === p.id ? "..." : "Duplicate"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(p.id)}
-                      className="rounded-md border border-red-200 px-3 py-1 text-xs text-red-700 hover:bg-red-50"
-                    >
-                      Delete
-                    </button>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td className="px-6 py-6 text-[#6B7280]" colSpan={6}>
+                    Loading recent quotes...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : recentRows.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-6 text-[#6B7280]" colSpan={6}>
+                    No quotes yet. Create your first quote.
+                  </td>
+                </tr>
+              ) : (
+                recentRows.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="border-t border-[#E7E5E0] bg-white hover:bg-[#F3F2EF]"
+                  >
+                    <td className="px-6 py-4 text-[#2A2E36]">{p.name ?? "Untitled Quote"}</td>
+
+                    <td className="px-6 py-4">
+                      {statusBadge(p.status)}
+                    </td>
+
+                    <td className="px-6 py-4 text-[#2A2E36]">{money(p.final_price)}</td>
+                    <td className="px-6 py-4 text-[#2A2E36]">{money(p.expected_profit)}</td>
+                    <td className="px-6 py-4 text-[#2A2E36]">{pct(p.target_margin)}</td>
+
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/projects/${p.id}`}
+                          className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
+                        >
+                          Open
+                        </Link>
+
+                        <Link
+                          href={`/projects/${p.id}/edit`}
+                          className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
+                        >
+                          Edit
+                        </Link>
+
+                        <Link
+                          href={`/projects/${p.id}/preview`}
+                          className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
+                        >
+                          Preview
+                        </Link>
+
+                        <a
+                          href={`/api/proposal/${p.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
+                        >
+                          PDF
+                        </a>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDuplicate(p.id)}
+                          disabled={duplicating === p.id}
+                          className="rounded-md border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF] disabled:opacity-50"
+                        >
+                          {duplicating === p.id ? "..." : "Duplicate"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(p.id)}
+                          className="rounded-md border border-red-200 px-3 py-1 text-xs text-red-700 hover:bg-red-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </main>
   );

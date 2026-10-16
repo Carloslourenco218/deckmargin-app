@@ -149,74 +149,126 @@ export default function ProjectsPage() {
           ) : projects.length === 0 ? (
             <div className="py-6 text-sm text-[#6B7280]">No quotes found.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="text-[#6B7280]">
-                  <tr className="border-b border-[#E7E5E0]">
-                    <th className="py-3 pr-4 font-medium">Project</th>
-                    <th className="py-3 pr-4 font-medium">Status</th>
-                    <th className="py-3 pr-4 font-medium">Price</th>
-                    <th className="py-3 pr-4 font-medium">Profit</th>
-                    <th className="py-3 pr-4 font-medium">Margin</th>
-                    <th className="py-3 text-right font-medium">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody className="text-[#2A2E36]">
-                  {projects.map((project) => (
-                    <tr key={project.id} className="border-b border-[#E7E5E0] hover:bg-[#F3F2EF]">
-                      <td className="py-4 pr-4">
-                        {project.name ?? "Untitled Quote"}
-                      </td>
-
-                      <td className="py-4 pr-4">
-                        {statusBadge(project.status)}
-                      </td>
-
-                      <td className="py-4 pr-4">{money(project.final_price)}</td>
-                      <td className="py-4 pr-4">{money(project.expected_profit)}</td>
-                      <td className="py-4 pr-4">{percent(project.target_margin)}</td>
-
-                      <td className="py-4">
-                        <div className="flex justify-end gap-2">
-                          <Link
-                            href={`/projects/${project.id}`}
-                            className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
-                          >
-                            Open
-                          </Link>
-
-                          <Link
-                            href={`/projects/${project.id}/edit`}
-                            className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
-                          >
-                            Edit
-                          </Link>
-
-                          <a
-                            href={`/api/proposal/${project.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
-                          >
-                            PDF
-                          </a>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDuplicate(project.id)}
-                            disabled={duplicating === project.id}
-                            className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF] disabled:opacity-50"
-                          >
-                            {duplicating === project.id ? "..." : "Duplicate"}
-                          </button>
+            <>
+              {/* Mobile card list */}
+              <div className="md:hidden space-y-3">
+                {projects.map((project) => (
+                  <div key={project.id} className="rounded-xl border border-[#E7E5E0] bg-[#F9F8F6] p-4">
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div className="min-w-0">
+                        <div className="font-medium text-[#1D2C4B] text-sm truncate">
+                          {project.name ?? "Untitled Quote"}
                         </div>
-                      </td>
+                        <div className="mt-1 text-xs text-[#6B7280]">
+                          {money(project.final_price)} &middot; {money(project.expected_profit)} profit &middot; {percent(project.target_margin)} margin
+                        </div>
+                      </div>
+                      <div className="shrink-0">{statusBadge(project.status)}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/projects/${project.id}`}
+                        className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white"
+                      >
+                        Open
+                      </Link>
+                      <Link
+                        href={`/projects/${project.id}/edit`}
+                        className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white"
+                      >
+                        Edit
+                      </Link>
+                      <a
+                        href={`/api/proposal/${project.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white"
+                      >
+                        PDF
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleDuplicate(project.id)}
+                        disabled={duplicating === project.id}
+                        className="rounded border border-[#E7E5E0] px-3 py-1.5 text-xs text-[#2A2E36] hover:bg-white disabled:opacity-50"
+                      >
+                        {duplicating === project.id ? "..." : "Duplicate"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="text-[#6B7280]">
+                    <tr className="border-b border-[#E7E5E0]">
+                      <th className="py-3 pr-4 font-medium">Project</th>
+                      <th className="py-3 pr-4 font-medium">Status</th>
+                      <th className="py-3 pr-4 font-medium">Price</th>
+                      <th className="py-3 pr-4 font-medium">Profit</th>
+                      <th className="py-3 pr-4 font-medium">Margin</th>
+                      <th className="py-3 text-right font-medium">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+
+                  <tbody className="text-[#2A2E36]">
+                    {projects.map((project) => (
+                      <tr key={project.id} className="border-b border-[#E7E5E0] hover:bg-[#F3F2EF]">
+                        <td className="py-4 pr-4">
+                          {project.name ?? "Untitled Quote"}
+                        </td>
+
+                        <td className="py-4 pr-4">
+                          {statusBadge(project.status)}
+                        </td>
+
+                        <td className="py-4 pr-4">{money(project.final_price)}</td>
+                        <td className="py-4 pr-4">{money(project.expected_profit)}</td>
+                        <td className="py-4 pr-4">{percent(project.target_margin)}</td>
+
+                        <td className="py-4">
+                          <div className="flex justify-end gap-2">
+                            <Link
+                              href={`/projects/${project.id}`}
+                              className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
+                            >
+                              Open
+                            </Link>
+
+                            <Link
+                              href={`/projects/${project.id}/edit`}
+                              className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
+                            >
+                              Edit
+                            </Link>
+
+                            <a
+                              href={`/api/proposal/${project.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF]"
+                            >
+                              PDF
+                            </a>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicate(project.id)}
+                              disabled={duplicating === project.id}
+                              className="rounded border border-[#E7E5E0] px-3 py-1 text-xs text-[#2A2E36] hover:bg-[#F3F2EF] disabled:opacity-50"
+                            >
+                              {duplicating === project.id ? "..." : "Duplicate"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>
